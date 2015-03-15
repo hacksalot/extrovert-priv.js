@@ -1,0 +1,3 @@
+# Exclude content-related folders and files
+node_modules/
+bower_components/
