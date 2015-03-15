@@ -341,7 +341,10 @@ var EXTROVERT = (function (window, $, THREE) {
          }
          else if (val.type == 'point') {
             new_light = new THREE.PointLight( val.color, val.intensity, val.distance );
-            new_light.position.copy( val.pos ? val.pos : eng.camera.position );
+            if( val.pos )
+               new_light.position.set( val.pos[0], val.pos[1], val.pos[2] );
+            else
+               new_light.position.copy( eng.camera.position );
          }
          eng.scene.add( new_light );
          lights.push( new_light );
@@ -833,9 +836,8 @@ An Extrovert.js generator for a 3D image gallery.
 
       EXTROVERT.create_scene( opts );
       EXTROVERT.create_camera( opts.camera );
-      var lights = [];
-      //lights[0] = { type: 'ambient', color: 0xFFFFFFF };
-      lights[0] = { type: 'point', color: 0xFFFFFFFF, intensity: 1.0, distance: 10000 };
+      var lights = opts.lights || [{ type: 'point', color: 0xFFFFFFFF, intensity: 1.0, distance: 10000 }];
+      //{ type: 'ambient', color: 0xFFFFFFF }
       EXTROVERT.fiat_lux( lights );
 
       eng.drag_plane = new THREE.Mesh(
@@ -931,7 +933,7 @@ An Extrovert.js generator for a 3D image gallery.
       var block_height = Math.abs( topLeft.y - botRight.y );
       var cube_geo = new THREE.BoxGeometry( block_width, block_height, opts.block.depth );
       // Mess up face normals to get more interesting shading
-      var dapple = true;
+      var dapple = false;
       if( dapple ) {
          cube_geo.computeFaceNormals();
          cube_geo.computeVertexNormals();

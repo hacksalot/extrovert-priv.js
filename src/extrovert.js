@@ -341,7 +341,10 @@ var EXTROVERT = (function (window, $, THREE) {
          }
          else if (val.type == 'point') {
             new_light = new THREE.PointLight( val.color, val.intensity, val.distance );
-            new_light.position.copy( val.pos ? val.pos : eng.camera.position );
+            if( val.pos )
+               new_light.position.set( val.pos[0], val.pos[1], val.pos[2] );
+            else
+               new_light.position.copy( eng.camera.position );
          }
          eng.scene.add( new_light );
          lights.push( new_light );
