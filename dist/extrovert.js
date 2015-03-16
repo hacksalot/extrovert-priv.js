@@ -857,8 +857,7 @@ An Extrovert.js generator for a 3D image gallery.
 
       EXTROVERT.create_scene( opts );
       EXTROVERT.create_camera( opts.camera );
-      var lights = opts.lights || [{ type: 'point', color: 0xFFFFFFFF, intensity: 1.0, distance: 10000 }];
-      EXTROVERT.fiat_lux( lights );
+      EXTROVERT.fiat_lux( opts.lights );
 
       eng.drag_plane = new THREE.Mesh(
          new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
@@ -981,16 +980,9 @@ An Extrovert.js generator for a 3D image gallery.
 
       mesh.position.set( x, y, z );
       mesh.castShadow = mesh.receiveShadow = false;
-      //mesh.lookAt( eng.camera.position );
-      //mesh.updateMatrix();
-      //mesh.updateMatrixWorld();
-      mesh.updateMatrix();
-      mesh.updateMatrixWorld();
-      //mesh.geometry.computeFaceNormals();
-      //mesh.geometry.computeVertexNormals();
-      
+      if( opts.generator.lookat )
+         mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
       eng.scene.add( mesh );
-      
 
       if (!opts.physics.enabled) {
          mesh.velocity = new THREE.Vector3(
