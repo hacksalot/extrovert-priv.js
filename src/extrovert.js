@@ -333,22 +333,36 @@ var EXTROVERT = (function (window, $, THREE) {
    @method fiat_lux
    */
    my.fiat_lux = function( light_opts ) {
+
       var lights = [];
+      var new_light = null;
+
       $.each( light_opts, function(idx, val) {
-         var new_light = null;
+
          if( val.type === 'ambient' ) {
             new_light = new THREE.AmbientLight( val.color );
          }
-         else if (val.type == 'point') {
+         else if (val.type === 'point') {
             new_light = new THREE.PointLight( val.color, val.intensity, val.distance );
+         }
+         else if (val.type === 'spotlight') {
+            new_light = create_spotlight( val );
+         }
+         else {
+            return;
+         }
+
+         if( val.type !== 'ambient' ) {
             if( val.pos )
                new_light.position.set( val.pos[0], val.pos[1], val.pos[2] );
             else
                new_light.position.copy( eng.camera.position );
          }
+
          eng.scene.add( new_light );
          lights.push( new_light );
       });
+
       return lights;
    };
 
@@ -358,18 +372,12 @@ var EXTROVERT = (function (window, $, THREE) {
    Create a spotlight with the specified color. TODO: adjust shadowmap settings.
    @method create_spotlight
    */
-   function create_spotlight( color ) {
-      var spotLight = new THREE.SpotLight( color );
-      spotLight.position.copy( camera.position );
-      spotLight.castShadow = false;
-      spotLight.shadowMapWidth = 1024;
-      spotLight.shadowMapHeight = 1024;
-      spotLight.shadowCameraNear = 100;
-      spotLight.shadowCameraFar = 4000;
-      spotLight.shadowCameraFov = 35;
-      spotLight.shadowCameraVisible = true;
-      spotLight.intensity = 2;
-      eng.scene.add( spotLight );
+   function create_spotlight( light ) {
+      // var spotLight = new THREE.SpotLight( 
+         // light.color, light.intensity || 0.5, light.distance || 1000, 
+         // light.angle || 35 );
+      var spotLight = new THREE.SpotLight( light.color );
+      spotLight.shadowCameraVisible = false;
       return spotLight;
    }
 
@@ -408,7 +416,7 @@ var EXTROVERT = (function (window, $, THREE) {
       texture.needsUpdate = true;
       return {
          tex: texture,
-         mat: new THREE.MeshLambertMaterial( { map: texture } )
+         mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
       };
    };
 

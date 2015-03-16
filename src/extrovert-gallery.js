@@ -17,6 +17,16 @@ An Extrovert.js generator for a 3D image gallery.
    //var my = {};
 
 
+   /**
+   Default options.
+   */
+   var _def_opts = {
+      generator: {
+         name: 'gallery',
+         background: 'default_background.png',
+         material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
+      }
+   };
 
 
    /**
@@ -25,7 +35,10 @@ An Extrovert.js generator for a 3D image gallery.
    EXTROVERT.gallery = function() {
       return {
          generate: function( options, eng ) {
-            init_objects( options, eng );
+            var new_opts = $.extend(true, { }, _def_opts, options);
+            if( !new_opts.generator || typeof new_opts.generator == 'string' )
+               new_opts.generator = _def_opts.generator;
+            init_objects( new_opts, eng );
          }
       };
    };
@@ -46,20 +59,17 @@ An Extrovert.js generator for a 3D image gallery.
          new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
          new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true } ));
       eng.drag_plane.visible = false;
-      //scene.add( eng.drag_plane ); // Not required
       eng.log.msg("Building intersection plane: %o", eng.drag_plane);
 
       // A visible plane that can be collided with
       if( true ) {
 
          var frustum_planes = EXTROVERT.calc_frustum( eng.camera );
-         //var planeWidth = 2000;
-         //var planeHeight = 2000;
          var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
          var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
 
-         var plane_tex = opts.background ?
-            THREE.ImageUtils.loadTexture( opts.background ) : null;
+         var plane_tex = opts.generator.background ?
+            THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
 
          var plane2 = opts.physics.enabled ?
             new Physijs.BoxMesh(
@@ -70,7 +80,6 @@ An Extrovert.js generator for a 3D image gallery.
                new THREE.BoxGeometry(planeWidth,planeHeight,10),
                new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
             );
-         //plane2.position.z = -500;
          plane2.position.z = frustum_planes.farPlane.topRight.z;
          plane2.receiveShadow = false; // TODO: not working
          plane2.updateMatrix();
@@ -91,7 +100,6 @@ An Extrovert.js generator for a 3D image gallery.
             );
       eng.placement_plane.visible = false;
       eng.placement_plane.position.z = 200;
-      //eng.scene.add( eng.placement_plane ); // Not required
       eng.scene.updateMatrix();
       eng.placement_plane.updateMatrix();
       eng.placement_plane.updateMatrixWorld();
@@ -103,12 +111,12 @@ An Extrovert.js generator for a 3D image gallery.
 
 
    /**
-   Initialize all card objects. TODO: Optionally load dedicated per-face
-   textures for cards. TODO: Fix texture kludge.
+   Initialize all card objects.
    @method init_cards
    */
    function init_cards( opts, eng ) {
-      eng.side_mat = Physijs.createMaterial( new THREE.MeshLambertMaterial({ color: 0x440000 }), 0.2, 1.0 );
+      var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
+      eng.side_mat = Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution );
       $( opts.src.selector ).each( function( idx, val ) {
          init_card( idx, val, opts, eng );
       });
@@ -168,7 +176,16 @@ An Extrovert.js generator for a 3D image gallery.
 
       mesh.position.set( x, y, z );
       mesh.castShadow = mesh.receiveShadow = false;
+      //mesh.lookAt( eng.camera.position );
+      //mesh.updateMatrix();
+      //mesh.updateMatrixWorld();
+      mesh.updateMatrix();
+      mesh.updateMatrixWorld();
+      //mesh.geometry.computeFaceNormals();
+      //mesh.geometry.computeVertexNormals();
+      
       eng.scene.add( mesh );
+      
 
       if (!opts.physics.enabled) {
          mesh.velocity = new THREE.Vector3(

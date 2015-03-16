@@ -333,22 +333,36 @@ var EXTROVERT = (function (window, $, THREE) {
    @method fiat_lux
    */
    my.fiat_lux = function( light_opts ) {
+
       var lights = [];
+      var new_light = null;
+
       $.each( light_opts, function(idx, val) {
-         var new_light = null;
+
          if( val.type === 'ambient' ) {
             new_light = new THREE.AmbientLight( val.color );
          }
-         else if (val.type == 'point') {
+         else if (val.type === 'point') {
             new_light = new THREE.PointLight( val.color, val.intensity, val.distance );
+         }
+         else if (val.type === 'spotlight') {
+            new_light = create_spotlight( val );
+         }
+         else {
+            return;
+         }
+
+         if( val.type !== 'ambient' ) {
             if( val.pos )
                new_light.position.set( val.pos[0], val.pos[1], val.pos[2] );
             else
                new_light.position.copy( eng.camera.position );
          }
+
          eng.scene.add( new_light );
          lights.push( new_light );
       });
+
       return lights;
    };
 
@@ -358,18 +372,12 @@ var EXTROVERT = (function (window, $, THREE) {
    Create a spotlight with the specified color. TODO: adjust shadowmap settings.
    @method create_spotlight
    */
-   function create_spotlight( color ) {
-      var spotLight = new THREE.SpotLight( color );
-      spotLight.position.copy( camera.position );
-      spotLight.castShadow = false;
-      spotLight.shadowMapWidth = 1024;
-      spotLight.shadowMapHeight = 1024;
-      spotLight.shadowCameraNear = 100;
-      spotLight.shadowCameraFar = 4000;
-      spotLight.shadowCameraFov = 35;
-      spotLight.shadowCameraVisible = true;
-      spotLight.intensity = 2;
-      eng.scene.add( spotLight );
+   function create_spotlight( light ) {
+      // var spotLight = new THREE.SpotLight( 
+         // light.color, light.intensity || 0.5, light.distance || 1000, 
+         // light.angle || 35 );
+      var spotLight = new THREE.SpotLight( light.color );
+      spotLight.shadowCameraVisible = false;
       return spotLight;
    }
 
@@ -408,7 +416,7 @@ var EXTROVERT = (function (window, $, THREE) {
       texture.needsUpdate = true;
       return {
          tex: texture,
-         mat: new THREE.MeshLambertMaterial( { map: texture } )
+         mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
       };
    };
 
@@ -814,6 +822,16 @@ An Extrovert.js generator for a 3D image gallery.
    //var my = {};
 
 
+   /**
+   Default options.
+   */
+   var _def_opts = {
+      generator: {
+         name: 'gallery',
+         background: 'default_background.png',
+         material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
+      }
+   };
 
 
    /**
@@ -822,7 +840,10 @@ An Extrovert.js generator for a 3D image gallery.
    EXTROVERT.gallery = function() {
       return {
          generate: function( options, eng ) {
-            init_objects( options, eng );
+            var new_opts = $.extend(true, { }, _def_opts, options);
+            if( !new_opts.generator || typeof new_opts.generator == 'string' )
+               new_opts.generator = _def_opts.generator;
+            init_objects( new_opts, eng );
          }
       };
    };
@@ -837,27 +858,23 @@ An Extrovert.js generator for a 3D image gallery.
       EXTROVERT.create_scene( opts );
       EXTROVERT.create_camera( opts.camera );
       var lights = opts.lights || [{ type: 'point', color: 0xFFFFFFFF, intensity: 1.0, distance: 10000 }];
-      //{ type: 'ambient', color: 0xFFFFFFF }
       EXTROVERT.fiat_lux( lights );
 
       eng.drag_plane = new THREE.Mesh(
          new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
          new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true } ));
       eng.drag_plane.visible = false;
-      //scene.add( eng.drag_plane ); // Not required
       eng.log.msg("Building intersection plane: %o", eng.drag_plane);
 
       // A visible plane that can be collided with
       if( true ) {
 
          var frustum_planes = EXTROVERT.calc_frustum( eng.camera );
-         //var planeWidth = 2000;
-         //var planeHeight = 2000;
          var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
          var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
 
-         var plane_tex = opts.background ?
-            THREE.ImageUtils.loadTexture( opts.background ) : null;
+         var plane_tex = opts.generator.background ?
+            THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
 
          var plane2 = opts.physics.enabled ?
             new Physijs.BoxMesh(
@@ -868,7 +885,6 @@ An Extrovert.js generator for a 3D image gallery.
                new THREE.BoxGeometry(planeWidth,planeHeight,10),
                new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
             );
-         //plane2.position.z = -500;
          plane2.position.z = frustum_planes.farPlane.topRight.z;
          plane2.receiveShadow = false; // TODO: not working
          plane2.updateMatrix();
@@ -889,7 +905,6 @@ An Extrovert.js generator for a 3D image gallery.
             );
       eng.placement_plane.visible = false;
       eng.placement_plane.position.z = 200;
-      //eng.scene.add( eng.placement_plane ); // Not required
       eng.scene.updateMatrix();
       eng.placement_plane.updateMatrix();
       eng.placement_plane.updateMatrixWorld();
@@ -901,12 +916,12 @@ An Extrovert.js generator for a 3D image gallery.
 
 
    /**
-   Initialize all card objects. TODO: Optionally load dedicated per-face
-   textures for cards. TODO: Fix texture kludge.
+   Initialize all card objects.
    @method init_cards
    */
    function init_cards( opts, eng ) {
-      eng.side_mat = Physijs.createMaterial( new THREE.MeshLambertMaterial({ color: 0x440000 }), 0.2, 1.0 );
+      var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
+      eng.side_mat = Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution );
       $( opts.src.selector ).each( function( idx, val ) {
          init_card( idx, val, opts, eng );
       });
@@ -966,7 +981,16 @@ An Extrovert.js generator for a 3D image gallery.
 
       mesh.position.set( x, y, z );
       mesh.castShadow = mesh.receiveShadow = false;
+      //mesh.lookAt( eng.camera.position );
+      //mesh.updateMatrix();
+      //mesh.updateMatrixWorld();
+      mesh.updateMatrix();
+      mesh.updateMatrixWorld();
+      //mesh.geometry.computeFaceNormals();
+      //mesh.geometry.computeVertexNormals();
+      
       eng.scene.add( mesh );
+      
 
       if (!opts.physics.enabled) {
          mesh.velocity = new THREE.Vector3(
