@@ -44,10 +44,7 @@ var EXTROVERT = (function (window, $, THREE) {
       camera: {
          fov: 35,
          near: 1,
-         far: 2000,
-         position: [0,0,0],
-         rotation: [0,0,0],
-         up: [0,0,-1]
+         far: 2000
       },
       physics: {
          enabled: true,
