@@ -5,8 +5,9 @@
             <File name="dist\extrovert.min.js" />
         </Folder>
         <Folder name="src">
-            <File name="src\extrovert-gallery.js" />
             <File name="src\extrovert.js" />
+            <File name="src\extrovert-gallery.js" />
+            <File name="src\extrovert-sample.js" />
         </Folder>
         <File name=".gitattributes" />
         <File name=".gitignore" />
