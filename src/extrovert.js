@@ -46,7 +46,8 @@ var EXTROVERT = (function (window, $, THREE) {
          near: 1,
          far: 2000,
          position: [0,0,800],
-         rotation: [0,0,0]
+         rotation: [0,0,0],
+         up: [0,1,0]
       },
       physics: {
          enabled: true,
@@ -97,7 +98,11 @@ var EXTROVERT = (function (window, $, THREE) {
    */
    var ZERO_G = new THREE.Vector3(0, 0, 0);
    
+
    
+   /**
+   Combined options object.
+   */   
    var opts = null;
 
 
@@ -126,20 +131,24 @@ var EXTROVERT = (function (window, $, THREE) {
    @method init_options
    */
    function init_options( options ) {
-      opts = $.extend(true, { }, defaults, options );
+   
+      // Grab the generator. It has default options we need to wire in.
+      if( !options.generator )
+         eng.generator = new EXTROVERT.imitate();
+      else if (typeof options.generator == 'string')
+         eng.generator = new EXTROVERT[ options.generator ]();
+      else {
+         eng.generator = new EXTROVERT[ options.generator.name ]();
+      }
+
+      opts = $.extend(true, { }, defaults, eng.generator.options );
+      opts = $.extend(true, opts, options );
+      log.msg("Options: %o", opts);
+
       if( opts.physics.enabled ) {
          Physijs.scripts.worker = opts.physics.physijs.worker;
          Physijs.scripts.ammo = opts.physics.physijs.ammo;
       }
-      //TODO: Clean this block
-      if( !opts.generator )
-         eng.generator = new EXTROVERT.imitate();
-      else if (typeof opts.generator == 'string')
-         eng.generator = new EXTROVERT[ opts.generator ]();
-      else {
-         eng.generator = new EXTROVERT[ opts.generator.name ]();
-      }
-
       eng.rasterizer = opts.rasterizer || my.generate_image_texture;
       eng.log = log;
    }
@@ -187,11 +196,16 @@ var EXTROVERT = (function (window, $, THREE) {
          new THREE.PerspectiveCamera( cam_opts.fov, eng.width / eng.height, cam_opts.near, cam_opts.far ) :
          new THREE.OrthographicCamera( cam_opts.left, cam_opts.right, cam_opts.top, cam_opts.bottom, cam_opts.near, cam_opts.far );
       cam.position.set( cam_opts.position[0], cam_opts.position[1], cam_opts.position[2] );
-      //eng.camera.updateMatrix();
       eng.camera = cam;
+      eng.scene && eng.scene.add( cam );      
+      cam.up.set( cam_opts.up[0], cam_opts.up[1], cam_opts.up[2] );
+      if( cam_opts.lookat ) {
+         cam.lookAt( new THREE.Vector3( cam_opts.lookat[0], cam_opts.lookat[1], cam_opts.lookat[2] ) );
+         cam.updateProjectionMatrix();
+      }
       cam.updateMatrixWorld();
       log.msg( "Created camera: %o", eng.camera );
-      eng.scene && eng.scene.add( eng.camera ); // Is this necessary?
+
       return cam;
    };
 

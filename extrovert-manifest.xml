@@ -8,6 +8,7 @@
             <File name="src\extrovert.js" />
             <File name="src\extrovert-gallery.js" />
             <File name="src\extrovert-sample.js" />
+            <File name="src\extrovert-city.js" />
         </Folder>
         <File name=".gitattributes" />
         <File name=".gitignore" />

@@ -30,21 +30,6 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
    /**
-   A PixelHenge generator.
-   @class generator
-   */
-   my.generator = function( title ) {
-      this.title = title;
-      return {
-         generate: function() {
-
-         }
-      };
-   };
-
-
-
-   /**
    Default options.
    */
    var defaults = {
@@ -61,7 +46,8 @@ var EXTROVERT = (function (window, $, THREE) {
          near: 1,
          far: 2000,
          position: [0,0,800],
-         rotation: [0,0,0]
+         rotation: [0,0,0],
+         up: [0,1,0]
       },
       physics: {
          enabled: true,
@@ -108,9 +94,15 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
    /**
-   If you're in it, you're floating.
+   The infamous zero vector.
    */
    var ZERO_G = new THREE.Vector3(0, 0, 0);
+   
+
+   
+   /**
+   Combined options object.
+   */   
    var opts = null;
 
 
@@ -139,20 +131,24 @@ var EXTROVERT = (function (window, $, THREE) {
    @method init_options
    */
    function init_options( options ) {
-      opts = $.extend(true, { }, defaults, options );
+   
+      // Grab the generator. It has default options we need to wire in.
+      if( !options.generator )
+         eng.generator = new EXTROVERT.imitate();
+      else if (typeof options.generator == 'string')
+         eng.generator = new EXTROVERT[ options.generator ]();
+      else {
+         eng.generator = new EXTROVERT[ options.generator.name ]();
+      }
+
+      opts = $.extend(true, { }, defaults, eng.generator.options );
+      opts = $.extend(true, opts, options );
+      log.msg("Options: %o", opts);
+
       if( opts.physics.enabled ) {
          Physijs.scripts.worker = opts.physics.physijs.worker;
          Physijs.scripts.ammo = opts.physics.physijs.ammo;
       }
-      //TODO: Clean this block
-      if( !opts.generator )
-         eng.generator = new EXTROVERT.imitate();
-      else if (typeof opts.generator == 'string')
-         eng.generator = new EXTROVERT[ opts.generator ]();
-      else {
-         eng.generator = new EXTROVERT[ opts.generator.name ]();
-      }
-
       eng.rasterizer = opts.rasterizer || my.generate_image_texture;
       eng.log = log;
    }
@@ -200,11 +196,16 @@ var EXTROVERT = (function (window, $, THREE) {
          new THREE.PerspectiveCamera( cam_opts.fov, eng.width / eng.height, cam_opts.near, cam_opts.far ) :
          new THREE.OrthographicCamera( cam_opts.left, cam_opts.right, cam_opts.top, cam_opts.bottom, cam_opts.near, cam_opts.far );
       cam.position.set( cam_opts.position[0], cam_opts.position[1], cam_opts.position[2] );
-      //eng.camera.updateMatrix();
       eng.camera = cam;
+      eng.scene && eng.scene.add( cam );      
+      cam.up.set( cam_opts.up[0], cam_opts.up[1], cam_opts.up[2] );
+      if( cam_opts.lookat ) {
+         cam.lookAt( new THREE.Vector3( cam_opts.lookat[0], cam_opts.lookat[1], cam_opts.lookat[2] ) );
+         cam.updateProjectionMatrix();
+      }
       cam.updateMatrixWorld();
       log.msg( "Created camera: %o", eng.camera );
-      eng.scene && eng.scene.add( eng.camera ); // Is this necessary?
+
       return cam;
    };
 
@@ -530,39 +531,6 @@ var EXTROVERT = (function (window, $, THREE) {
 
    /**
    Push a card.
-
-   Achieve a more realistic push by applying a specific impulse to the point on
-   which the card was clicked, in the direction opposite to the normal of the
-   clicked face. In order to do that, we need to call Physijs's applyImpulse
-   method with two vectors: A) the force to be applied and B) the offset from
-   the object's center of gravity.
-
-   1. Extract the card's rotation. Exclude other transforms.
-
-      var rotation_matrix = new THREE.Matrix4().extractRotation( thing.object.matrix );
-
-   2. Take the clicked face's normal, copy it, reverse it, lengthen it by some
-      factor. This establishes a "force" running opposite to the direction of
-      the clicked face's normal (ie, directly into the card face).
-
-      var effect = thing.face.normal.clone().negate().multiplyScalar( 10000 );
-
-   3. Take the "force" we've established and rotate it with the object's local
-      rotation. We only want the rotation here; not the full transform.
-
-      effect.applyMatrix4( rotation_matrix );
-
-   4. Figure out the offset from the center of gravity. It's best to think of
-      this as a vector / offset rather than a specific point. If the offset is
-      (1,-3,2) and the center of gravity is (50,40,25) then the force will be
-      applied at (51,37,27). So in our case we can simply take the difference
-      between the clicked point (in world coordinates) and the object's position
-      /COG (also in world coordinates) yielding an offset or direction vector.
-      This will work regardless of how the object has been rotated.
-
-      var force_offset = thing.point.clone().sub( thing.object.position );
-      thing.object.applyImpulse( effect, force_offset )
-
    @method push_card
    */
    function push_card( thing ) {
@@ -598,11 +566,10 @@ var EXTROVERT = (function (window, $, THREE) {
          //var plane_intersects = eng.raycaster.intersectObject( eng.drag_plane );
          eng.offset.copy( intersects[ 0 ].point ).sub( eng.selected.position );
          if( opts.physics.enabled ) {
-            var zeroVec = new THREE.Vector3( 0, 0, 0 );
-            eng.selected.setAngularFactor( zeroVec );
-            eng.selected.setLinearFactor( zeroVec );
-            eng.selected.setAngularVelocity( zeroVec );
-            eng.selected.setLinearVelocity( zeroVec );
+            eng.selected.setAngularFactor( ZERO_G );
+            eng.selected.setLinearFactor( ZERO_G );
+            eng.selected.setAngularVelocity( ZERO_G );
+            eng.selected.setLinearVelocity( ZERO_G );
          }
          else {
             eng.selected.temp_velocity = new THREE.Vector3().copy( eng.selected.velocity );
@@ -803,6 +770,228 @@ var EXTROVERT = (function (window, $, THREE) {
 // [1]: FireFox doesn't support .offsetX:
 //      https://bugzilla.mozilla.org/show_bug.cgi?id=69787
 //      http://stackoverflow.com/q/11334452
+;/**
+An Extrovert.js generator for a 3D city.
+@module extrovert-city.js
+@copyright Copyright (c) 2015 by James M. Devlin
+@author James M. Devlin | james@indevious.com
+@license MIT
+@version 1.0
+*/
+
+(function (window, $, THREE, EXTROVERT) {
+
+
+
+   /**
+   Module object.
+   */
+   //var my = {};
+
+
+   /**
+   Default options.
+   */
+   var _def_opts = {
+      gravity: [0,-1,0],
+      camera: {
+         position: [0,400,0],
+         lookat: [0,0,-800],
+         up: [0,0,-1]
+      },
+      generator: {
+         name: 'city',
+         background: 'default_background.png',
+         material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
+      }
+   };
+
+
+   /**
+   @class The built-in 'city' generator.
+   */
+   EXTROVERT.city = function() {
+      return {
+         generate: function( options, eng ) {
+            var new_opts = $.extend(true, { }, _def_opts, options);
+            if( !new_opts.generator || typeof new_opts.generator == 'string' )
+               new_opts.generator = _def_opts.generator;
+            init_objects( new_opts, eng );
+         },
+         options: _def_opts
+      };
+   };
+
+
+   /**
+   Initialize scene props and objects. TODO: clean up object allocations.
+   @method init_objects
+   */
+   function init_objects( opts, eng ) {
+
+      EXTROVERT.create_scene( opts );
+      var cam = EXTROVERT.create_camera( opts.camera );
+      EXTROVERT.fiat_lux( opts.lights );
+
+      // Create an invisible, untouchable drag plane for drag-drop
+      // TODO: remove hard-coded numbers
+      eng.drag_plane = new THREE.Mesh(
+         new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
+         new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true } ));
+      eng.drag_plane.visible = false;
+      eng.log.msg("Building intersection plane: %o", eng.drag_plane);
+
+      // Create the visible/collidable backplane. Place it on the 
+      // camera's back frustum plane so it always fills the viewport.
+      if( false ) {
+
+         var frustum_planes = EXTROVERT.calc_frustum( eng.camera );
+         var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
+         var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
+
+         var plane_tex = opts.generator.background ?
+            THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
+
+         var plane2 = opts.physics.enabled ?
+            new Physijs.BoxMesh(
+               new THREE.BoxGeometry(planeWidth, planeHeight, 10),
+               new THREE.MeshLambertMaterial( { color: 0xFFFFFF, map: plane_tex } ), 0 )
+            :
+            new THREE.Mesh(
+               new THREE.BoxGeometry(planeWidth,planeHeight,10),
+               new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
+            );
+         plane2.position.z = frustum_planes.farPlane.topRight.z;
+         plane2.receiveShadow = false; // TODO: not working
+         plane2.updateMatrix();
+         plane2.updateMatrixWorld();
+         eng.scene.add( plane2 );
+         eng.log.msg("Building base plane: %o", plane2);
+      }
+
+      // Create a hidden plane for object placement.
+      // TODO: We don't actually need this plane. Replace with unproject at specified Z.
+      eng.placement_plane = opts.physics.enabled ?
+            new Physijs.BoxMesh(
+               new THREE.BoxGeometry(200000,1, 200000),
+               new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } ),
+               0 ) :
+            new THREE.Mesh(
+               new THREE.BoxGeometry(200000,1, 200000),
+               new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } )
+            );
+      eng.placement_plane.visible = false;
+      eng.placement_plane.position.y = 200;
+      // TODO: Figure out which update calls are necessary
+      eng.scene.updateMatrix();
+      eng.placement_plane.updateMatrix();
+      eng.placement_plane.updateMatrixWorld();
+      eng.log.msg("Building placement plane: %o", eng.placement_plane);
+
+      init_elements( opts, eng );
+   }
+
+
+
+   /**
+   Initialize all card objects.
+   @method init_cards
+   */
+   function init_elements( opts, eng ) {
+      var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
+      eng.side_mat = Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution );
+      $( opts.src.selector ).each( function( idx, val ) {
+         init_image( idx, val, opts, eng );
+      });
+   }
+
+
+
+   /**
+   Initialize a single card object. TODO: Clean up material/geo handling.
+   @method init_card
+   */
+   function init_image( idx, val, opts, eng ) {
+
+      // Position
+      var pos_info = get_position( val, opts, eng );
+
+      // Texture
+      var texture = eng.rasterizer( $(val), opts );
+      var material = (!opts.physics.enabled || !opts.physics.materials) ?
+         texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
+      var materials = new THREE.MeshFaceMaterial([
+         material, material, material, material,
+         material, material
+      ]);
+
+      // Mesh
+      var cube_geo = new THREE.BoxGeometry( pos_info.width, pos_info.height, pos_info.depth   );
+      var mesh = opts.physics.enabled ?
+         new Physijs.BoxMesh( cube_geo, materials, 1000 ) :
+         new THREE.Mesh( cube_geo, materials );
+      mesh.position.copy( pos_info.pos );         
+      mesh.castShadow = mesh.receiveShadow = false;
+      if( opts.generator.lookat )
+         mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
+      mesh.elem = $(val);
+      
+      opts.creating && opts.creating( val, mesh );
+      eng.scene.add( mesh );
+      eng.card_coll.push( mesh );
+      eng.log.msg("Created element %d (%f, %f, %f): %o.", idx, pos_info.pos.x, pos_info.pos.y, pos_info.pos.z, mesh);
+      opts.created && opts.created( val, mesh );
+
+      return mesh;
+   }
+   
+   
+   
+   /**
+   Retrieve the position, in 3D space, of a recruited HTML element.
+   @method init_card
+   */   
+   function get_position( val, opts, eng ) {
+   
+      // Get the position of the HTML element [1]
+      var parent_pos = $( opts.container ).offset();
+      var child_pos = $( val ).offset();
+      var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
+
+      // From that, compute the position of the top-left and bottom-right corner
+      // of the element as they would exist in 3D-land.
+      var topLeft = EXTROVERT.calc_position( pos.left, pos.top, eng.placement_plane );
+      var botRight = EXTROVERT.calc_position( pos.left + $(val).width(), pos.top + $(val).height(), eng.placement_plane );
+      var block_width = Math.abs( botRight.x - topLeft.x );
+      var block_height = Math.abs( topLeft.z - botRight.z );
+      
+      // Offset by the half-height/width so the corners line up
+      return { 
+         pos: new THREE.Vector3(
+            topLeft.x + (block_width / 2),
+            topLeft.y - (opts.block.depth / 2),
+            Math.min(botRight.z,topLeft.z) + (block_height / 2)),
+         width: block_width,
+         depth: block_height,
+         height: opts.block.depth
+      };
+   }
+
+
+
+   /**
+   Module return.
+   */
+   //return my;
+
+
+
+}(window, $, THREE, EXTROVERT));
+
+// [1] Don't rely exclusively on .offset() or .position()
+//     See: http://bugs.jquery.com/ticket/11606      
+//     var pos = $(val).offset();
+//     var pos = $(val).position();
 ;/**
 An Extrovert.js generator for a 3D image gallery.
 @module extrovert-gallery.js
@@ -1019,8 +1208,8 @@ An Extrovert.js generator for a 3D image gallery.
 //     var pos = $(val).offset();
 //     var pos = $(val).position();
 ;/**
-An Extrovert.js generator that attempts to represent a 2D web page in 3D.
-@module extrovert-imitate.js
+A sample Extrovert generator for demonstration purposes.
+@module extrovert-sample.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
 @license MIT
@@ -1037,191 +1226,31 @@ An Extrovert.js generator that attempts to represent a 2D web page in 3D.
    //var my = {};
 
 
-
-
    /**
-   @class The built-in 'imitate' generator.
+   Default options.
    */
-   EXTROVERT.imitate = function() {
-      return {
-         generate: function( options, eng ) {
-            init_objects( options, eng );
-         }
-      };
+   var _def_opts = {
+      generator: {
+         name: 'sample',
+         background: 'default_background.png',
+         material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
+      }
    };
 
 
    /**
-   Initialize scene props and objects. TODO: clean up object allocations.
-   @method init_objects
+   @class The built-in 'sample' generator.
    */
-   function init_objects( opts, eng ) {
-
-      EXTROVERT.create_scene( opts );
-      EXTROVERT.create_camera( opts.camera );
-      var lights = [];
-      lights[0] = { type: 'ambient', color: 0xFFFFFFF };
-      //lights[1] = { type: 'point', color: 0xFFFFFFFF, intensity: 1.0, distance: 10000 };
-      EXTROVERT.fiat_lux( lights );
-
-      eng.drag_plane = new THREE.Mesh(
-         new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
-         new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true } ));
-      eng.drag_plane.visible = false;
-      //scene.add( eng.drag_plane ); // Not required
-      eng.log.msg("Building intersection plane: %o", eng.drag_plane);
-
-      // A visible plane that can be collided with
-      if( true ) {
-         var plane2 = opts.physics.enabled ?
-            new Physijs.BoxMesh(
-               new THREE.BoxGeometry(2000,2000,10),
-               new THREE.MeshBasicMaterial( { color: 0x333333 } ), 0 )
-            :
-            new THREE.Mesh(
-               new THREE.BoxGeometry(2000,2000,10),
-               new THREE.MeshBasicMaterial( { color: 0x333333, opacity: 1.0, transparent: false } )
-            );
-         plane2.position.z = -500;
-         plane2.receiveShadow = true; // TODO: not working
-         eng.scene.add( plane2 );
-         eng.log.msg("Building base plane: %o", plane2);
-      }
-
-      // A hidden plane for object placement
-      eng.placement_plane = opts.physics.enabled ?
-            new Physijs.BoxMesh(
-               new THREE.BoxGeometry(200000,200000,1),
-               new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } ),
-               0 ) :
-            new THREE.Mesh(
-               new THREE.BoxGeometry(200000,200000,1),
-               new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } )
-            );
-      eng.placement_plane.visible = false;
-      eng.placement_plane.position.z = 200;
-      //eng.scene.add( eng.placement_plane ); // Not required
-      eng.scene.updateMatrix();
-      eng.placement_plane.updateMatrix();
-      eng.placement_plane.updateMatrixWorld();
-      eng.log.msg("Building placement plane: %o", eng.placement_plane);
-
-      init_cards( opts, eng );
-   }
-
-
-
-   /**
-   Initialize all card objects. TODO: Optionally load dedicated per-face
-   textures for cards. TODO: Fix texture kludge.
-   @method init_cards
-   */
-   function init_cards( opts, eng ) {
-      $( opts.src.selector ).each( function( idx, val ) {
-         init_card( idx, val, opts, eng );
-      });
-   }
-
-
-
-   /**
-   Adjust textures for simple mode to allow continuation of the texture around
-   the sides of the cube/object.
-   @method patch_textures
-   */
-   function patch_textures( cubeGeo ) {
-
-      for (i = 0; i < cubeGeo.faces.length ; i++) {
-         var face = cubeGeo.faces[ i ];
-         var v1 = cubeGeo.vertices[ face.a ],
-             v2 = cubeGeo.vertices[ face.b ],
-             v3 = cubeGeo.vertices[ face.c ];
-         var fvu = cubeGeo.faceVertexUvs[0][i];
-         // Quick kludge for textures on non-front faces. Replace with correct
-         // mapping, wrapping, or dedicated textures.
-         if(face.normal.y > 0.9) {
-            fvu[0].x = fvu[0].y = fvu[1].x = fvu[1].y = fvu[2].x = fvu[2].y = 0.99;
+   EXTROVERT.sample = function() {
+      return {
+         sample: function( options, eng ) {
+            var new_opts = $.extend(true, { }, _def_opts, options);
+            if( !new_opts.generator || typeof new_opts.generator == 'string' )
+               new_opts.generator = _def_opts.generator;
+            init_objects( new_opts, eng );
          }
-         else if(face.normal.y < -0.9) {
-            fvu[0].x = fvu[0].y = fvu[1].x = fvu[1].y = fvu[2].x = fvu[2].y = 0.01;
-         }
-         else if(face.normal.x > 0.9 || face.normal.x < -0.9) {
-            fvu[0].x = fvu[0].x > 0.5 ? 0.02 : 0.00;
-            fvu[1].x = fvu[1].x > 0.5 ? 0.02 : 0.00;
-            fvu[2].x = fvu[2].x > 0.5 ? 0.02 : 0.00;
-         }
-      }
-      cubeGeo.uvsNeedUpdate = true;
-   }
-
-
-
-   /**
-   Initialize a single card object. TODO: Clean up material/geo handling.
-   @method init_card
-   */
-   function init_card( idx, val, opts, eng ) {
-
-      //var first_elem = $( card_elements[0] );
-      //var pos = $(val).offset();
-      //http://bugs.jquery.com/ticket/11606
-      //var pos = $(val).position();
-      //if( $(val).css('float') == 'left' )
-      var parent_pos = $( opts.container ).offset();
-      var child_pos = $( val ).offset();
-      var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
-
-      //var realPos = getPosition( val );
-      //var pos = { left: realPos.offsetLeft, top: realPos.offsetTop };
-      var topLeft = EXTROVERT.calc_position( pos.left, pos.top, eng.placement_plane );
-      var botRight = EXTROVERT.calc_position( pos.left + $(val).width(), pos.top + $(val).height(), eng.placement_plane );
-      var block_width = Math.abs( botRight.x - topLeft.x );
-      var block_height = Math.abs( topLeft.y - botRight.y );
-      var cube_geo = new THREE.BoxGeometry( block_width, block_height, opts.block.depth );
-      patch_textures( cube_geo );
-
-      //var worldPos = calc_position( pos.left, pos.top, eng.placement_plane );
-      var rep = eng.rasterizer( $(val), opts );
-      var x = topLeft.x;
-      var y = topLeft.y;
-      var z = topLeft.z;
-      // Offset, in simple mode, to match screen position
-      x += (block_width / 2);
-      y -= (block_height / 2);
-      z -= (opts.block.depth / 2);
-
-      var material = (!opts.physics.enabled || !opts.physics.materials) ?
-         rep.mat : Physijs.createMaterial( rep.mat, 0.2, 1.0 );
-
-      var mesh = opts.physics.enabled ?
-         new Physijs.BoxMesh( cube_geo, material, 1000 ) :
-         new THREE.Mesh( cube_geo, material );
-
-      mesh.position.set( x, y, z );
-      mesh.castShadow = mesh.receiveShadow = true;
-      eng.scene.add( mesh );
-
-      if (!opts.physics.enabled) {
-         mesh.velocity = new THREE.Vector3(
-            (Math.random() - 0.5) / 5,
-            (Math.random() - 0.5) / 5,
-            (Math.random() - 0.5) / 5);
-      }
-      else {
-         if( 0 ) {
-            var scale = 0.5;
-            mesh.setAngularVelocity(new THREE.Vector3(
-               scale*(Math.random() - 0.5),
-               scale*(Math.random() - 0.5),
-               scale*(Math.random() - 0.5)));
-         }
-      }
-
-      mesh.elem = $(val);
-      eng.card_coll.push( mesh );
-      eng.log.msg("Created element %d (%f, %f, %f): %o.", idx, x, y, z, mesh);
-      return mesh;
-   }
+      };
+   };
 
 
 
@@ -1233,3 +1262,4 @@ An Extrovert.js generator that attempts to represent a 2D web page in 3D.
 
 
 }(window, $, THREE, EXTROVERT));
+
