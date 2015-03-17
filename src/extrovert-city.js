@@ -24,7 +24,8 @@ An Extrovert.js generator for a 3D city.
       gravity: [0,-1,0],
       camera: {
          position: [0,400,0],
-         lookat: [0,0,-800],
+         //lookat: [0,0,-800],
+         lookat: [0,0,0],
          up: [0,0,-1]
       },
       generator: {
@@ -154,7 +155,7 @@ An Extrovert.js generator for a 3D city.
       ]);
 
       // Mesh
-      var cube_geo = new THREE.BoxGeometry( pos_info.width, pos_info.height, pos_info.depth   );
+      var cube_geo = new THREE.BoxGeometry( pos_info.width, pos_info.height, pos_info.depth );
       var mesh = opts.physics.enabled ?
          new Physijs.BoxMesh( cube_geo, materials, 1000 ) :
          new THREE.Mesh( cube_geo, materials );
@@ -167,7 +168,8 @@ An Extrovert.js generator for a 3D city.
       opts.creating && opts.creating( val, mesh );
       eng.scene.add( mesh );
       eng.card_coll.push( mesh );
-      eng.log.msg("Created element %d (%f, %f, %f): %o.", idx, pos_info.pos.x, pos_info.pos.y, pos_info.pos.z, mesh);
+      eng.log.msg("Created element %d (%f, %f, %f) (size=%f x %f x %f): %o.", idx, pos_info.pos.x, pos_info.pos.y, pos_info.pos.z, pos_info.width, pos_info.height, pos_info.depth, mesh);
+      eng.log.msg("Texture = %o", texture);
       opts.created && opts.created( val, mesh );
 
       return mesh;
@@ -190,18 +192,21 @@ An Extrovert.js generator for a 3D city.
       // of the element as they would exist in 3D-land.
       var topLeft = EXTROVERT.calc_position( pos.left, pos.top, eng.placement_plane );
       var botRight = EXTROVERT.calc_position( pos.left + $(val).width(), pos.top + $(val).height(), eng.placement_plane );
+      // These return the topLeft and bottomRight coordinates of the MAIN FACE of the thing in WORLD coords
+      
       var block_width = Math.abs( botRight.x - topLeft.x );
-      var block_height = Math.abs( topLeft.z - botRight.z );
+      var block_height = opts.block.depth;//Math.abs( topLeft.y - botRight.y );
+      var block_depth = Math.abs( topLeft.z - botRight.z );
       
       // Offset by the half-height/width so the corners line up
       return { 
          pos: new THREE.Vector3(
             topLeft.x + (block_width / 2),
-            topLeft.y - (opts.block.depth / 2),
-            Math.min(botRight.z,topLeft.z) + (block_height / 2)),
+            topLeft.y - (block_height / 2),
+            topLeft.z + (block_depth / 2)),
          width: block_width,
-         depth: block_height,
-         height: opts.block.depth
+         depth: block_depth,
+         height: block_height
       };
    }
 

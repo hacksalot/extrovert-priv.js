@@ -411,7 +411,9 @@ var EXTROVERT = (function (window, $, THREE) {
       var context = canvas.getContext('2d');
       canvas.width = $val.width();
       canvas.height = $val.height();
+      
       var img = $val.get( 0 );
+      log.msg("Creating texture %d x %d (%d x %d)", img.clientWidth, img.clientHeight, canvas.width, canvas.height);
       context.drawImage(img, 0, 0, img.clientWidth, img.clientHeight);
       var texture = new THREE.Texture( canvas );
       texture.needsUpdate = true;
