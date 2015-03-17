@@ -927,7 +927,7 @@ An Extrovert.js generator for a 3D image gallery.
       var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
       eng.side_mat = Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution );
       $( opts.src.selector ).each( function( idx, val ) {
-         init_card( idx, val, opts, eng );
+         init_image( idx, val, opts, eng );
       });
    }
 
@@ -937,7 +937,7 @@ An Extrovert.js generator for a 3D image gallery.
    Initialize a single card object. TODO: Clean up material/geo handling.
    @method init_card
    */
-   function init_card( idx, val, opts, eng ) {
+   function init_image( idx, val, opts, eng ) {
 
       // Position
       var pos_info = get_position( val, opts, eng );
@@ -961,27 +961,26 @@ An Extrovert.js generator for a 3D image gallery.
       if( opts.generator.lookat )
          mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
       mesh.elem = $(val);
+      
+      opts.creating && opts.creating( val, mesh );
       eng.scene.add( mesh );
       eng.card_coll.push( mesh );
       eng.log.msg("Created element %d (%f, %f, %f): %o.", idx, pos_info.pos.x, pos_info.pos.y, pos_info.pos.z, mesh);
-
-      if( 0 ) {
-         var scale = 0.5;
-         mesh.setAngularVelocity(new THREE.Vector3(
-            scale*(Math.random() - 0.5),
-            scale*(Math.random() - 0.5),
-            scale*(Math.random() - 0.5)));
-      }
+      opts.created && opts.created( val, mesh );
 
       return mesh;
    }
    
    
    
+   /**
+   Retrieve the position, in 3D space, of a recruited HTML element.
+   @method init_card
+   */   
    function get_position( val, opts, eng ) {
    
-      // Get the position of the HTML element
-      var parent_pos = $( opts.container ).offset(); //[1]
+      // Get the position of the HTML element [1]
+      var parent_pos = $( opts.container ).offset();
       var child_pos = $( val ).offset();
       var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
@@ -992,19 +991,12 @@ An Extrovert.js generator for a 3D image gallery.
       var block_width = Math.abs( botRight.x - topLeft.x );
       var block_height = Math.abs( topLeft.y - botRight.y );
       
-      // Offset it so the corners line up
-      var x = topLeft.x + (block_width / 2);
-      var y = topLeft.y - (block_height / 2);
-      var z = topLeft.z - (opts.block.depth / 2);
-      
-      // Support a quick kludge allowing Z to be tweaked
-      var adjust_z = $(val).attr('data-adjustz');
-      if( adjust_z ) {
-         z += parseFloat( adjust_z );
-      }
-      
+      // Offset by the half-height/width so the corners line up
       return { 
-         pos: new THREE.Vector3(x,y,z),
+         pos: new THREE.Vector3(
+            topLeft.x + (block_width / 2),
+            topLeft.y - (block_height / 2), 
+            topLeft.z - (opts.block.depth / 2)),
          width: block_width,
          height: block_height,
          depth: opts.block.depth
@@ -1022,10 +1014,10 @@ An Extrovert.js generator for a 3D image gallery.
 
 }(window, $, THREE, EXTROVERT));
 
-// Don't rely exclusively on .offset() or .position()
-//http://bugs.jquery.com/ticket/11606      
-//var pos = $(val).offset();
-//var pos = $(val).position();
+// [1] Don't rely exclusively on .offset() or .position()
+//     See: http://bugs.jquery.com/ticket/11606      
+//     var pos = $(val).offset();
+//     var pos = $(val).position();
 ;/**
 An Extrovert.js generator that attempts to represent a 2D web page in 3D.
 @module extrovert-imitate.js

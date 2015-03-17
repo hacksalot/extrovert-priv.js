@@ -30,21 +30,6 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
    /**
-   A PixelHenge generator.
-   @class generator
-   */
-   my.generator = function( title ) {
-      this.title = title;
-      return {
-         generate: function() {
-
-         }
-      };
-   };
-
-
-
-   /**
    Default options.
    */
    var defaults = {
@@ -108,9 +93,11 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
    /**
-   If you're in it, you're floating.
+   The infamous zero vector.
    */
    var ZERO_G = new THREE.Vector3(0, 0, 0);
+   
+   
    var opts = null;
 
 
@@ -530,39 +517,6 @@ var EXTROVERT = (function (window, $, THREE) {
 
    /**
    Push a card.
-
-   Achieve a more realistic push by applying a specific impulse to the point on
-   which the card was clicked, in the direction opposite to the normal of the
-   clicked face. In order to do that, we need to call Physijs's applyImpulse
-   method with two vectors: A) the force to be applied and B) the offset from
-   the object's center of gravity.
-
-   1. Extract the card's rotation. Exclude other transforms.
-
-      var rotation_matrix = new THREE.Matrix4().extractRotation( thing.object.matrix );
-
-   2. Take the clicked face's normal, copy it, reverse it, lengthen it by some
-      factor. This establishes a "force" running opposite to the direction of
-      the clicked face's normal (ie, directly into the card face).
-
-      var effect = thing.face.normal.clone().negate().multiplyScalar( 10000 );
-
-   3. Take the "force" we've established and rotate it with the object's local
-      rotation. We only want the rotation here; not the full transform.
-
-      effect.applyMatrix4( rotation_matrix );
-
-   4. Figure out the offset from the center of gravity. It's best to think of
-      this as a vector / offset rather than a specific point. If the offset is
-      (1,-3,2) and the center of gravity is (50,40,25) then the force will be
-      applied at (51,37,27). So in our case we can simply take the difference
-      between the clicked point (in world coordinates) and the object's position
-      /COG (also in world coordinates) yielding an offset or direction vector.
-      This will work regardless of how the object has been rotated.
-
-      var force_offset = thing.point.clone().sub( thing.object.position );
-      thing.object.applyImpulse( effect, force_offset )
-
    @method push_card
    */
    function push_card( thing ) {
@@ -598,11 +552,10 @@ var EXTROVERT = (function (window, $, THREE) {
          //var plane_intersects = eng.raycaster.intersectObject( eng.drag_plane );
          eng.offset.copy( intersects[ 0 ].point ).sub( eng.selected.position );
          if( opts.physics.enabled ) {
-            var zeroVec = new THREE.Vector3( 0, 0, 0 );
-            eng.selected.setAngularFactor( zeroVec );
-            eng.selected.setLinearFactor( zeroVec );
-            eng.selected.setAngularVelocity( zeroVec );
-            eng.selected.setLinearVelocity( zeroVec );
+            eng.selected.setAngularFactor( ZERO_G );
+            eng.selected.setLinearFactor( ZERO_G );
+            eng.selected.setAngularVelocity( ZERO_G );
+            eng.selected.setLinearVelocity( ZERO_G );
          }
          else {
             eng.selected.temp_velocity = new THREE.Vector3().copy( eng.selected.velocity );
