@@ -25,7 +25,15 @@ An Extrovert.js generator for a 3D image gallery.
          name: 'gallery',
          background: 'default_background.png',
          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
-      }
+      },
+      camera: {
+         fov: 35,
+         near: 1,
+         far: 2000,
+         position: [0,0,800],
+         rotation: [0,0,0],
+         up: [0,0,-1]
+      }      
    };
 
 
@@ -35,11 +43,12 @@ An Extrovert.js generator for a 3D image gallery.
    EXTROVERT.gallery = function() {
       return {
          generate: function( options, eng ) {
-            var new_opts = $.extend(true, { }, _def_opts, options);
-            if( !new_opts.generator || typeof new_opts.generator == 'string' )
-               new_opts.generator = _def_opts.generator;
-            init_objects( new_opts, eng );
-         }
+            //var new_opts = $.extend(true, { }, _def_opts, options);
+            if( !options.generator || typeof options.generator == 'string' )
+               options.generator = _def_opts.generator;
+            init_objects( options, eng );
+         },
+         options: _def_opts
       };
    };
 

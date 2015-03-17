@@ -24,7 +24,7 @@ An Extrovert.js generator for a 3D city.
       gravity: [0,-1,0],
       camera: {
          position: [0,400,0],
-         //lookat: [0,0,-800],
+         // TODO: Don't modify these values until AFTER object placement
          lookat: [0,0,0],
          up: [0,0,-1]
       },
@@ -42,10 +42,10 @@ An Extrovert.js generator for a 3D city.
    EXTROVERT.city = function() {
       return {
          generate: function( options, eng ) {
-            var new_opts = $.extend(true, { }, _def_opts, options);
-            if( !new_opts.generator || typeof new_opts.generator == 'string' )
-               new_opts.generator = _def_opts.generator;
-            init_objects( new_opts, eng );
+            //var new_opts = $.extend(true, { }, _def_opts, options);
+            if( !options.generator || typeof options.generator == 'string' )
+               options.generator = _def_opts.generator;
+            init_objects( options, eng );
          },
          options: _def_opts
       };
@@ -59,25 +59,24 @@ An Extrovert.js generator for a 3D city.
    function init_objects( opts, eng ) {
 
       EXTROVERT.create_scene( opts );
-      var cam = EXTROVERT.create_camera( opts.camera );
+      EXTROVERT.create_camera( opts.camera );
       EXTROVERT.fiat_lux( opts.lights );
 
       // Create an invisible, untouchable drag plane for drag-drop
       // TODO: remove hard-coded numbers
       eng.drag_plane = new THREE.Mesh(
-         new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
+         new THREE.PlaneBufferGeometry( 2000, 2000 ),
          new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true } ));
       eng.drag_plane.visible = false;
       eng.log.msg("Building intersection plane: %o", eng.drag_plane);
 
-      // Create the visible/collidable backplane. Place it on the 
-      // camera's back frustum plane so it always fills the viewport.
+      // Create the ground. Place it on the camera's back frustum plane so 
+      // it always fills the viewport?
       if( false ) {
 
          var frustum_planes = EXTROVERT.calc_frustum( eng.camera );
          var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
          var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
-
          var plane_tex = opts.generator.background ?
             THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
 
@@ -99,25 +98,33 @@ An Extrovert.js generator for a 3D city.
       }
 
       // Create a hidden plane for object placement.
-      // TODO: We don't actually need this plane. Replace with unproject at specified Z.
+      // TODO: Replace with unproject at specified Z.
       eng.placement_plane = opts.physics.enabled ?
             new Physijs.BoxMesh(
-               new THREE.BoxGeometry(200000,1, 200000),
+               new THREE.BoxGeometry(200000,1,200000),
                new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } ),
                0 ) :
             new THREE.Mesh(
-               new THREE.BoxGeometry(200000,1, 200000),
+               new THREE.BoxGeometry(200000,1,200000),
                new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } )
             );
       eng.placement_plane.visible = false;
       eng.placement_plane.position.y = 200;
+      
       // TODO: Figure out which update calls are necessary
       eng.scene.updateMatrix();
       eng.placement_plane.updateMatrix();
       eng.placement_plane.updateMatrixWorld();
       eng.log.msg("Building placement plane: %o", eng.placement_plane);
-
+      
+      // Generate scene objects!
       init_elements( opts, eng );
+      
+      // Now that objects have been placed in-frustum, we can change the
+      // camera orientation. Rotation is in radians, here.
+      eng.camera.rotation.x = -(Math.PI / 4);
+      eng.camera.position.y = 300;
+      eng.camera.position.z = 200;
    }
 
 

@@ -45,9 +45,9 @@ var EXTROVERT = (function (window, $, THREE) {
          fov: 35,
          near: 1,
          far: 2000,
-         position: [0,0,800],
+         position: [0,0,0],
          rotation: [0,0,0],
-         up: [0,1,0]
+         up: [0,0,-1]
       },
       physics: {
          enabled: true,
@@ -94,7 +94,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
    /**
-   The infamous zero vector.
+   The infamous zero vector, whose reputation precedes itself.
    */
    var ZERO_G = new THREE.Vector3(0, 0, 0);
    
@@ -177,11 +177,11 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.renderer = new THREE.WebGLRenderer();
       eng.renderer.setPixelRatio( window.devicePixelRatio );
       eng.renderer.setSize( eng.width, eng.height );
-
-      // A couple tweaks. Give the canvas a tabindex so it receives keyboard
-      // input and set the position to relative so coordinates are canvas-local.
+      // Give the canvas a tabindex so it receives keyboard input and set the
+      // position to relative so coordinates are canvas-local.
+      // http://stackoverflow.com/a/3274697
       eng.renderer.domElement.setAttribute('tabindex', '0');
-      eng.renderer.domElement.style += ' position: relative;'; // http://stackoverflow.com/a/3274697
+      eng.renderer.domElement.style += ' position: relative;'; 
       log.msg( "Renderer: %o", eng.renderer );
    }
 
@@ -197,15 +197,12 @@ var EXTROVERT = (function (window, $, THREE) {
          new THREE.OrthographicCamera( cam_opts.left, cam_opts.right, cam_opts.top, cam_opts.bottom, cam_opts.near, cam_opts.far );
       cam.position.set( cam_opts.position[0], cam_opts.position[1], cam_opts.position[2] );
       eng.camera = cam;
-      eng.scene && eng.scene.add( cam );      
-      cam.up.set( cam_opts.up[0], cam_opts.up[1], cam_opts.up[2] );
-      if( cam_opts.lookat ) {
-         cam.lookAt( new THREE.Vector3( cam_opts.lookat[0], cam_opts.lookat[1], cam_opts.lookat[2] ) );
-         cam.updateProjectionMatrix();
-      }
+      if( cam_opts.up ) cam.up.set( cam_opts.up[0], cam_opts.up[1], cam_opts.up[2] );
+      if( cam_opts.lookat ) cam.lookAt( new THREE.Vector3( cam_opts.lookat[0], cam_opts.lookat[1], cam_opts.lookat[2] ) );
+      cam.updateMatrix();
       cam.updateMatrixWorld();
+      cam.updateProjectionMatrix();
       log.msg( "Created camera: %o", eng.camera );
-
       return cam;
    };
 

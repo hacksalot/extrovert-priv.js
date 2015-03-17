@@ -45,9 +45,9 @@ var EXTROVERT = (function (window, $, THREE) {
          fov: 35,
          near: 1,
          far: 2000,
-         position: [0,0,800],
+         position: [0,0,0],
          rotation: [0,0,0],
-         up: [0,1,0]
+         up: [0,0,-1]
       },
       physics: {
          enabled: true,
@@ -94,7 +94,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
    /**
-   The infamous zero vector.
+   The infamous zero vector, whose reputation precedes itself.
    */
    var ZERO_G = new THREE.Vector3(0, 0, 0);
    
@@ -177,11 +177,11 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.renderer = new THREE.WebGLRenderer();
       eng.renderer.setPixelRatio( window.devicePixelRatio );
       eng.renderer.setSize( eng.width, eng.height );
-
-      // A couple tweaks. Give the canvas a tabindex so it receives keyboard
-      // input and set the position to relative so coordinates are canvas-local.
+      // Give the canvas a tabindex so it receives keyboard input and set the
+      // position to relative so coordinates are canvas-local.
+      // http://stackoverflow.com/a/3274697
       eng.renderer.domElement.setAttribute('tabindex', '0');
-      eng.renderer.domElement.style += ' position: relative;'; // http://stackoverflow.com/a/3274697
+      eng.renderer.domElement.style += ' position: relative;'; 
       log.msg( "Renderer: %o", eng.renderer );
    }
 
@@ -197,15 +197,12 @@ var EXTROVERT = (function (window, $, THREE) {
          new THREE.OrthographicCamera( cam_opts.left, cam_opts.right, cam_opts.top, cam_opts.bottom, cam_opts.near, cam_opts.far );
       cam.position.set( cam_opts.position[0], cam_opts.position[1], cam_opts.position[2] );
       eng.camera = cam;
-      eng.scene && eng.scene.add( cam );      
-      cam.up.set( cam_opts.up[0], cam_opts.up[1], cam_opts.up[2] );
-      if( cam_opts.lookat ) {
-         cam.lookAt( new THREE.Vector3( cam_opts.lookat[0], cam_opts.lookat[1], cam_opts.lookat[2] ) );
-         cam.updateProjectionMatrix();
-      }
+      if( cam_opts.up ) cam.up.set( cam_opts.up[0], cam_opts.up[1], cam_opts.up[2] );
+      if( cam_opts.lookat ) cam.lookAt( new THREE.Vector3( cam_opts.lookat[0], cam_opts.lookat[1], cam_opts.lookat[2] ) );
+      cam.updateMatrix();
       cam.updateMatrixWorld();
+      cam.updateProjectionMatrix();
       log.msg( "Created camera: %o", eng.camera );
-
       return cam;
    };
 
@@ -798,7 +795,8 @@ An Extrovert.js generator for a 3D city.
       gravity: [0,-1,0],
       camera: {
          position: [0,400,0],
-         //lookat: [0,0,-800],
+         // TODO: Don't modify these values until AFTER object placement has 
+         // occurred.
          lookat: [0,0,0],
          up: [0,0,-1]
       },
@@ -816,10 +814,10 @@ An Extrovert.js generator for a 3D city.
    EXTROVERT.city = function() {
       return {
          generate: function( options, eng ) {
-            var new_opts = $.extend(true, { }, _def_opts, options);
-            if( !new_opts.generator || typeof new_opts.generator == 'string' )
-               new_opts.generator = _def_opts.generator;
-            init_objects( new_opts, eng );
+            //var new_opts = $.extend(true, { }, _def_opts, options);
+            if( !options.generator || typeof options.generator == 'string' )
+               options.generator = _def_opts.generator;
+            init_objects( options, eng );
          },
          options: _def_opts
       };
@@ -833,25 +831,24 @@ An Extrovert.js generator for a 3D city.
    function init_objects( opts, eng ) {
 
       EXTROVERT.create_scene( opts );
-      var cam = EXTROVERT.create_camera( opts.camera );
+      EXTROVERT.create_camera( opts.camera );
       EXTROVERT.fiat_lux( opts.lights );
 
       // Create an invisible, untouchable drag plane for drag-drop
       // TODO: remove hard-coded numbers
       eng.drag_plane = new THREE.Mesh(
-         new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
+         new THREE.PlaneBufferGeometry( 2000, 2000 ),
          new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true } ));
       eng.drag_plane.visible = false;
       eng.log.msg("Building intersection plane: %o", eng.drag_plane);
 
-      // Create the visible/collidable backplane. Place it on the 
-      // camera's back frustum plane so it always fills the viewport.
+      // Create the ground. Place it on the camera's back frustum plane so 
+      // it always fills the viewport?
       if( false ) {
 
          var frustum_planes = EXTROVERT.calc_frustum( eng.camera );
          var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
          var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
-
          var plane_tex = opts.generator.background ?
             THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
 
@@ -873,25 +870,33 @@ An Extrovert.js generator for a 3D city.
       }
 
       // Create a hidden plane for object placement.
-      // TODO: We don't actually need this plane. Replace with unproject at specified Z.
+      // TODO: Replace with unproject at specified Z.
       eng.placement_plane = opts.physics.enabled ?
             new Physijs.BoxMesh(
-               new THREE.BoxGeometry(200000,1, 200000),
+               new THREE.BoxGeometry(200000,1,200000),
                new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } ),
                0 ) :
             new THREE.Mesh(
-               new THREE.BoxGeometry(200000,1, 200000),
+               new THREE.BoxGeometry(200000,1,200000),
                new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } )
             );
       eng.placement_plane.visible = false;
       eng.placement_plane.position.y = 200;
+      
       // TODO: Figure out which update calls are necessary
       eng.scene.updateMatrix();
       eng.placement_plane.updateMatrix();
       eng.placement_plane.updateMatrixWorld();
       eng.log.msg("Building placement plane: %o", eng.placement_plane);
-
+      
+      // Generate scene objects!
       init_elements( opts, eng );
+      
+      // Now that objects have been placed in-frustum, we can change the
+      // camera orientation. Rotation is in radians, here.
+      eng.camera.rotation.x = -(Math.PI / 4);
+      eng.camera.position.y = 300;
+      eng.camera.position.z = 200;
    }
 
 
@@ -1026,7 +1031,15 @@ An Extrovert.js generator for a 3D image gallery.
          name: 'gallery',
          background: 'default_background.png',
          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
-      }
+      },
+      camera: {
+         fov: 35,
+         near: 1,
+         far: 2000,
+         position: [0,0,800],
+         rotation: [0,0,0],
+         up: [0,0,-1]
+      }      
    };
 
 
@@ -1036,11 +1049,12 @@ An Extrovert.js generator for a 3D image gallery.
    EXTROVERT.gallery = function() {
       return {
          generate: function( options, eng ) {
-            var new_opts = $.extend(true, { }, _def_opts, options);
-            if( !new_opts.generator || typeof new_opts.generator == 'string' )
-               new_opts.generator = _def_opts.generator;
-            init_objects( new_opts, eng );
-         }
+            //var new_opts = $.extend(true, { }, _def_opts, options);
+            if( !options.generator || typeof options.generator == 'string' )
+               options.generator = _def_opts.generator;
+            init_objects( options, eng );
+         },
+         options: _def_opts
       };
    };
 
