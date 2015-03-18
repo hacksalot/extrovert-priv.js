@@ -16,17 +16,19 @@ An Extrovert.js generator for a 3D city.
    */
    //var my = {};
 
+   
 
    /**
-   Default options. Don't use directly.
+   Default options for this generator. Set defaults here. These will be merged
+   in with any user-specified or engine-level options.
    */
    var _def_opts = {
       gravity: [0,-50,0],
       camera: {
-         position: [0,400,0],
-         // TODO: Don't modify these values until AFTER object placement
+         position: [0,300,200],
          lookat: [0,0,0],
-         up: [0,0,-1]
+         up: [0,0,-1],
+         rotation: [-(Math.PI / 4.0), 0, 0]
       },
       generator: {
          name: 'city',
@@ -35,6 +37,20 @@ An Extrovert.js generator for a 3D city.
       }
    };
 
+
+
+   /**
+   Initial camera state. Regardless of how the user decides to orient the 
+   camera, it needs to be created in this initial configuration so object
+   placements work.
+   */
+   var _init_cam_opts = {
+         position: [0,400,0],
+         lookat: [0,0,0],
+         up: [0,0,-1]
+   };
+
+   
 
    /**
    @class The built-in 'city' generator.
@@ -58,7 +74,7 @@ An Extrovert.js generator for a 3D city.
    function init_objects( opts, eng ) {
 
       EXTROVERT.create_scene( opts );
-      EXTROVERT.create_camera( opts.camera );
+      EXTROVERT.create_camera( $.extend(true, {}, opts.camera, _init_cam_opts) );
       EXTROVERT.fiat_lux( opts.lights );
 
       init_drag_plane( eng );
@@ -66,9 +82,11 @@ An Extrovert.js generator for a 3D city.
       init_placement_plane( opts, eng );
       init_elements( opts, eng );
 
-      // Now that objects have been placed in-frustum, we can change the
-      // camera orientation. Rotation is in radians, here.
-      eng.camera.rotation.x = -(Math.PI / 4);
+      // Now that objects have been placed in-frustum, we can set the camera
+      // position and rotation to whatever the client specified.
+      var oc = opts.camera;
+      eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );//-(Math.PI / 4);
+      eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
       eng.camera.position.y = 300;
       eng.camera.position.z = 200;
    }
