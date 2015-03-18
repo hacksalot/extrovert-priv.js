@@ -72,7 +72,7 @@ An Extrovert.js generator for a 3D city.
 
       // Create the ground. Place it on the camera's back frustum plane so 
       // it always fills the viewport?
-      if( false ) {
+      if( true ) {
 
          var frustum_planes = EXTROVERT.calc_frustum( eng.camera );
          var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
@@ -80,21 +80,21 @@ An Extrovert.js generator for a 3D city.
          var plane_tex = opts.generator.background ?
             THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
 
-         var plane2 = opts.physics.enabled ?
+         var ground = opts.physics.enabled ?
             new Physijs.BoxMesh(
-               new THREE.BoxGeometry(planeWidth, planeHeight, 10),
+               new THREE.BoxGeometry(planeWidth, 10, planeHeight),
                new THREE.MeshLambertMaterial( { color: 0xFFFFFF, map: plane_tex } ), 0 )
             :
             new THREE.Mesh(
-               new THREE.BoxGeometry(planeWidth,planeHeight,10),
+               new THREE.BoxGeometry(planeWidth, 10, planeHeight),
                new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
             );
-         plane2.position.z = frustum_planes.farPlane.topRight.z;
-         plane2.receiveShadow = false; // TODO: not working
-         plane2.updateMatrix();
-         plane2.updateMatrixWorld();
-         eng.scene.add( plane2 );
-         eng.log.msg("Building base plane: %o", plane2);
+         ground.position.y = 150; //frustum_planes.farPlane.topRight.z;
+         ground.receiveShadow = false; // TODO: not working
+         ground.updateMatrix();
+         ground.updateMatrixWorld();
+         eng.scene.add( ground );
+         eng.log.msg("Building ground plane: %o", ground);
       }
 
       // Create a hidden plane for object placement.

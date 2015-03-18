@@ -29,7 +29,7 @@ An Extrovert.js generator for a 3D city.
          up: [0,0,-1]
       },
       generator: {
-         name: 'city',
+         name: 'float',
          background: 'default_background.png',
          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
       }
@@ -37,9 +37,9 @@ An Extrovert.js generator for a 3D city.
 
 
    /**
-   @class The built-in 'city' generator.
+   @class The built-in 'float' generator.
    */
-   EXTROVERT.city = function() {
+   EXTROVERT.float = function() {
       return {
          generate: function( options, eng ) {
             //var new_opts = $.extend(true, { }, _def_opts, options);
@@ -72,7 +72,7 @@ An Extrovert.js generator for a 3D city.
 
       // Create the ground. Place it on the camera's back frustum plane so 
       // it always fills the viewport?
-      if( false ) {
+      if( true ) {
 
          var frustum_planes = EXTROVERT.calc_frustum( eng.camera );
          var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
@@ -82,14 +82,14 @@ An Extrovert.js generator for a 3D city.
 
          var plane2 = opts.physics.enabled ?
             new Physijs.BoxMesh(
-               new THREE.BoxGeometry(planeWidth, planeHeight, 10),
+               new THREE.BoxGeometry(planeWidth, 10, planeHeight),
                new THREE.MeshLambertMaterial( { color: 0xFFFFFF, map: plane_tex } ), 0 )
             :
             new THREE.Mesh(
-               new THREE.BoxGeometry(planeWidth,planeHeight,10),
+               new THREE.BoxGeometry(planeWidth,10,planeHeight),
                new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
             );
-         plane2.position.z = frustum_planes.farPlane.topRight.z;
+         plane2.position.y = 150;
          plane2.receiveShadow = false; // TODO: not working
          plane2.updateMatrix();
          plane2.updateMatrixWorld();
