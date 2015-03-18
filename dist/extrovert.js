@@ -793,15 +793,15 @@ An Extrovert.js generator for a 3D city.
    var _def_opts = {
       gravity: [0,-50,0],
       camera: {
-         position: [0,300,200],
+         position: [0,300,400],
          lookat: [0,0,0],
          up: [0,0,-1],
-         rotation: [-(Math.PI / 4.0), 0, 0]
+         rotation: [-(Math.PI / 8.0), 0, 0]
       },
       generator: {
          name: 'city',
          background: 'default_background.png',
-         material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
+         material: { color: 0xABABAB, friction: 0.2, restitution: 1.0 }
       }
    };
 
@@ -855,8 +855,6 @@ An Extrovert.js generator for a 3D city.
       var oc = opts.camera;
       eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );//-(Math.PI / 4);
       eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
-      eng.camera.position.y = 300;
-      eng.camera.position.z = 200;
    }
 
 
@@ -881,6 +879,9 @@ An Extrovert.js generator for a 3D city.
       var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
       var plane_tex = opts.generator.background ?
          THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
+         
+      plane_tex.wrapS = plane_tex.wrapT = THREE.RepeatWrapping;
+      plane_tex.repeat.set( 100, 100 );
 
       var ground = opts.physics.enabled ?
          new Physijs.BoxMesh(
@@ -950,8 +951,9 @@ An Extrovert.js generator for a 3D city.
       var texture = eng.rasterizer( $(val), opts );
       var material = (!opts.physics.enabled || !opts.physics.materials) ?
          texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
+      eng.side_mat.color = 0x00FF00;
       var materials = new THREE.MeshFaceMaterial([
-         material, material, material, material,
+         eng.side_mat, eng.side_mat, eng.side_mat, eng.side_mat,
          material, material
       ]);
 
@@ -996,8 +998,8 @@ An Extrovert.js generator for a 3D city.
       // These return the topLeft and bottomRight coordinates of the MAIN FACE of the thing in WORLD coords
 
       var block_width = Math.abs( botRight.x - topLeft.x );
-      var block_height = opts.block.depth;//Math.abs( topLeft.y - botRight.y );
       var block_depth = Math.abs( topLeft.z - botRight.z );
+      var block_height = block_depth;
 
       // Offset by the half-height/width so the corners line up
       return {
