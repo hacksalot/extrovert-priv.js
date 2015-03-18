@@ -50,7 +50,7 @@ var EXTROVERT = (function (window, $, THREE) {
          enabled: true,
          materials: false,
          physijs: {
-            worker: 'physijs_worker.js',
+            worker: 'physijs_worker.min.js',
             ammo: 'ammo.js'
          }
       },
