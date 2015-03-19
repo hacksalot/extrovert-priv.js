@@ -1,6 +1,6 @@
 /**
 A sample Extrovert generator for demonstration purposes.
-@module extrovert-sample.js
+@module gen-sample.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
 @license MIT

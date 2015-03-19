@@ -38,7 +38,7 @@ var EXTROVERT = (function (window, $, THREE) {
          title: 'h2'
       },
       generator: 'gallery',
-      rasterizer: my.generate_image_texture,
+      rasterizer: 'img',
       container: '#container',
       gravity: [0,0,0],
       camera: {
@@ -146,7 +146,12 @@ var EXTROVERT = (function (window, $, THREE) {
          Physijs.scripts.worker = opts.physics.physijs.worker;
          Physijs.scripts.ammo = opts.physics.physijs.ammo;
       }
-      eng.rasterizer = opts.rasterizer || my.generate_image_texture;
+      
+      if( typeof opts.rasterizer == 'string' )
+         eng.rasterizer = new EXTROVERT[ 'paint_' + opts.rasterizer ]();
+      else
+         eng.rasterizer = opts.rasterizer || new EXTROVERT.paint_img();
+      
       eng.log = log;
    }
 
@@ -397,30 +402,6 @@ var EXTROVERT = (function (window, $, THREE) {
    }
    /* jshint ignore:end */
 
-   /**
-   @method generate_image_texture
-   */
-   my.generate_image_texture = function ( $val ) {
-
-      var img = $val.get( 0 );
-      var texture = THREE.ImageUtils.loadTexture( img.src );   
-   
-      if( 0 ) {
-         var canvas = document.createElement('canvas');
-         var context = canvas.getContext('2d');
-         canvas.width = $val.width();
-         canvas.height = $val.height();
-         log.msg("Creating texture %d x %d (%d x %d)", img.clientWidth, img.clientHeight, canvas.width, canvas.height);
-         context.drawImage(img, 0, 0, img.clientWidth, img.clientHeight);
-         texture = new THREE.Texture( canvas );
-         texture.needsUpdate = true;
-      }
-      
-      return {
-         tex: texture,
-         mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
-      };
-   };
 
 
    /**

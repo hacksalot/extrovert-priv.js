@@ -1,6 +1,6 @@
 /**
 An Extrovert.js generator for a 3D city.
-@module extrovert-city.js
+@module gen-city.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
 @license MIT
@@ -15,6 +15,7 @@ An Extrovert.js generator for a 3D city.
    Module object.
    */
    //var my = {};
+
 
    
 
@@ -180,7 +181,7 @@ An Extrovert.js generator for a 3D city.
       var pos_info = get_position( val, opts, eng );
 
       // Texture
-      var texture = eng.rasterizer( $(val), opts );
+      var texture = eng.rasterizer.paint( $(val), opts );
       var material = (!opts.physics.enabled || !opts.physics.materials) ?
          texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
       eng.side_mat.color = 0x00FF00;

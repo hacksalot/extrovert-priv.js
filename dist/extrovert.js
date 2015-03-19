@@ -38,7 +38,7 @@ var EXTROVERT = (function (window, $, THREE) {
          title: 'h2'
       },
       generator: 'gallery',
-      rasterizer: my.generate_image_texture,
+      rasterizer: 'img',
       container: '#container',
       gravity: [0,0,0],
       camera: {
@@ -146,7 +146,12 @@ var EXTROVERT = (function (window, $, THREE) {
          Physijs.scripts.worker = opts.physics.physijs.worker;
          Physijs.scripts.ammo = opts.physics.physijs.ammo;
       }
-      eng.rasterizer = opts.rasterizer || my.generate_image_texture;
+      
+      if( typeof opts.rasterizer == 'string' )
+         eng.rasterizer = new EXTROVERT[ 'paint_' + opts.rasterizer ]();
+      else
+         eng.rasterizer = opts.rasterizer || new EXTROVERT.paint_img();
+      
       eng.log = log;
    }
 
@@ -397,30 +402,6 @@ var EXTROVERT = (function (window, $, THREE) {
    }
    /* jshint ignore:end */
 
-   /**
-   @method generate_image_texture
-   */
-   my.generate_image_texture = function ( $val ) {
-
-      var img = $val.get( 0 );
-      var texture = THREE.ImageUtils.loadTexture( img.src );   
-   
-      if( 0 ) {
-         var canvas = document.createElement('canvas');
-         var context = canvas.getContext('2d');
-         canvas.width = $val.width();
-         canvas.height = $val.height();
-         log.msg("Creating texture %d x %d (%d x %d)", img.clientWidth, img.clientHeight, canvas.width, canvas.height);
-         context.drawImage(img, 0, 0, img.clientWidth, img.clientHeight);
-         texture = new THREE.Texture( canvas );
-         texture.needsUpdate = true;
-      }
-      
-      return {
-         tex: texture,
-         mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
-      };
-   };
 
 
    /**
@@ -773,7 +754,7 @@ var EXTROVERT = (function (window, $, THREE) {
 //      http://stackoverflow.com/q/11334452
 ;/**
 An Extrovert.js generator for a 3D city.
-@module extrovert-city.js
+@module gen-city.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
 @license MIT
@@ -788,6 +769,7 @@ An Extrovert.js generator for a 3D city.
    Module object.
    */
    //var my = {};
+
 
    
 
@@ -953,7 +935,7 @@ An Extrovert.js generator for a 3D city.
       var pos_info = get_position( val, opts, eng );
 
       // Texture
-      var texture = eng.rasterizer( $(val), opts );
+      var texture = eng.rasterizer.paint( $(val), opts );
       var material = (!opts.physics.enabled || !opts.physics.materials) ?
          texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
       eng.side_mat.color = 0x00FF00;
@@ -1035,7 +1017,7 @@ An Extrovert.js generator for a 3D city.
 //     var pos = $(val).position();
 ;/**
 An Extrovert.js generator for 3D extrusion.
-@module extrovert-extrude.js
+@module gen-extrude.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
 @license MIT
@@ -1182,7 +1164,7 @@ An Extrovert.js generator for 3D extrusion.
       var pos_info = get_position( val, opts, eng );
 
       // Texture
-      var texture = eng.rasterizer( $(val), opts );
+      var texture = eng.rasterizer.paint( $(val), opts );
       var material = (!opts.physics.enabled || !opts.physics.materials) ?
          texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
       var materials = new THREE.MeshFaceMaterial([
@@ -1258,8 +1240,8 @@ An Extrovert.js generator for 3D extrusion.
 //     var pos = $(val).offset();
 //     var pos = $(val).position();
 ;/**
-An Extrovert.js generator for a 3D city.
-@module extrovert-city.js
+An Extrovert.js generator for a floating scene.
+@module gen-float.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
 @license MIT
@@ -1280,7 +1262,7 @@ An Extrovert.js generator for a 3D city.
    Default options.
    */
    var _def_opts = {
-      gravity: [0,-1,0],
+      gravity: [0,0,0],
       camera: {
          position: [0,400,0],
          // TODO: Don't modify these values until AFTER object placement
@@ -1412,7 +1394,7 @@ An Extrovert.js generator for a 3D city.
       var pos_info = get_position( val, opts, eng );
 
       // Texture
-      var texture = eng.rasterizer( $(val), opts );
+      var texture = eng.rasterizer.paint( $(val), opts );
       var material = (!opts.physics.enabled || !opts.physics.materials) ?
          texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
       var materials = new THREE.MeshFaceMaterial([
@@ -1493,7 +1475,7 @@ An Extrovert.js generator for a 3D city.
 //     var pos = $(val).position();
 ;/**
 An Extrovert.js generator for a 3D image gallery.
-@module extrovert-gallery.js
+@module gen-gallery.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
 @license MIT
@@ -1640,7 +1622,7 @@ An Extrovert.js generator for a 3D image gallery.
       var pos_info = get_position( val, opts, eng );
 
       // Texture
-      var texture = eng.rasterizer( $(val), opts );
+      var texture = eng.rasterizer.paint( $(val), opts );
       var material = (!opts.physics.enabled || !opts.physics.materials) ?
          texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
       var materials = new THREE.MeshFaceMaterial([
@@ -1717,7 +1699,7 @@ An Extrovert.js generator for a 3D image gallery.
 //     var pos = $(val).position();
 ;/**
 A sample Extrovert generator for demonstration purposes.
-@module extrovert-sample.js
+@module gen-sample.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
 @license MIT
@@ -1766,6 +1748,131 @@ A sample Extrovert generator for demonstration purposes.
    Module return.
    */
    //return my;
+
+
+
+}(window, $, THREE, EXTROVERT));
+
+;/**
+A simple Extrovert HTML rasterizer.
+@module paint-html.js
+@copyright Copyright (c) 2015 by James M. Devlin
+@author James M. Devlin | james@indevious.com
+@license MIT
+@version 1.0
+*/
+
+(function (window, $, THREE, EXTROVERT) {
+
+
+
+   EXTROVERT.paint_html = function () {
+      return {
+         paint: function( $val, opts ) {
+            /* TODO */
+            var texture = null;
+            return {
+               tex: texture,
+               mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
+            };
+         }
+      };
+   };
+
+
+
+}(window, $, THREE, EXTROVERT));
+;/**
+A simple Extrovert image rasterizer.
+@module paint-img-canvas.js
+@copyright Copyright (c) 2015 by James M. Devlin
+@author James M. Devlin | james@indevious.com
+@license MIT
+@version 1.0
+*/
+
+(function (window, $, THREE, EXTROVERT) {
+
+
+
+   EXTROVERT.paint_img_canvas = function () {
+      return {
+         paint: function( $val, opts ) {
+            var img = $val.get( 0 );
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            canvas.width = $val.width();
+            canvas.height = $val.height();
+            log.msg("Creating texture %d x %d (%d x %d)", img.clientWidth, img.clientHeight, canvas.width, canvas.height);
+            context.drawImage(img, 0, 0, img.clientWidth, img.clientHeight);
+            texture = new THREE.Texture( canvas );
+            texture.needsUpdate = true;
+            return {
+               tex: texture,
+               mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
+            };
+         }
+      };
+   };
+
+
+
+}(window, $, THREE, EXTROVERT));
+;/**
+A simple Extrovert image rasterizer.
+@module paint-img.js
+@copyright Copyright (c) 2015 by James M. Devlin
+@author James M. Devlin | james@indevious.com
+@license MIT
+@version 1.0
+*/
+
+(function (window, $, THREE, EXTROVERT) {
+
+
+
+   EXTROVERT.paint_img = function () {
+      return {
+         paint: function( $val, opts ) {
+            var img = $val.get( 0 );
+            var texture = THREE.ImageUtils.loadTexture( img.src );
+            return {
+               tex: texture,
+               mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
+            };
+         }
+      };
+   };
+
+
+
+}(window, $, THREE, EXTROVERT));
+;/**
+A simple Extrovert HTML rasterizer.
+@module paint-simple-html.js
+@copyright Copyright (c) 2015 by James M. Devlin
+@author James M. Devlin | james@indevious.com
+@license MIT
+@version 1.0
+*/
+
+(function (window, $, THREE, EXTROVERT) {
+
+
+
+   EXTROVERT.paint_simple_html = function () {
+      return {
+         paint: function( $val, opts ) {
+            /* TODO */
+            var texture = null;
+            return {
+               tex: texture,
+               mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
+            };
+         }
+      };
+   };
+
 
 
 

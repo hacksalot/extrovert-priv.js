@@ -1,6 +1,6 @@
 /**
 An Extrovert.js generator for a 3D image gallery.
-@module extrovert-gallery.js
+@module gen-gallery.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
 @license MIT
@@ -147,7 +147,7 @@ An Extrovert.js generator for a 3D image gallery.
       var pos_info = get_position( val, opts, eng );
 
       // Texture
-      var texture = eng.rasterizer( $(val), opts );
+      var texture = eng.rasterizer.paint( $(val), opts );
       var material = (!opts.physics.enabled || !opts.physics.materials) ?
          texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
       var materials = new THREE.MeshFaceMaterial([
