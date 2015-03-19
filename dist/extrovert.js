@@ -109,7 +109,7 @@ var EXTROVERT = (function (window, $, THREE) {
    @method init_priv
    */
    function init_priv( options ) {
-      if( !detect_webgl() ) return false;
+      if( !my.detect_webgl() ) return false;
       init_options( options );
       init_renderer();
       init_world( opts, eng );
@@ -656,7 +656,7 @@ var EXTROVERT = (function (window, $, THREE) {
    Determine if the browser/machine supports WebGL.
    @method detect_webgl
    */
-   function detect_webgl( return_context ) {
+   my.detect_webgl = function( return_context ) {
       if( !!window.WebGLRenderingContext ) {
          var canvas = document.createElement("canvas");
          var names = ["webgl", "experimental-webgl", "moz-webgl", "webkit-3d"];
@@ -685,7 +685,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
       // WebGL not supported
       return false;
-   }
+   };
 
 
 
