@@ -50,7 +50,7 @@ var EXTROVERT = (function (window, $, THREE) {
          enabled: true,
          materials: false,
          physijs: {
-            worker: 'physijs_worker.js',
+            worker: 'physijs_worker.min.js',
             ammo: 'ammo.js'
          }
       },
@@ -401,16 +401,21 @@ var EXTROVERT = (function (window, $, THREE) {
    @method generate_image_texture
    */
    my.generate_image_texture = function ( $val ) {
-      var canvas = document.createElement('canvas');
-      var context = canvas.getContext('2d');
-      canvas.width = $val.width();
-      canvas.height = $val.height();
-      
+
       var img = $val.get( 0 );
-      log.msg("Creating texture %d x %d (%d x %d)", img.clientWidth, img.clientHeight, canvas.width, canvas.height);
-      context.drawImage(img, 0, 0, img.clientWidth, img.clientHeight);
-      var texture = new THREE.Texture( canvas );
-      texture.needsUpdate = true;
+      var texture = THREE.ImageUtils.loadTexture( img.src );   
+   
+      if( 0 ) {
+         var canvas = document.createElement('canvas');
+         var context = canvas.getContext('2d');
+         canvas.width = $val.width();
+         canvas.height = $val.height();
+         log.msg("Creating texture %d x %d (%d x %d)", img.clientWidth, img.clientHeight, canvas.width, canvas.height);
+         context.drawImage(img, 0, 0, img.clientWidth, img.clientHeight);
+         texture = new THREE.Texture( canvas );
+         texture.needsUpdate = true;
+      }
+      
       return {
          tex: texture,
          mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
