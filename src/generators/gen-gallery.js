@@ -43,7 +43,6 @@ An Extrovert.js generator for a 3D image gallery.
    EXTROVERT.gallery = function() {
       return {
          generate: function( options, eng ) {
-            //var new_opts = $.extend(true, { }, _def_opts, options);
             if( !options.generator || typeof options.generator == 'string' )
                options.generator = _def_opts.generator;
             init_objects( options, eng );

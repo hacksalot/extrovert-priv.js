@@ -753,7 +753,7 @@ var EXTROVERT = (function (window, $, THREE) {
 //      https://bugzilla.mozilla.org/show_bug.cgi?id=69787
 //      http://stackoverflow.com/q/11334452
 ;/**
-An Extrovert.js generator for a 3D city.
+An Extrovert.js generator for a 3D city scene.
 @module gen-city.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
@@ -840,7 +840,7 @@ An Extrovert.js generator for a 3D city.
       // Now that objects have been placed in-frustum, we can set the camera
       // position and rotation to whatever the client specified.
       var oc = opts.camera;
-      eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );//-(Math.PI / 4);
+      eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
       eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
    }
 
@@ -1060,7 +1060,6 @@ An Extrovert.js generator for 3D extrusion.
    EXTROVERT.extrude = function() {
       return {
          generate: function( options, eng ) {
-            //var new_opts = $.extend(true, { }, _def_opts, options);
             if( !options.generator || typeof options.generator == 'string' )
                options.generator = _def_opts.generator;
             init_objects( options, eng );
@@ -1518,7 +1517,6 @@ An Extrovert.js generator for a 3D image gallery.
    EXTROVERT.gallery = function() {
       return {
          generate: function( options, eng ) {
-            //var new_opts = $.extend(true, { }, _def_opts, options);
             if( !options.generator || typeof options.generator == 'string' )
                options.generator = _def_opts.generator;
             init_objects( options, eng );

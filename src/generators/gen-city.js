@@ -1,5 +1,5 @@
 /**
-An Extrovert.js generator for a 3D city.
+An Extrovert.js generator for a 3D city scene.
 @module gen-city.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
@@ -86,7 +86,7 @@ An Extrovert.js generator for a 3D city.
       // Now that objects have been placed in-frustum, we can set the camera
       // position and rotation to whatever the client specified.
       var oc = opts.camera;
-      eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );//-(Math.PI / 4);
+      eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
       eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
    }
 
