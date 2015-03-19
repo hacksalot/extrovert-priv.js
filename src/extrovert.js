@@ -94,12 +94,12 @@ var EXTROVERT = (function (window, $, THREE) {
    The infamous zero vector, whose reputation precedes itself.
    */
    var ZERO_G = new THREE.Vector3(0, 0, 0);
-   
 
-   
+
+
    /**
    Combined options object.
-   */   
+   */
    var opts = null;
 
 
@@ -128,7 +128,7 @@ var EXTROVERT = (function (window, $, THREE) {
    @method init_options
    */
    function init_options( options ) {
-   
+
       // Grab the generator. It has default options we need to wire in.
       if( !options.generator )
          eng.generator = new EXTROVERT.imitate();
@@ -146,12 +146,12 @@ var EXTROVERT = (function (window, $, THREE) {
          Physijs.scripts.worker = opts.physics.physijs.worker;
          Physijs.scripts.ammo = opts.physics.physijs.ammo;
       }
-      
+
       if( typeof opts.rasterizer == 'string' )
          eng.rasterizer = new EXTROVERT[ 'paint_' + opts.rasterizer ]();
       else
          eng.rasterizer = opts.rasterizer || new EXTROVERT.paint_img();
-      
+
       eng.log = log;
    }
 
@@ -183,7 +183,7 @@ var EXTROVERT = (function (window, $, THREE) {
       // position to relative so coordinates are canvas-local.
       // http://stackoverflow.com/a/3274697
       eng.renderer.domElement.setAttribute('tabindex', '0');
-      eng.renderer.domElement.style += ' position: relative;'; 
+      eng.renderer.domElement.style += ' position: relative;';
       log.msg( "Renderer: %o", eng.renderer );
    }
 
@@ -193,14 +193,14 @@ var EXTROVERT = (function (window, $, THREE) {
    Create a camera from a generic options object.
    @method create_camera
    */
-   my.create_camera = function( cam_opts ) {
-      var cam = cam_opts.type != 'orthographic' ?
-         new THREE.PerspectiveCamera( cam_opts.fov, eng.width / eng.height, cam_opts.near, cam_opts.far ) :
-         new THREE.OrthographicCamera( cam_opts.left, cam_opts.right, cam_opts.top, cam_opts.bottom, cam_opts.near, cam_opts.far );
-      cam.position.set( cam_opts.position[0], cam_opts.position[1], cam_opts.position[2] );
+   my.create_camera = function( copts ) {
+      var cam = copts.type != 'orthographic' ?
+         new THREE.PerspectiveCamera( copts.fov, eng.width / eng.height, copts.near, copts.far ) :
+         new THREE.OrthographicCamera( copts.left, copts.right, copts.top, copts.bottom, copts.near, copts.far );
+      cam.position.set( copts.position[0], copts.position[1], copts.position[2] );
       eng.camera = cam;
-      if( cam_opts.up ) cam.up.set( cam_opts.up[0], cam_opts.up[1], cam_opts.up[2] );
-      if( cam_opts.lookat ) cam.lookAt( new THREE.Vector3( cam_opts.lookat[0], cam_opts.lookat[1], cam_opts.lookat[2] ) );
+      if( copts.up ) cam.up.set( copts.up[0], copts.up[1], copts.up[2] );
+      if( copts.lookat ) cam.lookAt( new THREE.Vector3( copts.lookat[0], copts.lookat[1], copts.lookat[2] ) );
       cam.updateMatrix();
       cam.updateMatrixWorld();
       cam.updateProjectionMatrix();
@@ -218,9 +218,57 @@ var EXTROVERT = (function (window, $, THREE) {
       var scene = scene_opts.physics.enabled ? new Physijs.Scene() : new THREE.Scene();
       eng.scene = scene;
       log.msg( "Created scene: %o", scene );
+      create_scene_objects( scene, scene_opts );
       return scene;
    };
 
+
+
+   /**
+   Create predefined scene objects.
+   @method create_scene_objects
+   */
+   function create_scene_objects( scene, scene_opts ) {
+      if( scene_opts.scene && scene_opts.scene.items ) {
+         for(var i = 0; i < scene_opts.scene.items.length; i++) {
+            var mesh = my.create_object( scene_opts.scene.items[ i ] );
+            scene.add( mesh );
+         }
+      }
+   }
+   
+   
+   
+   /**
+   Create a mesh object from a generic description.
+   @method create_object
+   */   
+   my.create_object = function( desc ) {
+      var mesh = null, geo = null, mat = null;
+      var rgb = desc.color || 0xFFFFFF;
+      if( desc.type === 'box' ) {
+         geo = new THREE.BoxGeometry( desc.dims[0], desc.dims[1], desc.dims[2] );
+         mat = new THREE.MeshLambertMaterial( { color: rgb, opacity: 1.0, transparent: false } );
+         mesh = create_mesh(geo, 'Box', mat);
+      }      
+      else if( desc.type === 'plane' ) {
+         geo = new THREE.PlaneBufferGeometry( desc.dims[0], desc.dims[1] );
+         mat = new THREE.MeshBasicMaterial( { color: rgb, opacity: 0.25, transparent: true } );
+         mesh = create_mesh( geo, null, mat, true );
+      }
+      if( desc.pos )
+         mesh.position.set( desc.pos[0], desc.pos[1], desc.pos[2] );
+      if( desc.visible === false )
+         mesh.visible = false;
+      eng.log.msg("Created object: %o", mesh);
+      return mesh;
+   };
+
+   
+   function create_mesh( geo, mesh_type, mat, force_simple ) {
+      return opts.physics.enabled && !force_simple ?
+         new Physijs[ mesh_type + 'Mesh' ]( geo, mat, 0 ) : new THREE.Mesh(geo, mat);
+   }
 
 
    /**
@@ -373,8 +421,8 @@ var EXTROVERT = (function (window, $, THREE) {
    @method create_spotlight
    */
    function create_spotlight( light ) {
-      // var spotLight = new THREE.SpotLight( 
-         // light.color, light.intensity || 0.5, light.distance || 1000, 
+      // var spotLight = new THREE.SpotLight(
+         // light.color, light.intensity || 0.5, light.distance || 1000,
          // light.angle || 35 );
       var spotLight = new THREE.SpotLight( light.color );
       spotLight.shadowCameraVisible = false;

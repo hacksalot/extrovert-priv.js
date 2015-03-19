@@ -117,7 +117,7 @@ An Extrovert.js generator for 3D extrusion.
       eng.placement_plane.updateMatrixWorld();
       eng.log.msg("Building placement plane: %o", eng.placement_plane);
 
-      init_cards( opts, eng );
+      init_elements( opts, eng );
    }
 
 
@@ -126,7 +126,7 @@ An Extrovert.js generator for 3D extrusion.
    Initialize all card objects.
    @method init_cards
    */
-   function init_cards( opts, eng ) {
+   function init_elements( opts, eng ) {
       var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
       eng.side_mat = Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution );
       $( opts.src.selector ).each( function( idx, val ) {
