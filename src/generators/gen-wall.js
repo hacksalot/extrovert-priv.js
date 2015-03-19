@@ -22,7 +22,7 @@ An Extrovert.js generator for 3D extrusion.
    */
    var _def_opts = {
       generator: {
-         name: 'extrude',
+         name: 'wall',
          background: 'default_background.png',
          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
       },
@@ -40,7 +40,7 @@ An Extrovert.js generator for 3D extrusion.
    /**
    @class The built-in 'gallery' generator.
    */
-   EXTROVERT.extrude = function() {
+   EXTROVERT.wall = function() {
       return {
          generate: function( options, eng ) {
             if( !options.generator || typeof options.generator == 'string' )

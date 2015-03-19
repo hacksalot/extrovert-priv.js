@@ -236,24 +236,26 @@ var EXTROVERT = (function (window, $, THREE) {
          }
       }
    }
-   
-   
-   
+
+
+
    /**
    Create a mesh object from a generic description.
    @method create_object
-   */   
+   */
    my.create_object = function( desc ) {
       var mesh = null, geo = null, mat = null;
       var rgb = desc.color || 0xFFFFFF;
+      var opac = desc.opacity || 1.0;
+      var trans = desc.transparent || true;
       if( desc.type === 'box' ) {
          geo = new THREE.BoxGeometry( desc.dims[0], desc.dims[1], desc.dims[2] );
-         mat = new THREE.MeshLambertMaterial( { color: rgb, opacity: 1.0, transparent: false } );
+         mat = new THREE.MeshLambertMaterial( { color: rgb, opacity: opac, transparent: trans } );
          mesh = create_mesh(geo, 'Box', mat);
-      }      
+      }
       else if( desc.type === 'plane' ) {
          geo = new THREE.PlaneBufferGeometry( desc.dims[0], desc.dims[1] );
-         mat = new THREE.MeshBasicMaterial( { color: rgb, opacity: 0.25, transparent: true } );
+         mat = new THREE.MeshBasicMaterial( { color: rgb, opacity: opac, transparent: trans } );
          mesh = create_mesh( geo, null, mat, true );
       }
       if( desc.pos )
@@ -264,7 +266,7 @@ var EXTROVERT = (function (window, $, THREE) {
       return mesh;
    };
 
-   
+
    function create_mesh( geo, mesh_type, mat, force_simple ) {
       return opts.physics.enabled && !force_simple ?
          new Physijs[ mesh_type + 'Mesh' ]( geo, mat, 0 ) : new THREE.Mesh(geo, mat);

@@ -93,12 +93,14 @@ An Extrovert.js generator for a 3D city scene.
 
    function init_drag_plane( eng ) {
       // Create an invisible, untouchable drag plane for drag-drop
-      // TODO: remove hard-coded numbers
-      eng.drag_plane = new THREE.Mesh(
-         new THREE.PlaneBufferGeometry( 2000, 2000 ),
-         new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true } ));
-      eng.drag_plane.visible = false;
-      eng.log.msg("Building intersection plane: %o", eng.drag_plane);
+      eng.drag_plane = EXTROVERT.create_object( {
+         type: 'plane',
+         dims: [2000,2000,8],
+         visible: false,
+         color: 0x000000,
+         opacity: 0.25,
+         transparent: true } );
+      eng.log.msg("Building drag plane: %o", eng.drag_plane);
       return eng.drag_plane;
    }
 
