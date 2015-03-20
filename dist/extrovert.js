@@ -2728,7 +2728,7 @@ An Extrovert.js generator for a 3D image gallery.
          far: 2000,
          position: [0,0,800],
          rotation: [0,0,0],
-         up: [0,0,-1]
+         //up: [0,0,-1]
       }      
    };
 
@@ -2813,7 +2813,7 @@ An Extrovert.js generator for a 3D image gallery.
       eng.placement_plane.updateMatrixWorld();
       eng.log.msg("Building placement plane: %o", eng.placement_plane);
 
-      init_cards( opts, eng );
+      init_elements( opts, eng );
    }
 
 
@@ -2822,7 +2822,7 @@ An Extrovert.js generator for a 3D image gallery.
    Initialize all card objects.
    @method init_cards
    */
-   function init_cards( opts, eng ) {
+   function init_elements( opts, eng ) {
       var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
       eng.side_mat = Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution );
       $( opts.src.selector ).each( function( idx, val ) {
@@ -2851,11 +2851,11 @@ An Extrovert.js generator for a 3D image gallery.
       ]);
 
       // Mesh
-      var cube_geo = new THREE.BoxGeometry( pos_info.width, pos_info.height, pos_info.depth );      
+      var cube_geo = new THREE.BoxGeometry( pos_info.width, pos_info.height, pos_info.depth );
       var mesh = opts.physics.enabled ?
          new Physijs.BoxMesh( cube_geo, materials, 1000 ) :
          new THREE.Mesh( cube_geo, materials );
-      mesh.position.copy( pos_info.pos );         
+      mesh.position.copy( pos_info.pos );
       mesh.castShadow = mesh.receiveShadow = false;
       if( opts.generator.lookat )
          mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
