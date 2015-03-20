@@ -5,7 +5,7 @@
  * @author Luca Antiga 	/ http://lantiga.github.io
  */
 
-THREE.TrackballControls = function ( object, domElement ) {
+THREE.TrackballControls = function ( object, domElement, options ) {
 
 	var _this = this;
 	var STATE = { NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
@@ -74,13 +74,18 @@ THREE.TrackballControls = function ( object, domElement ) {
 	var changeEvent = { type: 'change' };
 	var startEvent = { type: 'start' };
 	var endEvent = { type: 'end' };
-
-
+   
 	// methods
+   
+   function subscribe( event_name, handler, options ) {
+      if( !options || !options.ignore_events || options.ignore_events.indexOf( event_name ) === -1 ) {
+         _this.domElement.addEventListener( event_name, /*this[event_name]*/ handler, false );
+      }
+   }
 
 	this.handleResize = function () {
 
-		if ( this.domElement === document ) {
+		if ( _this.domElement === document ) {
 
 			this.screen.left = 0;
 			this.screen.top = 0;
@@ -91,7 +96,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 			var box = this.domElement.getBoundingClientRect();
 			// adjustments come from similar code in the jquery offset() function
-			var d = this.domElement.ownerDocument.documentElement;
+			var d = _this.domElement.ownerDocument.documentElement;
 			this.screen.left = box.left + window.pageXOffset - d.clientLeft;
 			this.screen.top = box.top + window.pageYOffset - d.clientTop;
 			this.screen.width = box.width;
@@ -101,15 +106,6 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	};
 
-	this.handleEvent = function ( event ) {
-
-		if ( typeof this[ event.type ] == 'function' ) {
-
-			this[ event.type ]( event );
-
-		}
-
-	};
 
 	var getMouseOnScreen = ( function () {
 
@@ -296,35 +292,24 @@ THREE.TrackballControls = function ( object, domElement ) {
 		_eye.subVectors( _this.object.position, _this.target );
 
 		if ( !_this.noRotate ) {
-
 			_this.rotateCamera();
-
 		}
 
 		if ( !_this.noZoom ) {
-
 			_this.zoomCamera();
-
 		}
 
 		if ( !_this.noPan ) {
-
 			_this.panCamera();
-
 		}
 
 		_this.object.position.addVectors( _this.target, _eye );
-
 		_this.checkDistances();
-
 		_this.object.lookAt( _this.target );
 
 		if ( lastPosition.distanceToSquared( _this.object.position ) > EPS ) {
-
 			_this.dispatchEvent( changeEvent );
-
 			lastPosition.copy( _this.object.position );
-
 		}
 
 	};
@@ -388,46 +373,38 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	}
 
-	function mousedown( event ) {
+	this.mousedown = function( event ) {
 
 		if ( _this.enabled === false ) return;
+      //if ( event.which !== 3 ) return;
 
 		event.preventDefault();
 		event.stopPropagation();
 
 		if ( _state === STATE.NONE ) {
-
-			_state = event.button;
-
+			//_state = event.button;
+         _state = STATE.PAN;
 		}
 
 		if ( _state === STATE.ROTATE && !_this.noRotate ) {
-
 			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
 			_movePrev.copy(_moveCurr);
-
 		} else if ( _state === STATE.ZOOM && !_this.noZoom ) {
-
 			_zoomStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
 			_zoomEnd.copy(_zoomStart);
-
 		} else if ( _state === STATE.PAN && !_this.noPan ) {
-
 			_panStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
 			_panEnd.copy(_panStart);
-
 		}
-
-		document.addEventListener( 'mousemove', mousemove, false );
-		document.addEventListener( 'mouseup', mouseup, false );
 
 		_this.dispatchEvent( startEvent );
 
-	}
+	};
 
-	function mousemove( event ) {
+	this.mousemove = function( event ) {
 
 		if ( _this.enabled === false ) return;
+      if ( _state === STATE.NONE ) return;
 
 		event.preventDefault();
 		event.stopPropagation();
@@ -447,22 +424,21 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		}
 
-	}
+	};
 
-	function mouseup( event ) {
+	this.mouseup = function( event ) {
 
 		if ( _this.enabled === false ) return;
+      //if( event.which != 3 ) return;
 
 		event.preventDefault();
 		event.stopPropagation();
 
 		_state = STATE.NONE;
 
-		document.removeEventListener( 'mousemove', mousemove );
-		document.removeEventListener( 'mouseup', mouseup );
 		_this.dispatchEvent( endEvent );
 
-	}
+	};
 
 	function mousewheel( event ) {
 
@@ -579,23 +555,18 @@ THREE.TrackballControls = function ( object, domElement ) {
 		_this.dispatchEvent( endEvent );
 
 	}
-
-	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
-
-	this.domElement.addEventListener( 'mousedown', mousedown, false );
-
-	this.domElement.addEventListener( 'mousewheel', mousewheel, false );
-	this.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false ); // firefox
-
-	this.domElement.addEventListener( 'touchstart', touchstart, false );
-	this.domElement.addEventListener( 'touchend', touchend, false );
-	this.domElement.addEventListener( 'touchmove', touchmove, false );
-
+   
+   document.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
+   subscribe( 'contextmenu', function ( event ) { event.preventDefault(); }, options );
+	subscribe( 'mousedown', this.mousedown, options );
+	subscribe( 'mousewheel', mousewheel, options );
+	subscribe( 'DOMMouseScroll', mousewheel, options ); // firefox
+	subscribe( 'touchstart', touchstart, options );
+	subscribe( 'touchend', touchend, options );
+	subscribe( 'touchmove', touchmove, options );
 	window.addEventListener( 'keydown', keydown, false );
 	window.addEventListener( 'keyup', keyup, false );
-
 	this.handleResize();
-
 	// force an update at start
 	this.update();
 

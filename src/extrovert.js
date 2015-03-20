@@ -87,9 +87,9 @@ var EXTROVERT = (function (window, $, THREE) {
    var opts = null;
 
 
-   
+
    /**
-   Initialize the Extrovert library and get some 3D up in that grill, holmes.
+   Initialize the Extrovert library and get some 3D up in that grill.
    @method init
    */
    my.init = function( options ) {
@@ -97,25 +97,26 @@ var EXTROVERT = (function (window, $, THREE) {
       init_options( options );
       init_renderer();
       init_world( opts, eng );
-      init_controls( opts, eng );
+      init_canvas();      
       init_physics();
-      //init_events();
+      init_controls( opts, eng );
+      init_events();
       init_timer();
       start();
       return true;
-   };   
-   
+   };
 
-   
+
+
    /**
    Initialize engine options. Not the engine, the *options*. Here's where we
-   merge user, generator, and engine options into a new combined options object 
+   merge user, generator, and engine options into a new combined options object
    and carry across other important settings.
    @method init_options
    */
    function init_options( options ) {
       // Set up a logger
-      eng.log = EXTROVERT.Utils.log;   
+      eng.log = EXTROVERT.Utils.log;
       // Instantiate the generator
       if( !options.generator )
          eng.generator = new EXTROVERT.imitate();
@@ -149,20 +150,20 @@ var EXTROVERT = (function (window, $, THREE) {
    function init_world( options, eng ) {
       eng.generator.generate( options, eng );
    }
-   
-   
+
+
 
    /**
    Initialize keyboard and mouse controls for the scene.
    @method init_controls
    */
    function init_controls( opts, eng ) {
-      eng.controls = my.create_controls( opts.controls );
+      eng.controls = my.create_controls( opts.controls, eng.camera, eng.renderer.domElement );
       return eng.controls;
    }
-   
-   
-   
+
+
+
    /**
    Initialize the renderer.
    @method init_renderer
@@ -181,18 +182,28 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.renderer.domElement.setAttribute('tabindex', '0');
       eng.renderer.domElement.style += ' position: relative;';
       eng.log.msg( "Renderer: %o", eng.renderer );
-   }   
+   }
    
    
    
    /**
+   Introduce the canvas to the live DOM. Note: .getBoundingClientRect will
+   return an empty (zero-size) result until this happens.
+   */
+   function init_canvas() {
+      $( opts.container ).replaceWith( eng.renderer.domElement );   
+   }
+
+
+
+   /**
    Create a mouse/keyboard control type from a generic description.
    @method create_controls
    */
-   my.create_controls = function( control_opts ) {
+   my.create_controls = function( control_opts, camera, domElement ) {
       var controls = null;
       if( !control_opts || control_opts.type === 'trackball' ) {
-         controls = new THREE.TrackballControls( eng.camera );
+         controls = new THREE.TrackballControls( camera, eng.renderer.domElement, { ignore_events: 'mousedown mousemove mouseup' } );
          controls.rotateSpeed = 1.0;
          controls.zoomSpeed = 1.2;
          controls.panSpeed = 0.8;
@@ -292,19 +303,19 @@ var EXTROVERT = (function (window, $, THREE) {
    };
 
 
-   
+
    /**
    Helper function to abstract away whether we're dealing with a normal mesh or
    a Physijs mesh.
    @method create_object
-   */   
+   */
    function create_mesh( geo, mesh_type, mat, force_simple ) {
       return opts.physics.enabled && !force_simple ?
          new Physijs[ mesh_type + 'Mesh' ]( geo, mat, 0 ) : new THREE.Mesh(geo, mat);
    }
 
 
-   
+
    /**
    Initialize the physics system.
    @method init_physics
@@ -348,6 +359,7 @@ var EXTROVERT = (function (window, $, THREE) {
    @method start
    */
    function start() {
+      // Okay so things that rely on getBoundingClientRect wont work til this has happened
       $( opts.container ).replaceWith( eng.renderer.domElement );
       opts.onload && opts.onload(); // Fire the 'onload' event
       animate();
@@ -404,7 +416,7 @@ var EXTROVERT = (function (window, $, THREE) {
          }
       }
 
-      eng.controls && eng.controls.update( eng.clock.getDelta() );
+      eng.controls && eng.controls.enabled && eng.controls.update( /*eng.clock.getDelta()*/ );
       eng.renderer.clear();
       eng.renderer.render( eng.scene, eng.camera );
    }
@@ -502,6 +514,11 @@ var EXTROVERT = (function (window, $, THREE) {
    */
    function mouse_down( e ) {
 
+      if( e.which !== 1 && eng.controls && eng.controls.enabled ) {
+         eng.controls.mousedown( e );
+         return;
+      }
+
       e.preventDefault();
       var xpos = e.offsetX === undefined ? e.layerX : e.offsetX; //[1]
       var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
@@ -542,6 +559,11 @@ var EXTROVERT = (function (window, $, THREE) {
    @method mouse_move
    */
    function mouse_move( e ) {
+      if( e.which !== 1 && eng.controls && eng.controls.enabled ) {
+         eng.controls.mousemove( e );
+         return;
+      }
+
       e.preventDefault();
       var xpos = e.offsetX === undefined ? e.layerX : e.offsetX; //[1]
       var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
@@ -567,8 +589,12 @@ var EXTROVERT = (function (window, $, THREE) {
    Handle the 'mouseup' event.
    @method mouse_up
    */
-   function mouse_up( event ) {
-      event.preventDefault();
+   function mouse_up( e ) {
+      if( e.which !== 1 && eng.controls && eng.controls.enabled ) {
+         eng.controls.mouseup( e );
+         return;
+      }
+      e.preventDefault();
       if( eng.selected && opts.physics.enabled ) {
          if( opts.physics.enabled ) {
             var oneVec = new THREE.Vector3( 1, 1, 1 );
