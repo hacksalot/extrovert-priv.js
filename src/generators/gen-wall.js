@@ -34,8 +34,11 @@ An Extrovert.js generator that creates a 3D wall or tower.
       },
       camera: {
          far: 20000,
-         position: [0,0,4400],
+         position: [0,-1500,2000],
          rotation: [-0.25,0,0]
+      },
+      controls: {
+         target: [0,-1500, 0]
       },
       block: {
          depth: 100

@@ -213,8 +213,11 @@ var EXTROVERT = (function (window, $, THREE) {
    */
    my.create_controls = function( control_opts, camera, domElement ) {
       var controls = null;
-      if( !control_opts || control_opts.type === 'trackball' ) {
-         controls = new THREE.TrackballControls( camera, eng.renderer.domElement, { ignore_events: 'mousedown mousemove mouseup' } );
+      if( !control_opts || !control_opts.type || control_opts.type === 'trackball' ) {
+         var track_opts = { ignore_events: 'mousedown mousemove mouseup' };
+         if( control_opts && control_opts.target )
+            track_opts.target = control_opts.target;
+         controls = new THREE.TrackballControls( camera, domElement, track_opts );
          controls.rotateSpeed = 1.0;
          controls.zoomSpeed = 1.2;
          controls.panSpeed = 0.8;
@@ -628,8 +631,7 @@ var EXTROVERT = (function (window, $, THREE) {
    
    /**
    Retrieve the position, in 3D space, of a recruited HTML element.
-   gen-gallery, gen-wall, and gen-exclude have the same version
-   @method init_card
+   @method get_position
    */
    my.get_position = function( val, opts, eng ) {
 
@@ -658,9 +660,14 @@ var EXTROVERT = (function (window, $, THREE) {
    };
    
    
+   
+   /**
+   Create an invisible placement plane. TODO: No need to create geometry to place objects;
+   replace this technique with unproject at specified Z.
+   @method create_placement_plane
+   */   
    my.create_placement_plane = function( pos, dims ) {
-      // Create a hidden plane for object placement.
-      // TODO: Replace with unproject at specified Z.
+      
       dims = dims || [200000,200000,1];
       var geo = new THREE.BoxGeometry(dims[0], dims[1], dims[2]); 
       eng.placement_plane = opts.physics.enabled ?
@@ -675,6 +682,7 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.log.msg("Building placement plane: %o", eng.placement_plane);   
       return eng.placement_plane;
    };
+   
 
 
    /**
@@ -1305,6 +1313,8 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 	// internals
 
 	this.target = new THREE.Vector3();
+   if( options.target )
+      this.target.set( options.target[0], options.target[1], options.target[2] );
 
 	var EPS = 0.000001;
 
@@ -2928,8 +2938,11 @@ An Extrovert.js generator that creates a 3D wall or tower.
       },
       camera: {
          far: 20000,
-         position: [0,0,4400],
+         position: [0,-1500,2000],
          rotation: [-0.25,0,0]
+      },
+      controls: {
+         target: [0,-1500, 0]
       },
       block: {
          depth: 100
