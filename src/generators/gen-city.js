@@ -78,7 +78,6 @@ An Extrovert.js generator for a 3D city scene.
       EXTROVERT.create_camera( $.extend(true, {}, opts.camera, _init_cam_opts) );
       EXTROVERT.fiat_lux( opts.lights );
 
-      init_drag_plane( eng );
       init_ground( opts, eng );
       init_placement_plane( opts, eng );
       init_elements( opts, eng );
@@ -88,20 +87,6 @@ An Extrovert.js generator for a 3D city scene.
       var oc = opts.camera;
       eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
       eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
-   }
-
-
-   function init_drag_plane( eng ) {
-      // Create an invisible, untouchable drag plane for drag-drop
-      eng.drag_plane = EXTROVERT.create_object( {
-         type: 'plane',
-         dims: [2000,2000,8],
-         visible: false,
-         color: 0x000000,
-         opacity: 0.25,
-         transparent: true } );
-      eng.log.msg("Building drag plane: %o", eng.drag_plane);
-      return eng.drag_plane;
    }
 
 

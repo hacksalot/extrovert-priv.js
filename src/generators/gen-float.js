@@ -62,14 +62,6 @@ An Extrovert.js generator for a floating scene.
       EXTROVERT.create_camera( opts.camera );
       EXTROVERT.fiat_lux( opts.lights );
 
-      // Create an invisible, untouchable drag plane for drag-drop
-      // TODO: remove hard-coded numbers
-      eng.drag_plane = new THREE.Mesh(
-         new THREE.PlaneBufferGeometry( 2000, 2000 ),
-         new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true } ));
-      eng.drag_plane.visible = false;
-      eng.log.msg("Building intersection plane: %o", eng.drag_plane);
-
       // Create the ground. Place it on the camera's back frustum plane so 
       // it always fills the viewport?
       if( true ) {

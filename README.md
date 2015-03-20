@@ -25,14 +25,15 @@ Extrovert.js is a JavaScript library that supports on-the-fly generation of 3D g
 Extrovert.js is in active development and we'd like to groom it to be your go-to choice for irreverent, silly, often pointless 3D visualizations of arbitrary website data. That said, here's what's on the immediate agenda:
 
 - Remove jQuery dependency.
-- Better IE and Safari support.
+- Remove three.js dependency.
+- Better IE / Safari and Linux support.
 - More generators!
 - More rasterizers!
-- Implement [bin packing](http://codeincomplete.com/posts/2011/5/7/bin_packing/).
+- More control schemes!
+- Implement [bin packing](http://codeincomplete.com/posts/2011/5/7/bin_packing/) in the engine.
 - HTML-to-SVG texture rasterization.
 - Additional physics libraries.
 - Support plugin versions of the library.
-- Remove Three.js dependency.
 - Additional samples and docs.
 
 ## License ##
