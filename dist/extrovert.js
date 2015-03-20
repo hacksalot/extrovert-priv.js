@@ -186,6 +186,10 @@ var EXTROVERT = (function (window, $, THREE) {
    
    
    
+   /**
+   Introduce the canvas to the live DOM. Note: .getBoundingClientRect will
+   return an empty (zero-size) result until this happens.
+   */
    function init_canvas() {
       $( opts.container ).replaceWith( eng.renderer.domElement );   
    }
@@ -1757,7 +1761,6 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 
 	}
    
-   document.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
    subscribe( 'contextmenu', function ( event ) { event.preventDefault(); }, options );
 	subscribe( 'mousedown', this.mousedown, options );
 	subscribe( 'mousewheel', mousewheel, options );
