@@ -97,7 +97,7 @@ var EXTROVERT = (function (window, $, THREE) {
       init_options( options );
       init_renderer();
       init_world( opts, eng );
-      init_canvas();      
+      init_canvas();
       init_physics();
       init_controls( opts, eng );
       init_events();
@@ -183,15 +183,15 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.renderer.domElement.style += ' position: relative;';
       eng.log.msg( "Renderer: %o", eng.renderer );
    }
-   
-   
-   
+
+
+
    /**
    Introduce the canvas to the live DOM. Note: .getBoundingClientRect will
    return an empty (zero-size) result until this happens.
    */
    function init_canvas() {
-      $( opts.container ).replaceWith( eng.renderer.domElement );   
+      $( opts.container ).replaceWith( eng.renderer.domElement );
    }
 
 
@@ -1279,9 +1279,9 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 	var changeEvent = { type: 'change' };
 	var startEvent = { type: 'start' };
 	var endEvent = { type: 'end' };
-   
+
 	// methods
-   
+
    function subscribe( event_name, handler, options ) {
       if( !options || !options.ignore_events || options.ignore_events.indexOf( event_name ) === -1 ) {
          _this.domElement.addEventListener( event_name, /*this[event_name]*/ handler, false );
@@ -1760,7 +1760,7 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 		_this.dispatchEvent( endEvent );
 
 	}
-   
+
    subscribe( 'contextmenu', function ( event ) { event.preventDefault(); }, options );
 	subscribe( 'mousedown', this.mousedown, options );
 	subscribe( 'mousewheel', mousewheel, options );

@@ -97,7 +97,7 @@ var EXTROVERT = (function (window, $, THREE) {
       init_options( options );
       init_renderer();
       init_world( opts, eng );
-      init_canvas();      
+      init_canvas();
       init_physics();
       init_controls( opts, eng );
       init_events();
@@ -183,15 +183,15 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.renderer.domElement.style += ' position: relative;';
       eng.log.msg( "Renderer: %o", eng.renderer );
    }
-   
-   
-   
+
+
+
    /**
    Introduce the canvas to the live DOM. Note: .getBoundingClientRect will
    return an empty (zero-size) result until this happens.
    */
    function init_canvas() {
-      $( opts.container ).replaceWith( eng.renderer.domElement );   
+      $( opts.container ).replaceWith( eng.renderer.domElement );
    }
 
 

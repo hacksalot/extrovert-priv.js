@@ -74,9 +74,9 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 	var changeEvent = { type: 'change' };
 	var startEvent = { type: 'start' };
 	var endEvent = { type: 'end' };
-   
+
 	// methods
-   
+
    function subscribe( event_name, handler, options ) {
       if( !options || !options.ignore_events || options.ignore_events.indexOf( event_name ) === -1 ) {
          _this.domElement.addEventListener( event_name, /*this[event_name]*/ handler, false );
@@ -555,7 +555,7 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 		_this.dispatchEvent( endEvent );
 
 	}
-   
+
    subscribe( 'contextmenu', function ( event ) { event.preventDefault(); }, options );
 	subscribe( 'mousedown', this.mousedown, options );
 	subscribe( 'mousewheel', mousewheel, options );
