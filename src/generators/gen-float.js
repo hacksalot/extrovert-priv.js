@@ -74,7 +74,7 @@ An Extrovert.js generator for a floating scene.
       // it always fills the viewport?
       if( true ) {
 
-         var frustum_planes = EXTROVERT.calc_frustum( eng.camera );
+         var frustum_planes = EXTROVERT.Utils.calc_frustum( eng.camera );
          var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
          var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
          var plane_tex = opts.generator.background ?

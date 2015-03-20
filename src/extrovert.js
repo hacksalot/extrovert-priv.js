@@ -20,17 +20,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
    /**
-   Initialize EXTROVERT.
-   @method init
-   */
-   my.init = function( options ) {
-      return init_priv( options );
-   };
-
-
-
-   /**
-   Default options.
+   Default engine options. Will be smushed together with generator and user options.
    */
    var defaults = {
       src: {
@@ -55,8 +45,8 @@ var EXTROVERT = (function (window, $, THREE) {
          }
       },
       block: {
-         width: 128,
-         height: 64,
+         width: 128, // Not used
+         height: 64, // Not used
          depth: 2
       },
       move_with_physics: true,
@@ -67,7 +57,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
    /**
-   Internal engine settings.
+   Internal engine settings for internal use inside the engine, internally.
    */
    var eng = {
       camera: null,
@@ -85,51 +75,48 @@ var EXTROVERT = (function (window, $, THREE) {
       drag_plane: null,
       placement_plane: null,
       offset: new THREE.Vector3(),
-      generator: null
+      generator: null,
+      clock: new THREE.Clock()
    };
 
 
 
    /**
-   The infamous zero vector, whose reputation precedes itself.
-   */
-   var ZERO_G = new THREE.Vector3(0, 0, 0);
-
-
-
-   /**
-   Combined options object.
+   The one and only ultrafied combined options object.
    */
    var opts = null;
 
 
-
+   
    /**
-   Private initialization workhorse.
-   @method init_priv
+   Initialize the Extrovert library and get some 3D up in that grill, holmes.
+   @method init
    */
-   function init_priv( options ) {
-      if( !my.detect_webgl() ) return false;
+   my.init = function( options ) {
+      if( !EXTROVERT.Utils.detect_webgl() ) return false;
       init_options( options );
       init_renderer();
       init_world( opts, eng );
+      init_controls( opts, eng );
       init_physics();
-      init_events();
+      //init_events();
       init_timer();
       start();
       return true;
-   }
+   };   
+   
 
-
-
+   
    /**
-   Initialize engine options. Merge user-specified options with default options
-   without modifying the user-specified options.
+   Initialize engine options. Not the engine, the *options*. Here's where we
+   merge user, generator, and engine options into a new combined options object 
+   and carry across other important settings.
    @method init_options
    */
    function init_options( options ) {
-
-      // Grab the generator. It has default options we need to wire in.
+      // Set up a logger
+      eng.log = EXTROVERT.Utils.log;   
+      // Instantiate the generator
       if( !options.generator )
          eng.generator = new EXTROVERT.imitate();
       else if (typeof options.generator == 'string')
@@ -137,36 +124,45 @@ var EXTROVERT = (function (window, $, THREE) {
       else {
          eng.generator = new EXTROVERT[ options.generator.name ]();
       }
-
+      // Wire in generator options
       opts = $.extend(true, { }, defaults, eng.generator.options );
       opts = $.extend(true, opts, options );
-      log.msg("Options: %o", opts);
-
+      eng.log.msg("Options: %o", opts);
+      // Carry across physics
       if( opts.physics.enabled ) {
          Physijs.scripts.worker = opts.physics.physijs.worker;
          Physijs.scripts.ammo = opts.physics.physijs.ammo;
       }
-
+      // Instantiate a rasterizer
       if( typeof opts.rasterizer == 'string' )
          eng.rasterizer = new EXTROVERT[ 'paint_' + opts.rasterizer ]();
       else
          eng.rasterizer = opts.rasterizer || new EXTROVERT.paint_img();
-
-      eng.log = log;
    }
 
 
 
    /**
-   Generate world geography.
+   Generate the "world". Defers directly to the generator.
    @method init_world
    */
    function init_world( options, eng ) {
       eng.generator.generate( options, eng );
    }
+   
+   
 
-
-
+   /**
+   Initialize keyboard and mouse controls for the scene.
+   @method init_controls
+   */
+   function init_controls( opts, eng ) {
+      eng.controls = my.create_controls( opts.controls );
+      return eng.controls;
+   }
+   
+   
+   
    /**
    Initialize the renderer.
    @method init_renderer
@@ -184,8 +180,34 @@ var EXTROVERT = (function (window, $, THREE) {
       // http://stackoverflow.com/a/3274697
       eng.renderer.domElement.setAttribute('tabindex', '0');
       eng.renderer.domElement.style += ' position: relative;';
-      log.msg( "Renderer: %o", eng.renderer );
-   }
+      eng.log.msg( "Renderer: %o", eng.renderer );
+   }   
+   
+   
+   
+   /**
+   Create a mouse/keyboard control type from a generic description.
+   @method create_controls
+   */
+   my.create_controls = function( control_opts ) {
+      var controls = null;
+      if( !control_opts || control_opts.type === 'trackball' ) {
+         controls = new THREE.TrackballControls( eng.camera );
+         controls.rotateSpeed = 1.0;
+         controls.zoomSpeed = 1.2;
+         controls.panSpeed = 0.8;
+         controls.noZoom = false;
+         controls.noPan = false;
+         controls.staticMoving = true;
+         controls.dynamicDampingFactor = 0.3;
+         controls.keys = [ 65, 83, 68 ];
+         //controls.addEventListener( 'change', render );
+      }
+      else if( control_opts.type === 'fly' ) {
+
+      }
+      return controls;
+   };
 
 
 
@@ -201,23 +223,25 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.camera = cam;
       if( copts.up ) cam.up.set( copts.up[0], copts.up[1], copts.up[2] );
       if( copts.lookat ) cam.lookAt( new THREE.Vector3( copts.lookat[0], copts.lookat[1], copts.lookat[2] ) );
+      //eng.scene.add( cam );
       cam.updateMatrix();
       cam.updateMatrixWorld();
       cam.updateProjectionMatrix();
-      log.msg( "Created camera: %o", eng.camera );
+      eng.log.msg( "Created camera: %o", eng.camera );
       return cam;
    };
 
 
 
    /**
-   Initialize the scene.
+   Initialize the Three.js or Physijs scene object along with any predefined
+   geometry specified by the client.
    @method init_scene
    */
    my.create_scene = function( scene_opts ) {
       var scene = scene_opts.physics.enabled ? new Physijs.Scene() : new THREE.Scene();
       eng.scene = scene;
-      log.msg( "Created scene: %o", scene );
+      eng.log.msg( "Created scene: %o", scene );
       create_scene_objects( scene, scene_opts );
       return scene;
    };
@@ -240,7 +264,8 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
    /**
-   Create a mesh object from a generic description.
+   Create a mesh object from a generic description. Currently only supports box
+   and plane meshes because those are all we've needed. Add others as necessary.
    @method create_object
    */
    my.create_object = function( desc ) {
@@ -267,12 +292,19 @@ var EXTROVERT = (function (window, $, THREE) {
    };
 
 
+   
+   /**
+   Helper function to abstract away whether we're dealing with a normal mesh or
+   a Physijs mesh.
+   @method create_object
+   */   
    function create_mesh( geo, mesh_type, mat, force_simple ) {
       return opts.physics.enabled && !force_simple ?
          new Physijs[ mesh_type + 'Mesh' ]( geo, mat, 0 ) : new THREE.Mesh(geo, mat);
    }
 
 
+   
    /**
    Initialize the physics system.
    @method init_physics
@@ -301,7 +333,8 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
    /**
-   Initialize the scene "timer". TODO: Improve simulation timing and structure.
+   Initialize the scene timer. TODO: Improve simulation timing and structure.
+   TODO: integrate with Three.Clock() and eng.clock.
    @method init_timer
    */
    function init_timer() {
@@ -316,14 +349,14 @@ var EXTROVERT = (function (window, $, THREE) {
    */
    function start() {
       $( opts.container ).replaceWith( eng.renderer.domElement );
-      opts.onload && opts.onload();
+      opts.onload && opts.onload(); // Fire the 'onload' event
       animate();
    }
 
 
 
    /**
-   Animate the scene.
+   Request animation of the scene.
    @method animate
    */
    function animate() {
@@ -371,6 +404,7 @@ var EXTROVERT = (function (window, $, THREE) {
          }
       }
 
+      eng.controls && eng.controls.update( eng.clock.getDelta() );
       eng.renderer.clear();
       eng.renderer.render( eng.scene, eng.camera );
    }
@@ -434,120 +468,6 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
    /**
-   Perform a color blend (darken, lighten, or gradient) on a color (string) and
-   return another string representing the color. See: http://stackoverflow.com/a/13542669
-   @method shade_blend
-   */
-   /* jshint ignore:start */
-   function shade_blend( p, c0, c1 ) {
-       var n=p<0?p*-1:p,u=Math.round,w=parseInt;
-       if(c0.length>7) {
-           var f=c0.split(","),t=(c1?c1:p<0?"rgb(0,0,0)":"rgb(255,255,255)").split(","),R=w(f[0].slice(4)),G=w(f[1]),B=w(f[2]);
-           return "rgb("+(u((w(t[0].slice(4))-R)*n)+R)+","+(u((w(t[1])-G)*n)+G)+","+(u((w(t[2])-B)*n)+B)+")";
-       }
-       else {
-           var f=w(c0.slice(1),16),t=w((c1?c1:p<0?"#000000":"#FFFFFF").slice(1),16),R1=f>>16,G1=f>>8&0x00FF,B1=f&0x0000FF;
-           return "#"+(0x1000000+(u(((t>>16)-R1)*n)+R1)*0x10000+(u(((t>>8&0x00FF)-G1)*n)+G1)*0x100+(u(((t&0x0000FF)-B1)*n)+B1)).toString(16).slice(1);
-       }
-   }
-   /* jshint ignore:end */
-
-
-
-   /**
-   Generate a texture corresponding to the passed-in element. TODO: remove use
-   of jQuery. TODO: shader. TODO: Power-of-2 textures when possible. TODO: raw
-   bitmap data instead of loading via canvas. TODO: don't need to load separate
-   textures if they only differ by text or color.
-   @method generate_texture
-   */
-   my.generate_texture = function( $val ) {
-
-      // Get the element content
-      var title_elem = $val.find( opts.src.title );
-      var title = title_elem.text().trim();
-
-      // Create a canvas element. TODO: Reuse a single canvas.
-      var canvas = document.createElement('canvas');
-      var context = canvas.getContext('2d');
-      canvas.width = $val.width();
-      canvas.height = $val.height();
-
-      //rasterizeHTML.drawHTML( $val.html(), canvas );
-      //rasterizeHTML.drawDocument( document, canvas );
-
-      if( true ) {
-         // Paint on the canvas
-         var bkColor = $val.css('background-color');
-         if(bkColor === 'rgba(0, 0, 0, 0)')
-            bkColor = 'rgb(0,0,0)';
-         context.fillStyle = bkColor;
-         context.fillRect(0, 0, canvas.width, canvas.height);
-         var images = $val.children('img');
-         if(images.length > 0)
-            context.drawImage(images.get(0),0,0, canvas.width, canvas.height);
-         var font_size = title_elem.css('font-size');
-         //context.font = "Bold 18px 'Open Sans Condensed'";
-         context.font = "Bold " + font_size + " '" + title_elem.css('font-family') + "'";
-         context.fillStyle = title_elem.css('color');
-         context.textBaseline = 'top';
-         var line_height = 24;
-         var num_lines = wrap_text( context, title, 10, 10, canvas.width - 20, line_height, true );
-         if(images.length === 0)
-            context.fillStyle = shade_blend( -0.25, bkColor );
-         else
-            context.fillStyle = "rgba(0,0,0,0.75)";
-         context.fillRect(0,0, canvas.width, 20 + num_lines * line_height);
-         context.fillStyle = title_elem.css('color');
-         wrap_text( context, title, 10, 10, canvas.width - 20, line_height, false );
-      }
-
-      // Create a texture from the canvas
-      var texture = new THREE.Texture( canvas );
-      texture.needsUpdate = true;
-      return {
-         tex: texture,
-         mat: new THREE.MeshLambertMaterial( { map: texture/*, side: THREE.DoubleSide*/ } )
-      };
-   };
-
-
-
-   /**
-   Wrap text drawing helper for canvas. See:
-   - http://stackoverflow.com/a/11361958
-   - http: //www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
-   @method wrap_text
-   */
-   function wrap_text( context, text, x, y, maxWidth, lineHeight, measureOnly ) {
-      var lines = text.split("\n");
-      var numLines = 1;
-      for (var ii = 0; ii < lines.length; ii++) {
-         var line = "";
-         var words = lines[ii].split(" ");
-         for (var n = 0; n < words.length; n++) {
-            var testLine = line + words[n] + " ";
-            var metrics = context.measureText(testLine);
-            var testWidth = metrics.width;
-            if (testWidth > maxWidth) {
-               measureOnly || context.fillText(line, x, y);
-               line = words[n] + " ";
-               y += lineHeight;
-               numLines++;
-            }
-            else {
-               line = testLine;
-            }
-         }
-         measureOnly || context.fillText(line, x, y);
-         y += lineHeight;
-      }
-      return numLines;
-   }
-
-
-
-   /**
    Calculate the position, in world coordinates, of the specified (x,y) screen
    location, at a depth specified by the plane parameter. TODO: this can be done
    without raycasting; just extend a vector out to the desired Z.
@@ -562,10 +482,10 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
    /**
-   Push a card.
-   @method push_card
+   Apply a force to an object at a specific point.
+   @method apply_force
    */
-   function push_card( thing ) {
+   function apply_force( thing ) {
       if( opts.physics.enabled ) {
          var rotation_matrix = new THREE.Matrix4().extractRotation( thing.object.matrix );
          var effect = thing.face.normal.clone().negate().multiplyScalar( 30000 ).applyMatrix4( rotation_matrix );
@@ -598,10 +518,10 @@ var EXTROVERT = (function (window, $, THREE) {
          //var plane_intersects = eng.raycaster.intersectObject( eng.drag_plane );
          eng.offset.copy( intersects[ 0 ].point ).sub( eng.selected.position );
          if( opts.physics.enabled ) {
-            eng.selected.setAngularFactor( ZERO_G );
-            eng.selected.setLinearFactor( ZERO_G );
-            eng.selected.setAngularVelocity( ZERO_G );
-            eng.selected.setLinearVelocity( ZERO_G );
+            eng.selected.setAngularFactor( EXTROVERT.Utils.VZERO );
+            eng.selected.setLinearFactor( EXTROVERT.Utils.VZERO );
+            eng.selected.setAngularVelocity( EXTROVERT.Utils.VZERO );
+            eng.selected.setLinearVelocity( EXTROVERT.Utils.VZERO );
          }
          else {
             eng.selected.temp_velocity = new THREE.Vector3().copy( eng.selected.velocity );
@@ -609,7 +529,9 @@ var EXTROVERT = (function (window, $, THREE) {
          }
       }
       else {
-         push_card( intersects[0] );
+         // TODO: if we're following standard mouse-click behavior, the "click"
+         // action should be triggered with the UP click, not the down.
+         apply_force( intersects[0] );
       }
    }
 
@@ -678,45 +600,8 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.camera.aspect = eng.width / eng.height;
       eng.camera.updateProjectionMatrix();
       eng.renderer.setSize( eng.width, eng.height );
-      log.msg("window_resize( %d, %d a=%s)", eng.width, eng.height, eng.camera.aspect.toString());
+      eng.log.msg("window_resize( %d, %d a=%s)", eng.width, eng.height, eng.camera.aspect.toString());
    }
-
-
-
-   /**
-   Determine if the browser/machine supports WebGL.
-   @method detect_webgl
-   */
-   my.detect_webgl = function( return_context ) {
-      if( !!window.WebGLRenderingContext ) {
-         var canvas = document.createElement("canvas");
-         var names = ["webgl", "experimental-webgl", "moz-webgl", "webkit-3d"];
-         var context = false;
-         for(var i=0;i<4;i++) {
-            try {
-               context = canvas.getContext(names[i]);
-               if (context && typeof context.getParameter == "function") {
-                  // WebGL is enabled
-                  if (return_context) {
-                     // return WebGL object if the function's argument is present
-                     return {name:names[i], gl:context};
-                  }
-                  // else, return just true
-                  return true;
-               }
-            }
-            catch(e) {
-
-            }
-         }
-
-         // WebGL is supported, but disabled
-         return false;
-      }
-
-      // WebGL not supported
-      return false;
-   };
 
 
 
@@ -731,63 +616,6 @@ var EXTROVERT = (function (window, $, THREE) {
       coords.z = posZ;
       return coords;
    }
-
-
-
-   /**
-   Calculate the vertices of the near and far planes. Don't use THREE.Frustum
-   here. http://stackoverflow.com/a/12022005 http://stackoverflow.com/a/23002688
-   @method calc_frustum
-   */
-   my.calc_frustum = function( camera ) {
-      // Near Plane dimensions
-      var hNear = 2 * Math.tan(camera.fov * Math.PI / 180 / 2) * camera.near; // height
-      var wNear = hNear * camera.aspect; // width
-      // Far Plane dimensions
-      var hFar = 2 * Math.tan(camera.fov * Math.PI / 180 / 2) * camera.far; // height
-      var wFar = hFar * camera.aspect; // width
-
-      var cam_near = camera.position.z - camera.near; // -camera.near
-      var cam_far  = camera.position.z - camera.far;  // -camera.far
-
-      return {
-         nearPlane: {
-            topLeft: new THREE.Vector3( -(wNear / 2), hNear / 2, cam_near ),
-            topRight: new THREE.Vector3( wNear / 2, hNear / 2, cam_near ),
-            botRight: new THREE.Vector3( wNear / 2, -(hNear / 2), cam_near ),
-            botLeft: new THREE.Vector3( -(wNear / 2), -(hNear / 2), cam_near )
-         },
-         farPlane: {
-            topLeft: new THREE.Vector3( -(wFar / 2), hFar / 2, cam_far ),
-            topRight: new THREE.Vector3( wFar / 2, hFar / 2, cam_far ),
-            botRight: new THREE.Vector3( wFar / 2, -(hFar / 2), cam_far ),
-            botLeft: new THREE.Vector3( -(wFar / 2), -(hFar / 2), cam_far )
-         }
-      };
-   };
-
-
-
-   /**
-   Message logger from http://stackoverflow.com/a/25867340.
-   @class log
-   */
-   var log = (function () {
-      return {
-         msg: function() {
-            var args = Array.prototype.slice.call(arguments);
-            console.log.apply(console, args);
-         },
-         warn: function() {
-            var args = Array.prototype.slice.call(arguments);
-            console.warn.apply(console, args);
-         },
-         error: function() {
-            var args = Array.prototype.slice.call(arguments);
-            console.error.apply(console, args);
-         }
-      };
-   })();
 
 
 

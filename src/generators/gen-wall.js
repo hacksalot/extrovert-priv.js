@@ -33,7 +33,7 @@ An Extrovert.js generator for 3D extrusion.
          ]
       },
       camera: {
-         far: 6000,
+         far: 20000,
          position: [0,0,4400],
          rotation: [-0.25,0,0]
       },
