@@ -69,7 +69,7 @@ An Extrovert.js generator for a 3D city scene.
 
 
    /**
-   Initialize scene props and objects. TODO: clean up object allocations.
+   Initialize scene props and objects.
    @method init_objects
    */
    function init_objects( opts, eng ) {

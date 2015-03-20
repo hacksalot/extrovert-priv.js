@@ -26,14 +26,25 @@ An Extrovert.js generator for 3D extrusion.
          background: 'default_background.png',
          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
       },
+      gravity: [0,-200,0],
+      scene: {
+         items: [
+            { type: 'box', pos: [0,-2000,0], dims: [4000,10,4000] }
+         ]
+      },
       camera: {
-         fov: 35,
-         near: 1,
-         far: 2000,
-         position: [0,0,800],
-         rotation: [0,0,0],
-         up: [0,0,-1]
+         far: 6000,
+         position: [0,0,4400],
+         rotation: [-0.25,0,0]
+      },
+      block: {
+         depth: 100
       }
+   };
+   
+   
+   var _init_cam_opts = {
+      position: [0,0,800]
    };
 
 
@@ -59,7 +70,7 @@ An Extrovert.js generator for 3D extrusion.
    function init_objects( opts, eng ) {
 
       EXTROVERT.create_scene( opts );
-      EXTROVERT.create_camera( opts.camera );
+      EXTROVERT.create_camera( $.extend(true, {}, opts.camera, _init_cam_opts) );
       EXTROVERT.fiat_lux( opts.lights );
 
       // Create an invisible, untouchable drag plane for drag-drop
@@ -71,34 +82,6 @@ An Extrovert.js generator for 3D extrusion.
          opacity: 0.25,
          transparent: true } );
       eng.log.msg("Building drag plane: %o", eng.drag_plane);
-
-      // Create the visible/collidable backplane. Place it on the
-      // camera's back frustum plane so it always fills the viewport.
-      if( true ) {
-
-         var frustum_planes = EXTROVERT.calc_frustum( eng.camera );
-         var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
-         var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
-
-         var plane_tex = opts.generator.background ?
-            THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
-
-         var plane2 = opts.physics.enabled ?
-            new Physijs.BoxMesh(
-               new THREE.BoxGeometry(planeWidth, planeHeight, 10),
-               new THREE.MeshLambertMaterial( { color: 0xFFFFFF, map: plane_tex } ), 0 )
-            :
-            new THREE.Mesh(
-               new THREE.BoxGeometry(planeWidth,planeHeight,10),
-               new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
-            );
-         plane2.position.z = frustum_planes.farPlane.topRight.z;
-         plane2.receiveShadow = false; // TODO: not working
-         plane2.updateMatrix();
-         plane2.updateMatrixWorld();
-         eng.scene.add( plane2 );
-         eng.log.msg("Building base plane: %o", plane2);
-      }
 
       // Create a hidden plane for object placement.
       // TODO: We don't actually need this plane. Replace with unproject at specified Z.
@@ -120,6 +103,12 @@ An Extrovert.js generator for 3D extrusion.
       eng.log.msg("Building placement plane: %o", eng.placement_plane);
 
       init_elements( opts, eng );
+      
+      // Now that objects have been placed in-frustum, we can set the camera
+      // position and rotation to whatever the client specified.
+      var oc = opts.camera;
+      oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
+      oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );      
    }
 
 
