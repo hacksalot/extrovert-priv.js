@@ -528,43 +528,42 @@ var EXTROVERT = (function (window, $, THREE) {
    */
    function mouse_down( e ) {
 
-      if( e.which !== 1 && eng.controls && eng.controls.enabled ) {
-         eng.controls.mousedown( e );
-         eng.pass_mouse_input = true;
-         return;
-      }
-
       e.preventDefault();
       var xpos = e.offsetX === undefined ? e.layerX : e.offsetX; //[1]
       var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
       eng.mouse = to_ndc( xpos, ypos, 0.5, eng.mouse );
       eng.raycaster.setFromCamera( eng.mouse, eng.camera );
       var intersects = eng.raycaster.intersectObjects( eng.card_coll );
-      if( intersects.length === 0 )
-         return;
-
-      if( e.ctrlKey ) {
-         eng.selected = intersects[ 0 ].object;
-         eng.selected.has_been_touched = true;
-         eng.drag_plane.position.copy( eng.selected.position );
-         //var plane_intersects = eng.raycaster.intersectObject( eng.drag_plane );
-         eng.offset.copy( intersects[ 0 ].point ).sub( eng.selected.position );
-         if( opts.physics.enabled ) {
-            eng.selected.setAngularFactor( EXTROVERT.Utils.VZERO );
-            eng.selected.setLinearFactor( EXTROVERT.Utils.VZERO );
-            eng.selected.setAngularVelocity( EXTROVERT.Utils.VZERO );
-            eng.selected.setLinearVelocity( EXTROVERT.Utils.VZERO );
+      if( intersects.length !== 0 ) {
+         if( e.ctrlKey ) {
+            eng.selected = intersects[ 0 ].object;
+            eng.selected.has_been_touched = true;
+            eng.drag_plane.position.copy( eng.selected.position );
+            //var plane_intersects = eng.raycaster.intersectObject( eng.drag_plane );
+            eng.offset.copy( intersects[ 0 ].point ).sub( eng.selected.position );
+            if( opts.physics.enabled ) {
+               eng.selected.setAngularFactor( EXTROVERT.Utils.VZERO );
+               eng.selected.setLinearFactor( EXTROVERT.Utils.VZERO );
+               eng.selected.setAngularVelocity( EXTROVERT.Utils.VZERO );
+               eng.selected.setLinearVelocity( EXTROVERT.Utils.VZERO );
+            }
+            else {
+               eng.selected.temp_velocity = new THREE.Vector3().copy( eng.selected.velocity );
+               eng.selected.velocity.set(0,0,0);
+            }
          }
          else {
-            eng.selected.temp_velocity = new THREE.Vector3().copy( eng.selected.velocity );
-            eng.selected.velocity.set(0,0,0);
+            // TODO: if we're following standard mouse-click behavior, the "click"
+            // action should be triggered with the UP click, not the down.
+            apply_force( intersects[0] );
          }
       }
-      else {
-         // TODO: if we're following standard mouse-click behavior, the "click"
-         // action should be triggered with the UP click, not the down.
-         apply_force( intersects[0] );
-      }
+
+      if( /*e.which !== 1 &&*/ eng.controls && eng.controls.enabled ) {
+         eng.controls.mousedown( e );
+         eng.pass_mouse_input = true;
+         //return;
+      }      
    }
 
 
@@ -605,7 +604,7 @@ var EXTROVERT = (function (window, $, THREE) {
    @method mouse_up
    */
    function mouse_up( e ) {
-      if( e.which !== 1 && eng.controls && eng.controls.enabled ) {
+      if( /*e.which !== 1 &&*/eng.pass_mouse_input && eng.controls && eng.controls.enabled ) {
          eng.controls.mouseup( e );
          eng.pass_mouse_input = false;
          return;
