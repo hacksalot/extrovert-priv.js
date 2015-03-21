@@ -50,6 +50,7 @@ var EXTROVERT = (function (window, $, THREE) {
          depth: 2
       },
       move_with_physics: true,
+      click_force: 30000,
       onload: null,
       onerror: null
    };
@@ -287,6 +288,18 @@ var EXTROVERT = (function (window, $, THREE) {
    }
 
 
+   function roundedRect( ctx, x, y, width, height, radius ){
+      ctx.moveTo( x, y + radius );
+      ctx.lineTo( x, y + height - radius );
+      ctx.quadraticCurveTo( x, y + height, x + radius, y + height );
+      ctx.lineTo( x + width - radius, y + height) ;
+      ctx.quadraticCurveTo( x + width, y + height, x + width, y + height - radius );
+      ctx.lineTo( x + width, y + radius );
+      ctx.quadraticCurveTo( x + width, y, x + width - radius, y );
+      ctx.lineTo( x + radius, y );
+      ctx.quadraticCurveTo( x, y, x, y + radius );
+   }    
+   
 
    /**
    Create a mesh object from a generic description. Currently only supports box
@@ -300,13 +313,24 @@ var EXTROVERT = (function (window, $, THREE) {
       var trans = desc.transparent || true;
       if( desc.type === 'box' ) {
          geo = new THREE.BoxGeometry( desc.dims[0], desc.dims[1], desc.dims[2] );
-         mat = new THREE.MeshLambertMaterial( { color: rgb, opacity: opac, transparent: trans } );
-         mesh = create_mesh(geo, 'Box', mat);
+         mat = desc.mat || new THREE.MeshLambertMaterial( { color: rgb, opacity: opac, transparent: trans } );
+         mesh = create_mesh(geo, 'Box', mat, false, desc.mass);
       }
       else if( desc.type === 'plane' ) {
          geo = new THREE.PlaneBufferGeometry( desc.dims[0], desc.dims[1] );
-         mat = new THREE.MeshBasicMaterial( { color: rgb, opacity: opac, transparent: trans } );
-         mesh = create_mesh( geo, null, mat, true );
+         mat = desc.mat || new THREE.MeshBasicMaterial( { color: rgb, opacity: opac, transparent: trans } );
+         mesh = create_mesh( geo, null, mat, true, desc.mass );
+      }
+      else if( desc.type == 'roundedrect' ) {
+         // Rounded rectangle
+         var roundedRectShape = new THREE.Shape();
+         roundedRect( roundedRectShape, 0, 0, desc.dims[0], desc.dims[1], desc.radius || 20 );
+         var roundedRect3d = roundedRectShape.extrude( { amount: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1, material:0, extrudeMaterial : 1 } );
+         //var roundedRectPoints = roundedRectShape.createPointsGeometry();
+         //var roundedRectSpacedPoints = roundedRectShape.createSpacedPointsGeometry();
+         var real_mat = desc.mat ? desc.mat : new THREE.MeshLambertMaterial( { color: rgb, opacity: opac, transparent: trans } );
+         mat = new THREE.MeshFaceMaterial([real_mat, real_mat]);
+         mesh = create_mesh( /*roundedRectSpacedPoints*/ roundedRect3d, 'Convex', mat, true, desc.mass );
       }
       if( desc.pos )
          mesh.position.set( desc.pos[0], desc.pos[1], desc.pos[2] );
@@ -321,11 +345,11 @@ var EXTROVERT = (function (window, $, THREE) {
    /**
    Helper function to abstract away whether we're dealing with a normal mesh or
    a Physijs mesh.
-   @method create_object
+   @method create_mesh
    */
-   function create_mesh( geo, mesh_type, mat, force_simple ) {
+   function create_mesh( geo, mesh_type, mat, force_simple, mass ) {
       return opts.physics.enabled && !force_simple ?
-         new Physijs[ mesh_type + 'Mesh' ]( geo, mat, 0 ) : new THREE.Mesh(geo, mat);
+         new Physijs[ mesh_type + 'Mesh' ]( geo, mat, mass || 0 ) : new THREE.Mesh(geo, mat);
    }
 
 
@@ -517,7 +541,7 @@ var EXTROVERT = (function (window, $, THREE) {
    function apply_force( thing ) {
       if( opts.physics.enabled ) {
          var rotation_matrix = new THREE.Matrix4().extractRotation( thing.object.matrix );
-         var effect = thing.face.normal.clone().negate().multiplyScalar( 30000 ).applyMatrix4( rotation_matrix );
+         var effect = thing.face.normal.clone().negate().multiplyScalar( opts.click_force ).applyMatrix4( rotation_matrix );
          var force_offset = thing.point.clone().sub( thing.object.position );
          thing.object.applyImpulse( effect, force_offset );
       }

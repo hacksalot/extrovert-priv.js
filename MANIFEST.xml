@@ -1,0 +1,35 @@
+<NotepadPlus>
+    <Project name="extrovert">
+        <Folder name="src">
+            <Folder name="controls">
+                <File name="src\controls\first-person-controls.js" />
+                <File name="src\controls\fly-controls.js" />
+                <File name="src\controls\trackball-controls.js" />
+            </Folder>
+            <Folder name="generators">
+                <File name="src\generators\gen-city.js" />
+                <File name="src\generators\gen-extrude.js" />
+                <File name="src\generators\gen-float.js" />
+                <File name="src\generators\gen-gallery.js" />
+                <File name="src\generators\gen-sample.js" />
+                <File name="src\generators\gen-wall.js" />
+            </Folder>
+            <Folder name="painters">
+                <File name="src\painters\paint-html.js" />
+                <File name="src\painters\paint-img-canvas.js" />
+                <File name="src\painters\paint-img.js" />
+                <File name="src\painters\paint-simple-html.js" />
+            </Folder>
+            <File name="src\extrovert-utils.js" />
+            <File name="src\extrovert.js" />
+        </Folder>
+        <File name=".gitattributes" />
+        <File name=".gitignore" />
+        <File name="bower.json" />
+        <File name="Gruntfile.js" />
+        <File name="LICENSE.md" />
+        <File name="MANIFEST.xml" />
+        <File name="package.json" />
+        <File name="README.md" />
+    </Project>
+</NotepadPlus>

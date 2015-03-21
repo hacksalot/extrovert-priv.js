@@ -23,7 +23,6 @@ An Extrovert.js generator for a 3D image gallery.
    var _def_opts = {
       generator: {
          name: 'gallery',
-         background: 'default_background.png',
          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
       },
       camera: {
@@ -144,6 +143,7 @@ An Extrovert.js generator for a 3D image gallery.
       ]);
 
       // Mesh
+      //var mesh = EXTROVERT.create_object({ type: 'box', dims: [pos_info.width, pos_info.height, pos_info.depth], mass: 1000, mat: materials });
       var cube_geo = new THREE.BoxGeometry( pos_info.width, pos_info.height, pos_info.depth );
       var mesh = opts.physics.enabled ?
          new Physijs.BoxMesh( cube_geo, materials, 1000 ) :
