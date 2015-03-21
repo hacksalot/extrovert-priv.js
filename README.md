@@ -4,7 +4,7 @@
 
 >Because websites, blogs, RSS feed, and image galleries be all like, yo, where my 3D at?
 
-Extrovert.js is a JavaScript library that supports on-the-fly generation of 3D geometry from HTML pages or other arbitrary markup (RSS, JSON, etc.).
+Extrovert.js is a JavaScript library that supports on-the-fly generation of 3D geometry from HTML pages or other arbitrary markup (RSS, JSON, xkcd comics, etc.).
 
 ## Usage ##
 
@@ -20,12 +20,16 @@ Extrovert.js is a JavaScript library that supports on-the-fly generation of 3D g
 
         EXTROVERT.init();
 
+4. Okay, that's a slight simplification. A more realistic call to `init` might look like this:
+
+
+
 ## Development Roadmap ##
 
-Extrovert.js is in active development and we'd like to groom it to be your go-to choice for irreverent, silly, often pointless 3D visualizations of arbitrary website data. That said, here's what's on the immediate agenda:
+Extrovert.js is in active development and being groomed for production use. Here's what's happening in the immediate future:
 
-- Remove jQuery dependency.
-- Remove three.js dependency.
+- Remove hard jQuery dependency.
+- Remove hard Three.js dependency.
 - Better IE / Safari and Linux support.
 - More generators!
 - More rasterizers!

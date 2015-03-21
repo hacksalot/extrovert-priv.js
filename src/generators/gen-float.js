@@ -30,9 +30,12 @@ An Extrovert.js generator for a floating scene.
       },
       generator: {
          name: 'float',
-         background: 'default_background.png',
          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
-      }
+      },
+      lights: [
+         { type: 'point', color: 0xffffff, intensity: 1, distance: 10000 },
+         { type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,300,0] },
+      ]      
    };
 
 

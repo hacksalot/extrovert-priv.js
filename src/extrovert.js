@@ -119,7 +119,7 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.log = EXTROVERT.Utils.log;
       // Instantiate the generator
       if( !options.generator )
-         eng.generator = new EXTROVERT.imitate();
+         eng.generator = new EXTROVERT.float();
       else if (typeof options.generator == 'string')
          eng.generator = new EXTROVERT[ options.generator ]();
       else {
@@ -447,6 +447,9 @@ var EXTROVERT = (function (window, $, THREE) {
       var lights = [];
       var new_light = null;
 
+      if( !light_opts || light_opts.length === 0 )
+         return;
+      
       $.each( light_opts, function(idx, val) {
 
          if( val.type === 'ambient' ) {

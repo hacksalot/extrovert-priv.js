@@ -119,7 +119,7 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.log = EXTROVERT.Utils.log;
       // Instantiate the generator
       if( !options.generator )
-         eng.generator = new EXTROVERT.imitate();
+         eng.generator = new EXTROVERT.float();
       else if (typeof options.generator == 'string')
          eng.generator = new EXTROVERT[ options.generator ]();
       else {
@@ -447,6 +447,9 @@ var EXTROVERT = (function (window, $, THREE) {
       var lights = [];
       var new_light = null;
 
+      if( !light_opts || light_opts.length === 0 )
+         return;
+      
       $.each( light_opts, function(idx, val) {
 
          if( val.type === 'ambient' ) {
@@ -539,7 +542,6 @@ var EXTROVERT = (function (window, $, THREE) {
             eng.selected = intersects[ 0 ].object;
             eng.selected.has_been_touched = true;
             eng.drag_plane.position.copy( eng.selected.position );
-            //var plane_intersects = eng.raycaster.intersectObject( eng.drag_plane );
             eng.offset.copy( intersects[ 0 ].point ).sub( eng.selected.position );
             if( opts.physics.enabled ) {
                eng.selected.setAngularFactor( EXTROVERT.Utils.VZERO );
@@ -548,7 +550,7 @@ var EXTROVERT = (function (window, $, THREE) {
                eng.selected.setLinearVelocity( EXTROVERT.Utils.VZERO );
             }
             else {
-               eng.selected.temp_velocity = new THREE.Vector3().copy( eng.selected.velocity );
+               eng.selected.temp_velocity = eng.selected.velocity.clone();
                eng.selected.velocity.set(0,0,0);
             }
          }
@@ -1821,7 +1823,7 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 
 	}
 
-   subscribe( 'contextmenu', function ( event ) { event.preventDefault(); }, options );
+   //subscribe( 'contextmenu', function ( event ) { event.preventDefault(); }, options );
 	subscribe( 'mousedown', this.mousedown, options );
 	subscribe( 'mousewheel', mousewheel, options );
 	subscribe( 'DOMMouseScroll', mousewheel, options ); // firefox
@@ -2474,9 +2476,12 @@ An Extrovert.js generator for a floating scene.
       },
       generator: {
          name: 'float',
-         background: 'default_background.png',
          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
-      }
+      },
+      lights: [
+         { type: 'point', color: 0xffffff, intensity: 1, distance: 10000 },
+         { type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,300,0] },
+      ]      
    };
 
 
@@ -2699,12 +2704,20 @@ An Extrovert.js generator for a 3D image gallery.
       camera: {
          fov: 35,
          near: 1,
-         far: 2000,
-         position: [0,0,800],
-         rotation: [0,0,0],
-         //up: [0,0,-1]
-      }      
+         far: 10000,
+         position: [0,0,3200]
+      },
+      lights: [
+         { type: 'point', color: 0xffffff, intensity: 1, distance: 10000 },
+         { type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,0,300] },
+      ]      
    };
+   
+   
+   
+   var _init_cam_opts = {
+      position: [0,0,800]
+   };   
 
 
    /**
@@ -2729,7 +2742,7 @@ An Extrovert.js generator for a 3D image gallery.
    function init_objects( opts, eng ) {
 
       EXTROVERT.create_scene( opts );
-      EXTROVERT.create_camera( opts.camera );
+      EXTROVERT.create_camera( $.extend(true, {}, opts.camera, _init_cam_opts) );
       EXTROVERT.fiat_lux( opts.lights );
 
       // Create the visible/collidable backplane. Place it on the 
@@ -2763,6 +2776,12 @@ An Extrovert.js generator for a 3D image gallery.
       EXTROVERT.create_placement_plane( [0,0,200] );
 
       init_elements( opts, eng );
+      
+      // Now that objects have been placed in-frustum, we can set the camera
+      // position and rotation to whatever the client specified.
+      var oc = opts.camera;
+      oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
+      oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );      
    }
 
 

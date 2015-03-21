@@ -545,7 +545,7 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 
 	}
 
-   subscribe( 'contextmenu', function ( event ) { event.preventDefault(); }, options );
+   //subscribe( 'contextmenu', function ( event ) { event.preventDefault(); }, options );
 	subscribe( 'mousedown', this.mousedown, options );
 	subscribe( 'mousewheel', mousewheel, options );
 	subscribe( 'DOMMouseScroll', mousewheel, options ); // firefox
