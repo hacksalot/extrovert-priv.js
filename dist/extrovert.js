@@ -530,6 +530,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
       if( e.which !== 1 && eng.controls && eng.controls.enabled ) {
          eng.controls.mousedown( e );
+         eng.pass_mouse_input = true;
          return;
       }
 
@@ -573,7 +574,7 @@ var EXTROVERT = (function (window, $, THREE) {
    @method mouse_move
    */
    function mouse_move( e ) {
-      if( e.which !== 1 && eng.controls && eng.controls.enabled ) {
+      if( eng.pass_mouse_input && eng.controls && eng.controls.enabled ) {
          eng.controls.mousemove( e );
          return;
       }
@@ -606,6 +607,7 @@ var EXTROVERT = (function (window, $, THREE) {
    function mouse_up( e ) {
       if( e.which !== 1 && eng.controls && eng.controls.enabled ) {
          eng.controls.mouseup( e );
+         eng.pass_mouse_input = false;
          return;
       }
       e.preventDefault();
@@ -1278,6 +1280,7 @@ THREE.FlyControls = function ( object, domElement ) {
  * @author Mark Lundin 	/ http://mark-lundin.com
  * @author Simone Manini / http://daron1337.github.io
  * @author Luca Antiga 	/ http://lantiga.github.io
+ * @author James Devlin / http://indevious.com
  */
 
 THREE.TrackballControls = function ( object, domElement, options ) {
@@ -1289,56 +1292,41 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
 
 	// API
-
 	this.enabled = true;
-
 	this.screen = { left: 0, top: 0, width: 0, height: 0 };
-
 	this.rotateSpeed = 1.0;
 	this.zoomSpeed = 1.2;
 	this.panSpeed = 0.3;
-
 	this.noRotate = false;
 	this.noZoom = false;
 	this.noPan = false;
-
 	this.staticMoving = false;
 	this.dynamicDampingFactor = 0.2;
-
 	this.minDistance = 0;
 	this.maxDistance = Infinity;
-
 	this.keys = [ 65 /*A*/, 83 /*S*/, 68 /*D*/ ];
 
 	// internals
-
 	this.target = new THREE.Vector3();
    if( options.target )
       this.target.set( options.target[0], options.target[1], options.target[2] );
-
+      
+   /* these used to be globals */
 	var EPS = 0.000001;
-
 	var lastPosition = new THREE.Vector3();
-
-	var _state = STATE.NONE,
-	_prevState = STATE.NONE,
-
-	_eye = new THREE.Vector3(),
-
-	_movePrev = new THREE.Vector2(),
-	_moveCurr = new THREE.Vector2(),
-
-	_lastAxis = new THREE.Vector3(),
-	_lastAngle = 0,
-
-	_zoomStart = new THREE.Vector2(),
-	_zoomEnd = new THREE.Vector2(),
-
-	_touchZoomDistanceStart = 0,
-	_touchZoomDistanceEnd = 0,
-
-	_panStart = new THREE.Vector2(),
-	_panEnd = new THREE.Vector2();
+	var _state = STATE.NONE;
+	var _prevState = STATE.NONE;
+	var _eye = new THREE.Vector3();
+	var _movePrev = new THREE.Vector2();
+	var _moveCurr = new THREE.Vector2();
+	var _lastAxis = new THREE.Vector3();
+	var _lastAngle = 0;
+	var _zoomStart = new THREE.Vector2();
+	var _zoomEnd = new THREE.Vector2();
+	var _touchZoomDistanceStart = 0;
+	var _touchZoomDistanceEnd = 0;
+	var _panStart = new THREE.Vector2();
+	var _panEnd = new THREE.Vector2();
 
 	// for reset
 
@@ -1620,11 +1608,11 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 
 		_prevState = _state;
 
-		if ( _state !== STATE.NONE ) {
+		/* if ( _state !== STATE.NONE ) {
 
-			return;
+			// return;
 
-		} else if ( event.keyCode === _this.keys[ STATE.ROTATE ] && !_this.noRotate ) {
+		// } else*/ if ( event.keyCode === _this.keys[ STATE.ROTATE ] && !_this.noRotate ) {
 
 			_state = STATE.ROTATE;
 
@@ -1644,7 +1632,7 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 
 		if ( _this.enabled === false ) return;
 
-		_state = _prevState;
+		//_state = _prevState;
 
 		window.addEventListener( 'keydown', keydown, false );
 
@@ -1659,6 +1647,7 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 		event.stopPropagation();
 
 		if ( _state === STATE.NONE ) {
+         // This should never happen
 			//_state = event.button;
          _state = STATE.PAN;
 		}
@@ -1711,7 +1700,7 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 		event.preventDefault();
 		event.stopPropagation();
 
-		_state = STATE.NONE;
+		//_state = STATE.NONE;
 
 		_this.dispatchEvent( endEvent );
 

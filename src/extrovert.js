@@ -530,6 +530,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
       if( e.which !== 1 && eng.controls && eng.controls.enabled ) {
          eng.controls.mousedown( e );
+         eng.pass_mouse_input = true;
          return;
       }
 
@@ -573,7 +574,7 @@ var EXTROVERT = (function (window, $, THREE) {
    @method mouse_move
    */
    function mouse_move( e ) {
-      if( e.which !== 1 && eng.controls && eng.controls.enabled ) {
+      if( eng.pass_mouse_input && eng.controls && eng.controls.enabled ) {
          eng.controls.mousemove( e );
          return;
       }
@@ -606,6 +607,7 @@ var EXTROVERT = (function (window, $, THREE) {
    function mouse_up( e ) {
       if( e.which !== 1 && eng.controls && eng.controls.enabled ) {
          eng.controls.mouseup( e );
+         eng.pass_mouse_input = false;
          return;
       }
       e.preventDefault();
