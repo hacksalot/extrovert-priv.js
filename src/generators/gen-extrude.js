@@ -23,16 +23,13 @@ An Extrovert.js generator for 3D extrusion.
    var _def_opts = {
       generator: {
          name: 'extrude',
-         background: 'default_background.png',
          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
       },
       camera: {
          fov: 35,
          near: 1,
          far: 2000,
-         position: [0,0,800],
-         rotation: [0,0,0],
-         up: [0,0,-1]
+         position: [0,0,800]
       }
    };
 
@@ -61,37 +58,7 @@ An Extrovert.js generator for 3D extrusion.
       EXTROVERT.create_scene( opts );
       EXTROVERT.create_camera( opts.camera );
       EXTROVERT.fiat_lux( opts.lights );
-
-      // Create the visible/collidable backplane. Place it on the
-      // camera's back frustum plane so it always fills the viewport.
-      if( true ) {
-
-         var frustum_planes = EXTROVERT.Utils.calc_frustum( eng.camera );
-         var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
-         var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
-
-         var plane_tex = opts.generator.background ?
-            THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
-
-         var plane2 = opts.physics.enabled ?
-            new Physijs.BoxMesh(
-               new THREE.BoxGeometry(planeWidth, planeHeight, 10),
-               new THREE.MeshLambertMaterial( { color: 0xFFFFFF, map: plane_tex } ), 0 )
-            :
-            new THREE.Mesh(
-               new THREE.BoxGeometry(planeWidth,planeHeight,10),
-               new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
-            );
-         plane2.position.z = frustum_planes.farPlane.topRight.z;
-         plane2.receiveShadow = false; // TODO: not working
-         plane2.updateMatrix();
-         plane2.updateMatrixWorld();
-         eng.scene.add( plane2 );
-         eng.log.msg("Building base plane: %o", plane2);
-      }
-
       EXTROVERT.create_placement_plane( [0,0,200] );
-
       init_elements( opts, eng );
    }
 

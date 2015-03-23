@@ -25,11 +25,11 @@ var EXTROVERT = (function (window, $, THREE) {
    var defaults = {
       src: {
          selector: 'div',
-         title: 'h2'
+         title: 'h2',
+         container: '#container'
       },
       generator: 'gallery',
       rasterizer: 'img',
-      container: '#container',
       gravity: [0,0,0],
       camera: {
          fov: 35,
@@ -181,7 +181,7 @@ var EXTROVERT = (function (window, $, THREE) {
    @method init_renderer
    */
    function init_renderer() {
-      var cont = $( opts.container );
+      var cont = $( opts.src.container );
       var rect = cont[0].getBoundingClientRect();
       eng.width = rect.right - rect.left;
       eng.height = rect.bottom - rect.top;
@@ -203,7 +203,7 @@ var EXTROVERT = (function (window, $, THREE) {
    return an empty (zero-size) result until this happens.
    */
    function init_canvas() {
-      $( opts.container ).replaceWith( eng.renderer.domElement );
+      $( opts.target.container ).append( eng.renderer.domElement );
    }
 
 
@@ -398,7 +398,8 @@ var EXTROVERT = (function (window, $, THREE) {
    */
    function start() {
       // Okay so things that rely on getBoundingClientRect wont work til this has happened
-      $( opts.container ).replaceWith( eng.renderer.domElement );
+      //...but we're doing this in init_canvas
+      //$( opts.target.container ).replaceWith( eng.renderer.domElement );
       opts.onload && opts.onload(); // Fire the 'onload' event
       animate();
    }
@@ -663,7 +664,7 @@ var EXTROVERT = (function (window, $, THREE) {
    my.get_position = function( val, opts, eng ) {
 
       // Get the position of the HTML element [1]
-      var parent_pos = $( opts.container ).offset();
+      var parent_pos = $( opts.src.container ).offset();
       var child_pos = $( val ).offset();
       var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 

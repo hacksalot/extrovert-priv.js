@@ -25,11 +25,11 @@ var EXTROVERT = (function (window, $, THREE) {
    var defaults = {
       src: {
          selector: 'div',
-         title: 'h2'
+         title: 'h2',
+         container: '#container'
       },
       generator: 'gallery',
       rasterizer: 'img',
-      container: '#container',
       gravity: [0,0,0],
       camera: {
          fov: 35,
@@ -181,7 +181,7 @@ var EXTROVERT = (function (window, $, THREE) {
    @method init_renderer
    */
    function init_renderer() {
-      var cont = $( opts.container );
+      var cont = $( opts.src.container );
       var rect = cont[0].getBoundingClientRect();
       eng.width = rect.right - rect.left;
       eng.height = rect.bottom - rect.top;
@@ -203,7 +203,7 @@ var EXTROVERT = (function (window, $, THREE) {
    return an empty (zero-size) result until this happens.
    */
    function init_canvas() {
-      $( opts.container ).replaceWith( eng.renderer.domElement );
+      $( opts.target.container ).append( eng.renderer.domElement );
    }
 
 
@@ -398,7 +398,8 @@ var EXTROVERT = (function (window, $, THREE) {
    */
    function start() {
       // Okay so things that rely on getBoundingClientRect wont work til this has happened
-      $( opts.container ).replaceWith( eng.renderer.domElement );
+      //...but we're doing this in init_canvas
+      //$( opts.target.container ).replaceWith( eng.renderer.domElement );
       opts.onload && opts.onload(); // Fire the 'onload' event
       animate();
    }
@@ -663,7 +664,7 @@ var EXTROVERT = (function (window, $, THREE) {
    my.get_position = function( val, opts, eng ) {
 
       // Get the position of the HTML element [1]
-      var parent_pos = $( opts.container ).offset();
+      var parent_pos = $( opts.src.container ).offset();
       var child_pos = $( val ).offset();
       var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
@@ -1918,31 +1919,78 @@ EXTROVERT.Utils = (function (window, $, THREE) {
    - http: //www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
    @method wrap_text
    */
+   // my.wrap_text = function( context, text, x, y, maxWidth, lineHeight, measureOnly ) {
+      // var lines = text.split("\n");
+      // var numLines = 1;
+      // for (var ii = 0; ii < lines.length; ii++) {
+         // var line = "";
+         // var words = lines[ii].split(" ");
+         // for (var n = 0; n < words.length; n++) {
+            // var testLine = line + words[n]//; + " ";
+            // var metrics = context.measureText(testLine);
+            // var testWidth = metrics.width;
+            // if (testWidth > maxWidth) {
+               // measureOnly || context.fillText(line, x, y);
+               // line = words[n] + " ";
+               // y += lineHeight;
+               // numLines++;
+            // }
+            // else {
+               // line = testLine;
+            // }
+         // }
+         // measureOnly || context.fillText(line, x, y);
+         // y += lineHeight;
+      // }
+      // return numLines;
+   // };
+   
+   
+   /**
+   Wrap text drawing helper for canvas. See:
+   - http://stackoverflow.com/a/11361958
+   - http: //www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
+   @method wrap_text
+   */
    my.wrap_text = function( context, text, x, y, maxWidth, lineHeight, measureOnly ) {
-      var lines = text.split("\n");
+   
       var numLines = 1;
-      for (var ii = 0; ii < lines.length; ii++) {
-         var line = "";
-         var words = lines[ii].split(" ");
-         for (var n = 0; n < words.length; n++) {
-            var testLine = line + words[n] + " ";
-            var metrics = context.measureText(testLine);
-            var testWidth = metrics.width;
-            if (testWidth > maxWidth) {
-               measureOnly || context.fillText(line, x, y);
-               line = words[n] + " ";
-               y += lineHeight;
-               numLines++;
+      var start_of_line = true;
+      var lines = text.split('\n');
+      var line_partial = '';
+      var try_line = '';
+      
+      for (var line_no = 0; line_no < lines.length; line_no++) {
+         var words = lines[ line_no ].split(' ');
+         start_of_line = true;
+         line_partial = '';
+         for( var w = 0; w < words.length; w++ ) {
+            try_line = line_partial + (start_of_line ? "" : " ") + words[ w ];
+            var metrics = context.measureText( try_line );
+            if( metrics.width <= maxWidth ) {
+               start_of_line = false;
+               line_partial = try_line;
             }
             else {
-               line = testLine;
+               measureOnly || context.fillText( line_partial, x, y);
+               start_of_line = true;               
+               y += lineHeight;
+               numLines++;
+               line_partial = words[w]; // Drop the space
+               metrics = context.measureText( line_partial );
+               if( metrics.width <= maxWidth ) {
+                  start_of_line = false;
+               }
+               else {
+                  // A single word that is wider than our max allowed width; need to break at the letter
+               }
             }
          }
-         measureOnly || context.fillText(line, x, y);
+         measureOnly || context.fillText( line_partial, x, y );
          y += lineHeight;
       }
       return numLines;
-   };
+   };   
 
 
 
@@ -2327,16 +2375,13 @@ An Extrovert.js generator for 3D extrusion.
    var _def_opts = {
       generator: {
          name: 'extrude',
-         background: 'default_background.png',
          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
       },
       camera: {
          fov: 35,
          near: 1,
          far: 2000,
-         position: [0,0,800],
-         rotation: [0,0,0],
-         up: [0,0,-1]
+         position: [0,0,800]
       }
    };
 
@@ -2365,37 +2410,7 @@ An Extrovert.js generator for 3D extrusion.
       EXTROVERT.create_scene( opts );
       EXTROVERT.create_camera( opts.camera );
       EXTROVERT.fiat_lux( opts.lights );
-
-      // Create the visible/collidable backplane. Place it on the
-      // camera's back frustum plane so it always fills the viewport.
-      if( true ) {
-
-         var frustum_planes = EXTROVERT.Utils.calc_frustum( eng.camera );
-         var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
-         var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
-
-         var plane_tex = opts.generator.background ?
-            THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
-
-         var plane2 = opts.physics.enabled ?
-            new Physijs.BoxMesh(
-               new THREE.BoxGeometry(planeWidth, planeHeight, 10),
-               new THREE.MeshLambertMaterial( { color: 0xFFFFFF, map: plane_tex } ), 0 )
-            :
-            new THREE.Mesh(
-               new THREE.BoxGeometry(planeWidth,planeHeight,10),
-               new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
-            );
-         plane2.position.z = frustum_planes.farPlane.topRight.z;
-         plane2.receiveShadow = false; // TODO: not working
-         plane2.updateMatrix();
-         plane2.updateMatrixWorld();
-         eng.scene.add( plane2 );
-         eng.log.msg("Building base plane: %o", plane2);
-      }
-
       EXTROVERT.create_placement_plane( [0,0,200] );
-
       init_elements( opts, eng );
    }
 
@@ -3176,6 +3191,94 @@ A simple Extrovert image rasterizer.
             return {
                tex: texture,
                mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
+            };
+         }
+      };
+   };
+
+
+
+}(window, $, THREE, EXTROVERT));
+;/**
+A simple Extrovert HTML rasterizer.
+@module paint-plain-text.js
+@copyright Copyright (c) 2015 by James M. Devlin
+@author James M. Devlin | james@indevious.com
+@license MIT
+@version 1.0
+*/
+
+(function (window, $, THREE, EXTROVERT) {
+
+
+
+   EXTROVERT.paint_plain_text = function () {
+      return {
+         paint: function( $val, opts ) {
+
+            // Get the element content
+            var title_elem = $val.find( opts.src.title );
+            var title = title_elem.text();//.trim();
+            var content_elem = $val.find( opts.src.content );
+            var content = content_elem.text();//.trim();
+
+            // Create a canvas element. TODO: Reuse a single canvas.
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            canvas.width = $val.width();
+            canvas.height = $val.height();
+
+            // Fill the canvas with the background color
+            var bkColor = $val.css('background-color');
+            if(bkColor === 'rgba(0, 0, 0, 0)')
+               bkColor = 'rgb(0,0,0)';
+            context.fillStyle = bkColor;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            // For photo backgrounds:
+            // var images = $val.children('img');
+            // if(images.length > 0)
+            // context.drawImage(images.get(0),0,0, canvas.width, canvas.height);
+            var has_photo = false;
+
+            // Compute the size of the title text
+            var font_size = title_elem.css('font-size');
+            //context.font = "Bold " + font_size + " '" + title_elem.css('font-family') + "'";
+            
+            context.font = title_elem.css('font');
+            
+            context.fillStyle = title_elem.css('color');
+            //context.textBaseline = 'top';
+            var line_height = 24;
+            var num_lines = EXTROVERT.Utils.wrap_text( context, title, 10, 10 + line_height, canvas.width - 20, line_height, true );
+            
+            // Paint the title's background panel
+            context.fillStyle = has_photo ? "rgba(0,0,0,0.75)" : EXTROVERT.Utils.shade_blend( -0.25, bkColor );
+            context.fillRect(0,0, canvas.width, 20 + num_lines * line_height);
+
+            // Paint the title text
+            context.fillStyle = title_elem.css('color');
+            EXTROVERT.Utils.wrap_text( context, title, 10, 10 + line_height, canvas.width - 20, line_height, false );
+            
+            // Paint the content text
+            //context.font = "Normal " + font_size + " '" + content_elem.css('font-family') + "'";
+            context.font = content_elem.css('font');
+            
+            var shim = $('<div id="_fetchSize" style="display: none;">Sample text</div>');
+            $( opts.src.container ).append( shim );
+            line_height = shim.text("x").height();
+            
+            //var TestDivLineHeight = $("#TestDiv").css("font-size", "12px").css("line-height", "1.25").text("x").height();
+            var massaged_content = content.replace('\n',' ');
+            
+            EXTROVERT.Utils.wrap_text( context, massaged_content, 10, 20 + (num_lines * line_height) + line_height, canvas.width - 20, line_height, false );
+
+            // Create a texture from the canvas
+            var texture = new THREE.Texture( canvas );
+            texture.needsUpdate = true;
+            return {
+               tex: texture,
+               mat: new THREE.MeshLambertMaterial( { map: texture/*, side: THREE.DoubleSide*/ } )
             };
          }
       };

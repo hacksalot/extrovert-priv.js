@@ -52,31 +52,78 @@ EXTROVERT.Utils = (function (window, $, THREE) {
    - http: //www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
    @method wrap_text
    */
+   // my.wrap_text = function( context, text, x, y, maxWidth, lineHeight, measureOnly ) {
+      // var lines = text.split("\n");
+      // var numLines = 1;
+      // for (var ii = 0; ii < lines.length; ii++) {
+         // var line = "";
+         // var words = lines[ii].split(" ");
+         // for (var n = 0; n < words.length; n++) {
+            // var testLine = line + words[n]//; + " ";
+            // var metrics = context.measureText(testLine);
+            // var testWidth = metrics.width;
+            // if (testWidth > maxWidth) {
+               // measureOnly || context.fillText(line, x, y);
+               // line = words[n] + " ";
+               // y += lineHeight;
+               // numLines++;
+            // }
+            // else {
+               // line = testLine;
+            // }
+         // }
+         // measureOnly || context.fillText(line, x, y);
+         // y += lineHeight;
+      // }
+      // return numLines;
+   // };
+   
+   
+   /**
+   Wrap text drawing helper for canvas. See:
+   - http://stackoverflow.com/a/11361958
+   - http: //www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
+   @method wrap_text
+   */
    my.wrap_text = function( context, text, x, y, maxWidth, lineHeight, measureOnly ) {
-      var lines = text.split("\n");
+   
       var numLines = 1;
-      for (var ii = 0; ii < lines.length; ii++) {
-         var line = "";
-         var words = lines[ii].split(" ");
-         for (var n = 0; n < words.length; n++) {
-            var testLine = line + words[n] + " ";
-            var metrics = context.measureText(testLine);
-            var testWidth = metrics.width;
-            if (testWidth > maxWidth) {
-               measureOnly || context.fillText(line, x, y);
-               line = words[n] + " ";
-               y += lineHeight;
-               numLines++;
+      var start_of_line = true;
+      var lines = text.split('\n');
+      var line_partial = '';
+      var try_line = '';
+      
+      for (var line_no = 0; line_no < lines.length; line_no++) {
+         var words = lines[ line_no ].split(' ');
+         start_of_line = true;
+         line_partial = '';
+         for( var w = 0; w < words.length; w++ ) {
+            try_line = line_partial + (start_of_line ? "" : " ") + words[ w ];
+            var metrics = context.measureText( try_line );
+            if( metrics.width <= maxWidth ) {
+               start_of_line = false;
+               line_partial = try_line;
             }
             else {
-               line = testLine;
+               measureOnly || context.fillText( line_partial, x, y);
+               start_of_line = true;               
+               y += lineHeight;
+               numLines++;
+               line_partial = words[w]; // Drop the space
+               metrics = context.measureText( line_partial );
+               if( metrics.width <= maxWidth ) {
+                  start_of_line = false;
+               }
+               else {
+                  // A single word that is wider than our max allowed width; need to break at the letter
+               }
             }
          }
-         measureOnly || context.fillText(line, x, y);
+         measureOnly || context.fillText( line_partial, x, y );
          y += lineHeight;
       }
       return numLines;
-   };
+   };   
 
 
 
