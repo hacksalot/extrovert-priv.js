@@ -95,10 +95,23 @@ var EXTROVERT = (function (window, $, THREE) {
    */
    my.init = function( options ) {
       if( !EXTROVERT.Utils.detect_webgl() ) return false;
+
+      // Special handling for IE
+      var ua = window.navigator.userAgent;
+      if( ~ua.indexOf('MSIE ') || ~ua.indexOf('Trident/') ) {
+         // Remove some troublesome stuff from the shader. Assumes three.js R70.
+         // https://github.com/mrdoob/three.js/issues/4843#issuecomment-43957698
+         Object.keys(THREE.ShaderLib).forEach(function (key) {
+             THREE.ShaderLib[key].fragmentShader =
+             THREE.ShaderLib[key].fragmentShader.replace('#extension GL_EXT_frag_depth : enable', '');
+         });      
+      }
+      
+      
       init_options( options );
       init_renderer();
       init_world( opts, eng );
-      init_canvas();
+      init_canvas( opts );
       init_physics();
       init_controls( opts, eng );
       init_events();
@@ -193,6 +206,8 @@ var EXTROVERT = (function (window, $, THREE) {
       // http://stackoverflow.com/a/3274697
       eng.renderer.domElement.setAttribute('tabindex', '0');
       eng.renderer.domElement.style += ' position: relative;';
+      eng.renderer.autoClearStencil = false;
+      eng.renderer.getContext().clearStencil = function() { };
       eng.log.msg( "Renderer: %o", eng.renderer );
    }
 
@@ -202,8 +217,9 @@ var EXTROVERT = (function (window, $, THREE) {
    Introduce the canvas to the live DOM. Note: .getBoundingClientRect will
    return an empty (zero-size) result until this happens.
    */
-   function init_canvas() {
-      $( opts.target.container ).append( eng.renderer.domElement );
+   function init_canvas( opts ) {
+      var action = opts.target.action || 'replaceWith'; // call .append or .replaceWith
+      $( opts.target.container )[ action ]( eng.renderer.domElement );
    }
 
 
@@ -434,7 +450,7 @@ var EXTROVERT = (function (window, $, THREE) {
    */
    function render() {
 
-      eng.scene.simulate();
+      opts.physics.enabled && eng.scene.simulate();
 
       // Get time in SECONDS
       var time = Date.now() / 1000.0;

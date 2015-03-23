@@ -130,7 +130,10 @@ An Extrovert.js generator for a floating scene.
    */
    function init_elements( opts, eng ) {
       var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
-      eng.side_mat = Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution );
+      eng.side_mat = opts.physics.enabled ? 
+         Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution ) :
+         mat;
+
       $( opts.src.selector ).each( function( idx, val ) {
          init_image( idx, val, opts, eng );
       });
@@ -186,7 +189,7 @@ An Extrovert.js generator for a floating scene.
    function get_position( val, opts, eng ) {
    
       // Get the position of the HTML element [1]
-      var parent_pos = $( opts.container ).offset();
+      var parent_pos = $( opts.src.container ).offset();
       var child_pos = $( val ).offset();
       var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 

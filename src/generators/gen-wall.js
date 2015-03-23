@@ -94,7 +94,7 @@ An Extrovert.js generator that creates a 3D wall or tower.
    */
    function init_elements( opts, eng ) {
       var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
-      eng.side_mat = Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution );
+      eng.side_mat = opts.physics.enabled ? Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution ) : mat;
       $( opts.src.selector ).each( function( idx, val ) {
          init_image( idx, val, opts, eng );
       });

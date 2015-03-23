@@ -207,7 +207,7 @@ An Extrovert.js generator for a 3D city scene.
    function get_position( val, opts, eng ) {
 
       // Get the position of the HTML element [1]
-      var parent_pos = $( opts.container ).offset();
+      var parent_pos = $( opts.src.container ).offset();
       var child_pos = $( val ).offset();
       var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
