@@ -72,7 +72,7 @@ var EXTROVERT = (function (window, $, THREE) {
     selected: null,
     start_time: 0,
     last_time: 0,
-    card_coll: [],
+    objects: [],
     drag_plane: null,
     placement_plane: null,
     offset: new THREE.Vector3(),
@@ -112,7 +112,7 @@ var EXTROVERT = (function (window, $, THREE) {
     init_renderer();
     init_world( opts, eng );
     init_canvas( opts );
-    init_physics();
+    init_physics( opts );
     init_controls( opts, eng );
     init_events();
     init_timer();
@@ -184,8 +184,17 @@ var EXTROVERT = (function (window, $, THREE) {
     EXTROVERT.fiat_lux( options.lights );
 
     // Create world content/geometry
-    eng.generator.generate( options, eng );
-
+    eng.generator.init && eng.generator.init( options, eng );
+    
+    $( options.src.selector ).each( function( idx, elem ) {
+      var mesh = eng.generator.generate( elem );
+      options.creating && options.creating( elem, mesh );
+      eng.scene.add( mesh );
+      eng.objects.push( mesh );
+      mesh.elem = $(elem);
+      options.created && options.created( elem, mesh ); 
+    });
+    
     // Now that objects have been placed, update the final cam position
     var oc = options.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
@@ -368,7 +377,7 @@ var EXTROVERT = (function (window, $, THREE) {
       mesh.position.set( desc.pos[0], desc.pos[1], desc.pos[2] );
     if( desc.visible === false )
       mesh.visible = false;
-    eng.log.msg("Created object: %o", mesh);
+    mesh.castShadow = mesh.receiveShadow = false;      
     return mesh;
   };
 
@@ -380,7 +389,7 @@ var EXTROVERT = (function (window, $, THREE) {
   */
   function create_mesh( geo, mesh_type, mat, force_simple, mass ) {
     return opts.physics.enabled && !force_simple ?
-      new Physijs[ mesh_type + 'Mesh' ]( geo, mat, mass || 0 ) : new THREE.Mesh(geo, mat);
+      new Physijs[ mesh_type + 'Mesh' ]( geo, mat, mass ) : new THREE.Mesh(geo, mat);
   }
 
 
@@ -389,7 +398,7 @@ var EXTROVERT = (function (window, $, THREE) {
   Initialize the physics system.
   @method init_physics
   */
-  function init_physics() {
+  function init_physics( opts ) {
     if( opts.physics.enabled ) {
       eng.gravity.set( opts.gravity[0], opts.gravity[1], opts.gravity[2] );
       eng.scene.setGravity( eng.gravity );
@@ -478,10 +487,10 @@ var EXTROVERT = (function (window, $, THREE) {
         eng.selected.__dirtyPosition = true;
       }
        // Maintain the __dirtyPosition flag on touched objects
-      for ( var i = 0, l = eng.card_coll.length; i < l; i ++ )
+      for ( var i = 0, l = eng.objects.length; i < l; i ++ )
       {
-        if( eng.card_coll[ i ].has_been_touched ) {
-          eng.card_coll[ i ].__dirtyPosition = true;
+        if( eng.objects[ i ].has_been_touched ) {
+          eng.objects[ i ].__dirtyPosition = true;
         }
       }
     }
@@ -592,7 +601,7 @@ var EXTROVERT = (function (window, $, THREE) {
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
     eng.mouse = to_ndc( xpos, ypos, 0.5, eng.mouse );
     eng.raycaster.setFromCamera( eng.mouse, eng.camera );
-    var intersects = eng.raycaster.intersectObjects( eng.card_coll );
+    var intersects = eng.raycaster.intersectObjects( eng.objects );
     if( intersects.length !== 0 ) {
       if( e.ctrlKey ) {
         eng.selected = intersects[ 0 ].object;

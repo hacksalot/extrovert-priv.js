@@ -75,12 +75,7 @@ An Extrovert.js generator for 3D extrusion.
     ]);
 
     // Mesh
-    var cube_geo = new THREE.BoxGeometry( pos_info.width, pos_info.height, pos_info.depth );
-    var mesh = opts.physics.enabled ?
-      new Physijs.BoxMesh( cube_geo, materials, 1000 ) :
-      new THREE.Mesh( cube_geo, materials );
-    mesh.position.set( pos_info.pos[0], pos_info.pos[1], pos_info.pos[2] );
-    mesh.castShadow = mesh.receiveShadow = false;
+    var mesh = EXTROVERT.create_object({ type: 'box', dims: [pos_info.width, pos_info.height, pos_info.depth], mass: 1000, mat: materials });
     if( opts.generator.lookat )
       mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
     mesh.elem = $(val);

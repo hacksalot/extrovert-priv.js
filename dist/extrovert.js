@@ -72,7 +72,7 @@ var EXTROVERT = (function (window, $, THREE) {
     selected: null,
     start_time: 0,
     last_time: 0,
-    card_coll: [],
+    objects: [],
     drag_plane: null,
     placement_plane: null,
     offset: new THREE.Vector3(),
@@ -112,7 +112,7 @@ var EXTROVERT = (function (window, $, THREE) {
     init_renderer();
     init_world( opts, eng );
     init_canvas( opts );
-    init_physics();
+    init_physics( opts );
     init_controls( opts, eng );
     init_events();
     init_timer();
@@ -184,8 +184,17 @@ var EXTROVERT = (function (window, $, THREE) {
     EXTROVERT.fiat_lux( options.lights );
 
     // Create world content/geometry
-    eng.generator.generate( options, eng );
-
+    eng.generator.init && eng.generator.init( options, eng );
+    
+    $( options.src.selector ).each( function( idx, elem ) {
+      var mesh = eng.generator.generate( elem );
+      options.creating && options.creating( elem, mesh );
+      eng.scene.add( mesh );
+      eng.objects.push( mesh );
+      mesh.elem = $(elem);
+      options.created && options.created( elem, mesh ); 
+    });
+    
     // Now that objects have been placed, update the final cam position
     var oc = options.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
@@ -368,7 +377,7 @@ var EXTROVERT = (function (window, $, THREE) {
       mesh.position.set( desc.pos[0], desc.pos[1], desc.pos[2] );
     if( desc.visible === false )
       mesh.visible = false;
-    eng.log.msg("Created object: %o", mesh);
+    mesh.castShadow = mesh.receiveShadow = false;      
     return mesh;
   };
 
@@ -380,7 +389,7 @@ var EXTROVERT = (function (window, $, THREE) {
   */
   function create_mesh( geo, mesh_type, mat, force_simple, mass ) {
     return opts.physics.enabled && !force_simple ?
-      new Physijs[ mesh_type + 'Mesh' ]( geo, mat, mass || 0 ) : new THREE.Mesh(geo, mat);
+      new Physijs[ mesh_type + 'Mesh' ]( geo, mat, mass ) : new THREE.Mesh(geo, mat);
   }
 
 
@@ -389,7 +398,7 @@ var EXTROVERT = (function (window, $, THREE) {
   Initialize the physics system.
   @method init_physics
   */
-  function init_physics() {
+  function init_physics( opts ) {
     if( opts.physics.enabled ) {
       eng.gravity.set( opts.gravity[0], opts.gravity[1], opts.gravity[2] );
       eng.scene.setGravity( eng.gravity );
@@ -478,10 +487,10 @@ var EXTROVERT = (function (window, $, THREE) {
         eng.selected.__dirtyPosition = true;
       }
        // Maintain the __dirtyPosition flag on touched objects
-      for ( var i = 0, l = eng.card_coll.length; i < l; i ++ )
+      for ( var i = 0, l = eng.objects.length; i < l; i ++ )
       {
-        if( eng.card_coll[ i ].has_been_touched ) {
-          eng.card_coll[ i ].__dirtyPosition = true;
+        if( eng.objects[ i ].has_been_touched ) {
+          eng.objects[ i ].__dirtyPosition = true;
         }
       }
     }
@@ -592,7 +601,7 @@ var EXTROVERT = (function (window, $, THREE) {
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
     eng.mouse = to_ndc( xpos, ypos, 0.5, eng.mouse );
     eng.raycaster.setFromCamera( eng.mouse, eng.camera );
-    var intersects = eng.raycaster.intersectObjects( eng.card_coll );
+    var intersects = eng.raycaster.intersectObjects( eng.objects );
     if( intersects.length !== 0 ) {
       if( e.ctrlKey ) {
         eng.selected = intersects[ 0 ].object;
@@ -2414,12 +2423,7 @@ An Extrovert.js generator for 3D extrusion.
     ]);
 
     // Mesh
-    var cube_geo = new THREE.BoxGeometry( pos_info.width, pos_info.height, pos_info.depth );
-    var mesh = opts.physics.enabled ?
-      new Physijs.BoxMesh( cube_geo, materials, 1000 ) :
-      new THREE.Mesh( cube_geo, materials );
-    mesh.position.set( pos_info.pos[0], pos_info.pos[1], pos_info.pos[2] );
-    mesh.castShadow = mesh.receiveShadow = false;
+    var mesh = EXTROVERT.create_object({ type: 'box', dims: [pos_info.width, pos_info.height, pos_info.depth], mass: 1000, mat: materials });
     if( opts.generator.lookat )
       mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
     mesh.elem = $(val);
@@ -2446,40 +2450,60 @@ An Extrovert.js generator for a floating scene.
 
 (function (window, $, THREE, EXTROVERT) {
 
-
-
-  /**
-  Default options.
-  */
-  var _def_opts = {
-    gravity: [0,0,0],
-    camera: {
-      position: [0,300,200],
-      rotation: [-(Math.PI / 4),0,0]
-    },
-    generator: {
-      name: 'float',
-      material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
-    },
-    lights: [
-      { type: 'point', color: 0xffffff, intensity: 1, distance: 10000 },
-      { type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,300,0] },
-    ]
-  };
-
-
-  /**
-  @class The built-in 'float' generator.
-  */
   EXTROVERT.float = function() {
+
+    var _opts = null;
+    var _eng = null;
+    var _side_mat = null;
+    var _platformWidth;
+    var _platformHeight;
+
     return {
-      generate: function( options, eng ) {
-        //var new_opts = $.extend(true, { }, _def_opts, options);
-        if( !options.generator || typeof options.generator == 'string' )
-          options.generator = _def_opts.generator;
-          init_objects( options, eng );
+      init: function( merged_options, eng ) {
+        _opts = merged_options;
+        _eng = eng;
+        EXTROVERT.create_placement_plane( [0,0,200] );
+        var mat = new THREE.MeshLambertMaterial({ color: _opts.generator.material.color });
+        _side_mat = _opts.physics.enabled ?
+          Physijs.createMaterial( mat, _opts.generator.material.friction, _opts.generator.material.restitution ) : mat;
+        var frustum_planes = EXTROVERT.Utils.calc_frustum( _eng.camera );
+        this.options.scene.items[0].dims[0] = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
+        this.options.scene.items[0].dims[2] = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
       },
-      options: _def_opts,
+      transform: function( obj ) {
+        return EXTROVERT.get_position( obj, _opts, _eng );
+      },
+      rasterize: function( obj ) {
+        var texture = _eng.rasterizer.paint( $(obj), _opts );
+        var material = (!_opts.physics.enabled || !_opts.physics.materials) ?
+          texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
+        return new THREE.MeshFaceMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
+      },
+      generate: function( obj ) {
+        var pos_info = this.transform( obj );
+        var mat_info = this.rasterize( obj );
+        var mesh = EXTROVERT.create_object({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
+        if( _opts.generator.lookat )
+          mesh.lookAt( new THREE.Vector3( _opts.generator.lookat[0], _opts.generator.lookat[1], _opts.generator.lookat[2]) );
+        return mesh;
+      },
+      options: {
+        generator: {
+          name: 'float',
+          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
+        },
+        scene: { items: [ { type: 'box', pos: [0,150,0], dims: [-1,10,-1] } ] },
+        camera: {
+          position: [0,300,200],
+          rotation: [-(Math.PI / 4),0,0]
+        },
+        controls: { target: [0,-1500, 0] },
+        block: { depth: 100 },
+        lights: [
+          { type: 'point', color: 0xffffff, intensity: 1, distance: 10000 },
+          { type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,300,0] },
+        ]
+      },
       init_cam_opts: {
         position: [0,400,0],
         lookat: [0,0,0],
@@ -2487,122 +2511,7 @@ An Extrovert.js generator for a floating scene.
       }
     };
   };
-
-
-  /**
-  Initialize scene props and objects. TODO: clean up object allocations.
-  @method init_objects
-  */
-  function init_objects( opts, eng ) {
-    // Create the ground. Place it on the camera's back frustum plane so
-    // it always fills the viewport?
-    if( true ) {
-      var frustum_planes = EXTROVERT.Utils.calc_frustum( eng.camera );
-      var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
-      var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
-      var plane_tex = opts.generator.background ?
-        THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
-
-      var plane2 = opts.physics.enabled ?
-        new Physijs.BoxMesh(
-          new THREE.BoxGeometry(planeWidth, 10, planeHeight),
-          new THREE.MeshLambertMaterial( { color: 0xFFFFFF, map: plane_tex } ), 0 )
-        :
-        new THREE.Mesh(
-          new THREE.BoxGeometry(planeWidth,10,planeHeight),
-          new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
-        );
-      plane2.position.y = 150;
-      plane2.receiveShadow = false; // TODO: not working
-      plane2.updateMatrix();
-      plane2.updateMatrixWorld();
-      eng.scene.add( plane2 );
-      eng.log.msg("Building base plane: %o", plane2);
-    }
-
-    // Create a hidden plane for object placement.
-    // TODO: Replace with unproject at specified Z.
-    eng.placement_plane = opts.physics.enabled ?
-      new Physijs.BoxMesh(
-        new THREE.BoxGeometry(200000,1,200000),
-        new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } ),
-        0 ) :
-      new THREE.Mesh(
-        new THREE.BoxGeometry(200000,1,200000),
-        new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } )
-      );
-    eng.placement_plane.visible = false;
-    eng.placement_plane.position.y = 200;
-
-    // TODO: Figure out which update calls are necessary
-    eng.scene.updateMatrix();
-    eng.placement_plane.updateMatrix();
-    eng.placement_plane.updateMatrixWorld();
-    eng.log.msg("Building placement plane: %o", eng.placement_plane);
-
-    // Generate scene objects!
-    init_elements( opts, eng );
-
-    // // Now that objects have been placed in-frustum, we can change the
-    // // camera orientation. Rotation is in radians, here.
-    // eng.camera.rotation.x = -(Math.PI / 4);
-    // eng.camera.position.y = 300;
-    // eng.camera.position.z = 200;
-  }
-
-
-
-  /**
-  Initialize all objects.
-  @method init_elements
-  */
-  function init_elements( opts, eng ) {
-     var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
-     eng.side_mat = opts.physics.enabled ?
-        Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution ) :
-        mat;
-
-     $( opts.src.selector ).each( function( idx, val ) {
-        init_image( idx, val, opts, eng );
-     });
-  }
-
-
-
-  /**
-  Initialize a single element. TODO: Clean up material/geo handling.
-  @method init_card
-  */
-  function init_image( idx, val, opts, eng ) {
-
-     // Position
-     var pos_info = get_position( val, opts, eng );
-
-     // Texture
-     var texture = eng.rasterizer.paint( $(val), opts );
-     var material = (!opts.physics.enabled || !opts.physics.materials) ?
-        texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
-     var materials = new THREE.MeshFaceMaterial([
-        material, material, material, material,
-        material, material
-     ]);
-     
-     var mesh = EXTROVERT.create_object({ type: 'box', dims: [pos_info.width, pos_info.height, pos_info.depth], mat: materials, mass: 1000, pos: pos_info.pos });
-     mesh.castShadow = mesh.receiveShadow = false;
-     if( opts.generator.lookat )
-        mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
-     mesh.elem = $(val);
-
-     opts.creating && opts.creating( val, mesh );
-     eng.scene.add( mesh );
-     eng.card_coll.push( mesh );
-     opts.created && opts.created( val, mesh );
-
-     return mesh;
-  }
-
-
-
+  
   /**
   Retrieve the position, in 3D space, of a recruited HTML element.
   @method init_card
@@ -2634,9 +2543,7 @@ An Extrovert.js generator for a floating scene.
         depth: block_depth,
         height: block_height
      };
-  }
-
-
+  }  
 
 }(window, $, THREE, EXTROVERT));
 
@@ -2842,96 +2749,56 @@ An Extrovert.js generator that creates a 3D wall or tower.
 
 (function (window, $, THREE, EXTROVERT) {
 
-
-
-  /**
-  Default options.
-  */
-  var _def_opts = {
-    generator: {
-      name: 'wall',
-      background: 'default_background.png',
-      material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
-    },
-    gravity: [0,-200,0],
-    scene: { items: [ { type: 'box', pos: [0,-2000,0], dims: [4000,10,4000] } ] },
-    camera: {
-      far: 20000,
-      position: [0,-1500,2000],
-      rotation: [-0.25,0,0]
-    },
-    controls: {
-      target: [0,-1500, 0]
-    },
-    block: { depth: 100 }
-  };
-
-
-
-  /**
-  @class The built-in 'wall' generator.
-  */
   EXTROVERT.wall = function() {
+
+    var _opts = null;
+    var _eng = null;
+    var _side_mat = null;
+  
     return {
-      generate: function( options, eng ) {
-        if( !options.generator || typeof options.generator == 'string' )
-          options.generator = _def_opts.generator;
+      init: function( merged_options, eng ) {
+        _opts = merged_options;
+        _eng = eng;
         EXTROVERT.create_placement_plane( [0,0,200] );
-        init_elements( options, eng );
+        var mat = new THREE.MeshLambertMaterial({ color: _opts.generator.material.color });
+        _side_mat = _opts.physics.enabled ? 
+          Physijs.createMaterial( mat, _opts.generator.material.friction, _opts.generator.material.restitution ) : mat;        
       },
-      options: _def_opts,
+      transform: function( obj ) {
+        return EXTROVERT.get_position( obj, _opts, _eng );
+      },
+      rasterize: function( obj ) {
+        var texture = _eng.rasterizer.paint( $(obj), _opts );
+        var material = (!_opts.physics.enabled || !_opts.physics.materials) ?
+          texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
+        return new THREE.MeshFaceMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
+      },
+      generate: function( obj ) {
+        var pos_info = this.transform( obj );
+        var mat_info = this.rasterize( obj );
+        var mesh = EXTROVERT.create_object({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
+        if( _opts.generator.lookat )
+          mesh.lookAt( new THREE.Vector3( _opts.generator.lookat[0], _opts.generator.lookat[1], _opts.generator.lookat[2]) );
+        return mesh;
+      },
+      options: {
+        generator: {
+          name: 'wall',
+          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
+        },
+        gravity: [0,-200,0],
+        scene: { items: [ { type: 'box', pos: [0,-2000,0], dims: [4000,10,4000], mass: 0 } ] },
+        camera: {
+          far: 20000,
+          position: [0,-1500,2000],
+          rotation: [-0.25,0,0]
+        },
+        controls: { target: [0,-1500, 0] },
+        block: { depth: 100 }
+      },
       init_cam_opts: { position: [0,0,800] }
     };
   };
-
-
-
-  /**
-  Initialize all generated elements.
-  @method init_elements
-  */
-  function init_elements( opts, eng ) {
-    var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
-    eng.side_mat = opts.physics.enabled ? Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution ) : mat;
-    $( opts.src.selector ).each( function( idx, val ) {
-      init_image( idx, val, opts, eng );
-    });
-  }
-
-
-
-  /**
-  Initialize a single card object. TODO: Clean up material/geo handling.
-  @method init_card
-  */
-  function init_image( idx, val, opts, eng ) {
-    // Position
-    var pos_info = EXTROVERT.get_position( val, opts, eng );
-    // Texture
-    var texture = eng.rasterizer.paint( $(val), opts );
-    var material = (!opts.physics.enabled || !opts.physics.materials) ?
-      texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
-    var materials = new THREE.MeshFaceMaterial([
-      eng.side_mat, eng.side_mat, eng.side_mat, eng.side_mat,
-      material, material
-    ]);
-    // Mesh
-    var mesh = EXTROVERT.create_object({ type: 'box', dims: [pos_info.width, pos_info.height, pos_info.depth], mat: materials, mass: 1000, pos: pos_info.pos });
-    mesh.castShadow = mesh.receiveShadow = false;
-    if( opts.generator.lookat )
-      mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
-    mesh.elem = $(val);
-    // Housekeeping
-    opts.creating && opts.creating( val, mesh );
-    eng.scene.add( mesh );
-    eng.card_coll.push( mesh );
-    eng.log.msg("Created element %d (%f, %f, %f): %o.", idx, pos_info.pos.x, pos_info.pos.y, pos_info.pos.z, mesh);
-    opts.created && opts.created( val, mesh );
-
-    return mesh;
-  }
-
-
 
 }(window, $, THREE, EXTROVERT));
 ;/**

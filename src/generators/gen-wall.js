@@ -9,95 +9,55 @@ An Extrovert.js generator that creates a 3D wall or tower.
 
 (function (window, $, THREE, EXTROVERT) {
 
-
-
-  /**
-  Default options.
-  */
-  var _def_opts = {
-    generator: {
-      name: 'wall',
-      background: 'default_background.png',
-      material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
-    },
-    gravity: [0,-200,0],
-    scene: { items: [ { type: 'box', pos: [0,-2000,0], dims: [4000,10,4000] } ] },
-    camera: {
-      far: 20000,
-      position: [0,-1500,2000],
-      rotation: [-0.25,0,0]
-    },
-    controls: {
-      target: [0,-1500, 0]
-    },
-    block: { depth: 100 }
-  };
-
-
-
-  /**
-  @class The built-in 'wall' generator.
-  */
   EXTROVERT.wall = function() {
+
+    var _opts = null;
+    var _eng = null;
+    var _side_mat = null;
+  
     return {
-      generate: function( options, eng ) {
-        if( !options.generator || typeof options.generator == 'string' )
-          options.generator = _def_opts.generator;
+      init: function( merged_options, eng ) {
+        _opts = merged_options;
+        _eng = eng;
         EXTROVERT.create_placement_plane( [0,0,200] );
-        init_elements( options, eng );
+        var mat = new THREE.MeshLambertMaterial({ color: _opts.generator.material.color });
+        _side_mat = _opts.physics.enabled ? 
+          Physijs.createMaterial( mat, _opts.generator.material.friction, _opts.generator.material.restitution ) : mat;        
       },
-      options: _def_opts,
+      transform: function( obj ) {
+        return EXTROVERT.get_position( obj, _opts, _eng );
+      },
+      rasterize: function( obj ) {
+        var texture = _eng.rasterizer.paint( $(obj), _opts );
+        var material = (!_opts.physics.enabled || !_opts.physics.materials) ?
+          texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
+        return new THREE.MeshFaceMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
+      },
+      generate: function( obj ) {
+        var pos_info = this.transform( obj );
+        var mat_info = this.rasterize( obj );
+        var mesh = EXTROVERT.create_object({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
+        if( _opts.generator.lookat )
+          mesh.lookAt( new THREE.Vector3( _opts.generator.lookat[0], _opts.generator.lookat[1], _opts.generator.lookat[2]) );
+        return mesh;
+      },
+      options: {
+        generator: {
+          name: 'wall',
+          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
+        },
+        gravity: [0,-200,0],
+        scene: { items: [ { type: 'box', pos: [0,-2000,0], dims: [4000,10,4000], mass: 0 } ] },
+        camera: {
+          far: 20000,
+          position: [0,-1500,2000],
+          rotation: [-0.25,0,0]
+        },
+        controls: { target: [0,-1500, 0] },
+        block: { depth: 100 }
+      },
       init_cam_opts: { position: [0,0,800] }
     };
   };
-
-
-
-  /**
-  Initialize all generated elements.
-  @method init_elements
-  */
-  function init_elements( opts, eng ) {
-    var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
-    eng.side_mat = opts.physics.enabled ? Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution ) : mat;
-    $( opts.src.selector ).each( function( idx, val ) {
-      init_image( idx, val, opts, eng );
-    });
-  }
-
-
-
-  /**
-  Initialize a single card object. TODO: Clean up material/geo handling.
-  @method init_card
-  */
-  function init_image( idx, val, opts, eng ) {
-    // Position
-    var pos_info = EXTROVERT.get_position( val, opts, eng );
-    // Texture
-    var texture = eng.rasterizer.paint( $(val), opts );
-    var material = (!opts.physics.enabled || !opts.physics.materials) ?
-      texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
-    var materials = new THREE.MeshFaceMaterial([
-      eng.side_mat, eng.side_mat, eng.side_mat, eng.side_mat,
-      material, material
-    ]);
-    // Mesh
-    var mesh = EXTROVERT.create_object({ type: 'box', dims: [pos_info.width, pos_info.height, pos_info.depth], mat: materials, mass: 1000, pos: pos_info.pos });
-    mesh.castShadow = mesh.receiveShadow = false;
-    if( opts.generator.lookat )
-      mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
-    mesh.elem = $(val);
-    // Housekeeping
-    opts.creating && opts.creating( val, mesh );
-    eng.scene.add( mesh );
-    eng.card_coll.push( mesh );
-    eng.log.msg("Created element %d (%f, %f, %f): %o.", idx, pos_info.pos.x, pos_info.pos.y, pos_info.pos.z, mesh);
-    opts.created && opts.created( val, mesh );
-
-    return mesh;
-  }
-
-
 
 }(window, $, THREE, EXTROVERT));
