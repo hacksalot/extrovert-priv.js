@@ -234,7 +234,7 @@ var EXTROVERT = (function (window, $, THREE) {
   return an empty (zero-size) result until this happens.
   */
   function init_canvas( opts ) {
-    var action = opts.target.action || 'replaceWith'; // call .append or .replaceWith
+    var action = opts.target.action || 'append'; // call .append or .replaceWith
     $( opts.target.container )[ action ]( eng.renderer.domElement );
   }
 
@@ -708,10 +708,10 @@ var EXTROVERT = (function (window, $, THREE) {
 
     // Offset by the half-height/width so the corners line up
     return {
-      pos: new THREE.Vector3(
-        topLeft.x + (block_width / 2),
+      pos: //new THREE.Vector3(
+        [topLeft.x + (block_width / 2),
         topLeft.y - (block_height / 2),
-        topLeft.z - (opts.block.depth / 2)),
+        topLeft.z - (opts.block.depth / 2)],
       width: block_width,
       height: block_height,
       depth: opts.block.depth

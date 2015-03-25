@@ -234,7 +234,7 @@ var EXTROVERT = (function (window, $, THREE) {
   return an empty (zero-size) result until this happens.
   */
   function init_canvas( opts ) {
-    var action = opts.target.action || 'replaceWith'; // call .append or .replaceWith
+    var action = opts.target.action || 'append'; // call .append or .replaceWith
     $( opts.target.container )[ action ]( eng.renderer.domElement );
   }
 
@@ -708,10 +708,10 @@ var EXTROVERT = (function (window, $, THREE) {
 
     // Offset by the half-height/width so the corners line up
     return {
-      pos: new THREE.Vector3(
-        topLeft.x + (block_width / 2),
+      pos: //new THREE.Vector3(
+        [topLeft.x + (block_width / 2),
         topLeft.y - (block_height / 2),
-        topLeft.z - (opts.block.depth / 2)),
+        topLeft.z - (opts.block.depth / 2)],
       width: block_width,
       height: block_height,
       depth: opts.block.depth
@@ -2694,50 +2694,41 @@ An Extrovert.js generator for a 3D image gallery.
   };
 
 
+
   /**
   Initialize scene props and objects. TODO: clean up object allocations.
   @method init_objects
   */
   function init_objects( opts, eng ) {
-
-    // Create the visible/collidable backplane. Place it on the
-    // camera's back frustum plane so it always fills the viewport.
-    if( true ) {
-
-      var frustum_planes = EXTROVERT.Utils.calc_frustum( eng.camera );
-      var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
-      var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
-
-      var plane_tex = opts.generator.background ?
-        THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
-
-      var plane2 = opts.physics.enabled ?
-        new Physijs.BoxMesh(
-          new THREE.BoxGeometry(planeWidth, planeHeight, 10),
-          new THREE.MeshLambertMaterial( { color: 0xFFFFFF, map: plane_tex } ), 0 )
-        :
-        new THREE.Mesh(
-          new THREE.BoxGeometry(planeWidth,planeHeight,10),
-          new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
-        );
-      plane2.position.z = frustum_planes.farPlane.topRight.z;
-      plane2.receiveShadow = false; // TODO: not working
-      plane2.updateMatrix();
-      plane2.updateMatrixWorld();
-      eng.scene.add( plane2 );
-      eng.log.msg("Building base plane: %o", plane2);
-    }
-
+    var frustum_planes = EXTROVERT.Utils.calc_frustum( eng.camera );
+    var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
+    var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
+    var plane_tex = opts.generator.background ?
+      THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
+    var plane2 = opts.physics.enabled ?
+      new Physijs.BoxMesh(
+        new THREE.BoxGeometry(planeWidth, planeHeight, 10),
+        new THREE.MeshLambertMaterial( { color: 0xFFFFFF, map: plane_tex } ), 0 )
+      :
+      new THREE.Mesh(
+        new THREE.BoxGeometry(planeWidth,planeHeight,10),
+        new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
+      );
+    plane2.position.z = frustum_planes.farPlane.topRight.z;
+    plane2.receiveShadow = false; // TODO: not working
+    plane2.updateMatrix();
+    plane2.updateMatrixWorld();
+    eng.scene.add( plane2 );
+    eng.log.msg("Building base plane: %o", plane2);
     EXTROVERT.create_placement_plane( [0,0,200] );
-
     init_elements( opts, eng );
   }
 
 
 
   /**
-  Initialize all card objects.
-  @method init_cards
+  Initialize all elements
+  @method init_elements
   */
   function init_elements( opts, eng ) {
     var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
@@ -2750,8 +2741,8 @@ An Extrovert.js generator for a 3D image gallery.
 
 
   /**
-  Initialize a single card object. TODO: Clean up material/geo handling.
-  @method init_card
+  Initialize a single element. TODO: Clean up material/geo handling.
+  @method init_image
   */
   function init_image( idx, val, opts, eng ) {
 
@@ -2768,12 +2759,7 @@ An Extrovert.js generator for a 3D image gallery.
     ]);
 
     // Mesh
-    //var mesh = EXTROVERT.create_object({ type: 'box', dims: [pos_info.width, pos_info.height, pos_info.depth], mass: 1000, mat: materials });
-    var cube_geo = new THREE.BoxGeometry( pos_info.width, pos_info.height, pos_info.depth );
-    var mesh = opts.physics.enabled ?
-       new Physijs.BoxMesh( cube_geo, materials, 1000 ) :
-       new THREE.Mesh( cube_geo, materials );
-    mesh.position.copy( pos_info.pos );
+    var mesh = EXTROVERT.create_object({ type: 'box', dims: [pos_info.width, pos_info.height, pos_info.depth], mass: 1000, mat: materials });
     mesh.castShadow = mesh.receiveShadow = false;
     if( opts.generator.lookat )
        mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
@@ -2782,7 +2768,6 @@ An Extrovert.js generator for a 3D image gallery.
     opts.creating && opts.creating( val, mesh );
     eng.scene.add( mesh );
     eng.card_coll.push( mesh );
-    eng.log.msg("Created element %d (%f, %f, %f): %o.", idx, pos_info.pos.x, pos_info.pos.y, pos_info.pos.z, mesh);
     opts.created && opts.created( val, mesh );
 
     return mesh;
@@ -2790,19 +2775,7 @@ An Extrovert.js generator for a 3D image gallery.
 
 
 
-  /**
-  Module return.
-  */
-  //return my;
-
-
-
 }(window, $, THREE, EXTROVERT));
-
-// [1] Don't rely exclusively on .offset() or .position()
-//     See: http://bugs.jquery.com/ticket/11606
-//     var pos = $(val).offset();
-//     var pos = $(val).position();
 ;/**
 A sample Extrovert generator for demonstration purposes.
 @module gen-sample.js
@@ -2944,11 +2917,7 @@ An Extrovert.js generator that creates a 3D wall or tower.
       material, material
     ]);
     // Mesh
-    var cube_geo = new THREE.BoxGeometry( pos_info.width, pos_info.height, pos_info.depth );
-    var mesh = opts.physics.enabled ?
-      new Physijs.BoxMesh( cube_geo, materials, 1000 ) :
-      new THREE.Mesh( cube_geo, materials );
-    mesh.position.copy( pos_info.pos );
+    var mesh = EXTROVERT.create_object({ type: 'box', dims: [pos_info.width, pos_info.height, pos_info.depth], mat: materials, mass: 1000, pos: pos_info.pos });
     mesh.castShadow = mesh.receiveShadow = false;
     if( opts.generator.lookat )
       mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );

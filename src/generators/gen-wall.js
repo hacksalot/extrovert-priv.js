@@ -83,11 +83,7 @@ An Extrovert.js generator that creates a 3D wall or tower.
       material, material
     ]);
     // Mesh
-    var cube_geo = new THREE.BoxGeometry( pos_info.width, pos_info.height, pos_info.depth );
-    var mesh = opts.physics.enabled ?
-      new Physijs.BoxMesh( cube_geo, materials, 1000 ) :
-      new THREE.Mesh( cube_geo, materials );
-    mesh.position.copy( pos_info.pos );
+    var mesh = EXTROVERT.create_object({ type: 'box', dims: [pos_info.width, pos_info.height, pos_info.depth], mat: materials, mass: 1000, pos: pos_info.pos });
     mesh.castShadow = mesh.receiveShadow = false;
     if( opts.generator.lookat )
       mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
