@@ -77,8 +77,8 @@ EXTROVERT.Utils = (function (window, $, THREE) {
       // }
       // return numLines;
    // };
-   
-   
+
+
    /**
    Wrap text drawing helper for canvas. See:
    - http://stackoverflow.com/a/11361958
@@ -86,13 +86,13 @@ EXTROVERT.Utils = (function (window, $, THREE) {
    @method wrap_text
    */
    my.wrap_text = function( context, text, x, y, maxWidth, lineHeight, measureOnly ) {
-   
+
       var numLines = 1;
       var start_of_line = true;
       var lines = text.split('\n');
       var line_partial = '';
       var try_line = '';
-      
+
       for (var line_no = 0; line_no < lines.length; line_no++) {
          var words = lines[ line_no ].split(' ');
          start_of_line = true;
@@ -106,7 +106,7 @@ EXTROVERT.Utils = (function (window, $, THREE) {
             }
             else {
                measureOnly || context.fillText( line_partial, x, y);
-               start_of_line = true;               
+               start_of_line = true;
                y += lineHeight;
                numLines++;
                line_partial = words[w]; // Drop the space
@@ -123,7 +123,7 @@ EXTROVERT.Utils = (function (window, $, THREE) {
          y += lineHeight;
       }
       return numLines;
-   };   
+   };
 
 
 

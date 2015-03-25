@@ -185,11 +185,11 @@ var EXTROVERT = (function (window, $, THREE) {
 
     // Create world content/geometry
     eng.generator.init && eng.generator.init( options, eng );
-    
+
     create_scene_objects( eng.scene, options );
-    
+
     eng.scene.updateMatrix();
-    
+
     $( options.src.selector ).each( function( idx, elem ) {
       var mesh = eng.generator.generate( elem );
       mesh.updateMatrix();
@@ -198,9 +198,9 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.scene.add( mesh );
       eng.objects.push( mesh );
       mesh.elem = $(elem);
-      options.created && options.created( elem, mesh ); 
+      options.created && options.created( elem, mesh );
     });
-    
+
     // Now that objects have been placed, update the final cam position
     var oc = options.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
@@ -381,7 +381,7 @@ var EXTROVERT = (function (window, $, THREE) {
       mesh.position.set( desc.pos[0], desc.pos[1], desc.pos[2] );
     if( desc.visible === false )
       mesh.visible = false;
-    mesh.castShadow = mesh.receiveShadow = false;      
+    mesh.castShadow = mesh.receiveShadow = false;
     return mesh;
   };
 

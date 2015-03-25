@@ -62,7 +62,7 @@ An Extrovert.js generator for a floating scene.
       }
     };
   };
-  
+
   /**
   Retrieve the position, in 3D space, of a recruited HTML element.
   @method init_card
@@ -94,7 +94,7 @@ An Extrovert.js generator for a floating scene.
         depth: block_depth,
         height: block_height
      };
-  }  
+  }
 
 }(window, $, THREE, EXTROVERT));
 
