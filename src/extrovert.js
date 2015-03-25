@@ -40,7 +40,7 @@ var EXTROVERT = (function (window, $, THREE) {
       enabled: true,
       materials: false,
       physijs: {
-        worker: 'physijs_worker.min.js',
+        worker: 'physijs_worker.js',
         ammo: 'ammo.js'
       }
     },
@@ -186,8 +186,14 @@ var EXTROVERT = (function (window, $, THREE) {
     // Create world content/geometry
     eng.generator.init && eng.generator.init( options, eng );
     
+    create_scene_objects( eng.scene, options );
+    
+    eng.scene.updateMatrix();
+    
     $( options.src.selector ).each( function( idx, elem ) {
       var mesh = eng.generator.generate( elem );
+      mesh.updateMatrix();
+      mesh.updateMatrixWorld();
       options.creating && options.creating( elem, mesh );
       eng.scene.add( mesh );
       eng.objects.push( mesh );
@@ -294,7 +300,6 @@ var EXTROVERT = (function (window, $, THREE) {
     cam.updateMatrix();
     cam.updateMatrixWorld();
     cam.updateProjectionMatrix();
-    eng.log.msg( "Created camera: %o", eng.camera );
     return cam;
   };
 
@@ -308,8 +313,7 @@ var EXTROVERT = (function (window, $, THREE) {
   my.create_scene = function( scene_opts ) {
     var scene = scene_opts.physics.enabled ? new Physijs.Scene() : new THREE.Scene();
     eng.scene = scene;
-    eng.log.msg( "Created scene: %o", scene );
-    create_scene_objects( scene, scene_opts );
+    //create_scene_objects( scene, scene_opts );
     return scene;
   };
 

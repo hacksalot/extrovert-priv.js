@@ -11,32 +11,25 @@ An Extrovert.js generator for a floating scene.
 
   EXTROVERT.float = function() {
 
-    var _opts = null;
-    var _eng = null;
-    var _side_mat = null;
-    var _platformWidth;
-    var _platformHeight;
+    var _opts = null, _eng = null;
 
     return {
       init: function( merged_options, eng ) {
         _opts = merged_options;
         _eng = eng;
-        EXTROVERT.create_placement_plane( [0,0,200] );
-        var mat = new THREE.MeshLambertMaterial({ color: _opts.generator.material.color });
-        _side_mat = _opts.physics.enabled ?
-          Physijs.createMaterial( mat, _opts.generator.material.friction, _opts.generator.material.restitution ) : mat;
         var frustum_planes = EXTROVERT.Utils.calc_frustum( _eng.camera );
-        this.options.scene.items[0].dims[0] = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
-        this.options.scene.items[0].dims[2] = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
+        merged_options.scene.items[0].dims[0] = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
+        merged_options.scene.items[0].dims[2] = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
+        EXTROVERT.create_placement_plane( [0,200,0], [200000,1,200000] );
       },
       transform: function( obj ) {
-        return EXTROVERT.get_position( obj, _opts, _eng );
+        return get_position( obj, _opts, _eng );
       },
       rasterize: function( obj ) {
         var texture = _eng.rasterizer.paint( $(obj), _opts );
         var material = (!_opts.physics.enabled || !_opts.physics.materials) ?
           texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
-        return new THREE.MeshFaceMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
+        return new THREE.MeshFaceMaterial([ material, material, material, material, material, material ]);
       },
       generate: function( obj ) {
         var pos_info = this.transform( obj );
@@ -51,12 +44,11 @@ An Extrovert.js generator for a floating scene.
           name: 'float',
           material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
         },
-        scene: { items: [ { type: 'box', pos: [0,150,0], dims: [-1,10,-1] } ] },
+        scene: { items: [ { type: 'box', pos: [0,150,0], dims: [-1,10,-1], mass: 0 } ] },
         camera: {
           position: [0,300,200],
           rotation: [-(Math.PI / 4),0,0]
         },
-        controls: { target: [0,-1500, 0] },
         block: { depth: 100 },
         lights: [
           { type: 'point', color: 0xffffff, intensity: 1, distance: 10000 },
