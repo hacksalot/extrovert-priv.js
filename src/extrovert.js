@@ -158,6 +158,7 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.rasterizer = new EXTROVERT[ 'paint_' + opts.rasterizer ]();
     else
       eng.rasterizer = opts.rasterizer || new EXTROVERT.paint_img();
+    return opts;
   }
 
 
@@ -186,7 +187,7 @@ var EXTROVERT = (function (window, $, THREE) {
     eng.generator.generate( options, eng );
 
     // Now that objects have been placed, update the final cam position
-    var oc = opts.camera;
+    var oc = options.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
     oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
   }

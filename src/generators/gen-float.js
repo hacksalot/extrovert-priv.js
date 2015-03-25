@@ -11,212 +11,193 @@ An Extrovert.js generator for a floating scene.
 
 
 
-   /**
-   Module object.
-   */
-   //var my = {};
+  /**
+  Default options.
+  */
+  var _def_opts = {
+    gravity: [0,0,0],
+    camera: {
+      position: [0,300,200],
+      rotation: [-(Math.PI / 4),0,0]
+    },
+    generator: {
+      name: 'float',
+      material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
+    },
+    lights: [
+      { type: 'point', color: 0xffffff, intensity: 1, distance: 10000 },
+      { type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,300,0] },
+    ]
+  };
 
 
-   /**
-   Default options.
-   */
-   var _def_opts = {
-      gravity: [0,0,0],
-      camera: {
-         position: [0,400,0],
-         // TODO: Don't modify these values until AFTER object placement
-         lookat: [0,0,0],
-         up: [0,0,-1]
+  /**
+  @class The built-in 'float' generator.
+  */
+  EXTROVERT.float = function() {
+    return {
+      generate: function( options, eng ) {
+        //var new_opts = $.extend(true, { }, _def_opts, options);
+        if( !options.generator || typeof options.generator == 'string' )
+          options.generator = _def_opts.generator;
+          init_objects( options, eng );
       },
-      generator: {
-         name: 'float',
-         material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
-      },
-      lights: [
-         { type: 'point', color: 0xffffff, intensity: 1, distance: 10000 },
-         { type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,300,0] },
-      ]
-   };
-
-
-   /**
-   @class The built-in 'float' generator.
-   */
-   EXTROVERT.float = function() {
-      return {
-         generate: function( options, eng ) {
-            //var new_opts = $.extend(true, { }, _def_opts, options);
-            if( !options.generator || typeof options.generator == 'string' )
-               options.generator = _def_opts.generator;
-            init_objects( options, eng );
-         },
-         options: _def_opts,
-         init_cam_opts: null
-      };
-   };
-
-
-   /**
-   Initialize scene props and objects. TODO: clean up object allocations.
-   @method init_objects
-   */
-   function init_objects( opts, eng ) {
-      // Create the ground. Place it on the camera's back frustum plane so
-      // it always fills the viewport?
-      if( true ) {
-
-         var frustum_planes = EXTROVERT.Utils.calc_frustum( eng.camera );
-         var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
-         var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
-         var plane_tex = opts.generator.background ?
-            THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
-
-         var plane2 = opts.physics.enabled ?
-            new Physijs.BoxMesh(
-               new THREE.BoxGeometry(planeWidth, 10, planeHeight),
-               new THREE.MeshLambertMaterial( { color: 0xFFFFFF, map: plane_tex } ), 0 )
-            :
-            new THREE.Mesh(
-               new THREE.BoxGeometry(planeWidth,10,planeHeight),
-               new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
-            );
-         plane2.position.y = 150;
-         plane2.receiveShadow = false; // TODO: not working
-         plane2.updateMatrix();
-         plane2.updateMatrixWorld();
-         eng.scene.add( plane2 );
-         eng.log.msg("Building base plane: %o", plane2);
+      options: _def_opts,
+      init_cam_opts: {
+        position: [0,400,0],
+        lookat: [0,0,0],
+        up: [0,0,-1]
       }
-
-      // Create a hidden plane for object placement.
-      // TODO: Replace with unproject at specified Z.
-      eng.placement_plane = opts.physics.enabled ?
-            new Physijs.BoxMesh(
-               new THREE.BoxGeometry(200000,1,200000),
-               new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } ),
-               0 ) :
-            new THREE.Mesh(
-               new THREE.BoxGeometry(200000,1,200000),
-               new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } )
-            );
-      eng.placement_plane.visible = false;
-      eng.placement_plane.position.y = 200;
-
-      // TODO: Figure out which update calls are necessary
-      eng.scene.updateMatrix();
-      eng.placement_plane.updateMatrix();
-      eng.placement_plane.updateMatrixWorld();
-      eng.log.msg("Building placement plane: %o", eng.placement_plane);
-
-      // Generate scene objects!
-      init_elements( opts, eng );
-
-      // // Now that objects have been placed in-frustum, we can change the
-      // // camera orientation. Rotation is in radians, here.
-      // eng.camera.rotation.x = -(Math.PI / 4);
-      // eng.camera.position.y = 300;
-      // eng.camera.position.z = 200;
-   }
+    };
+  };
 
 
+  /**
+  Initialize scene props and objects. TODO: clean up object allocations.
+  @method init_objects
+  */
+  function init_objects( opts, eng ) {
+    // Create the ground. Place it on the camera's back frustum plane so
+    // it always fills the viewport?
+    if( true ) {
+      var frustum_planes = EXTROVERT.Utils.calc_frustum( eng.camera );
+      var planeWidth = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
+      var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
+      var plane_tex = opts.generator.background ?
+        THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
 
-   /**
-   Initialize all card objects.
-   @method init_cards
-   */
-   function init_elements( opts, eng ) {
-      var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
-      eng.side_mat = opts.physics.enabled ?
-         Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution ) :
-         mat;
+      var plane2 = opts.physics.enabled ?
+        new Physijs.BoxMesh(
+          new THREE.BoxGeometry(planeWidth, 10, planeHeight),
+          new THREE.MeshLambertMaterial( { color: 0xFFFFFF, map: plane_tex } ), 0 )
+        :
+        new THREE.Mesh(
+          new THREE.BoxGeometry(planeWidth,10,planeHeight),
+          new THREE.MeshLambertMaterial( { color: 0x333333, map: plane_tex, opacity: 1.0, transparent: false } )
+        );
+      plane2.position.y = 150;
+      plane2.receiveShadow = false; // TODO: not working
+      plane2.updateMatrix();
+      plane2.updateMatrixWorld();
+      eng.scene.add( plane2 );
+      eng.log.msg("Building base plane: %o", plane2);
+    }
 
-      $( opts.src.selector ).each( function( idx, val ) {
-         init_image( idx, val, opts, eng );
-      });
-   }
+    // Create a hidden plane for object placement.
+    // TODO: Replace with unproject at specified Z.
+    eng.placement_plane = opts.physics.enabled ?
+      new Physijs.BoxMesh(
+        new THREE.BoxGeometry(200000,1,200000),
+        new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } ),
+        0 ) :
+      new THREE.Mesh(
+        new THREE.BoxGeometry(200000,1,200000),
+        new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } )
+      );
+    eng.placement_plane.visible = false;
+    eng.placement_plane.position.y = 200;
 
+    // TODO: Figure out which update calls are necessary
+    eng.scene.updateMatrix();
+    eng.placement_plane.updateMatrix();
+    eng.placement_plane.updateMatrixWorld();
+    eng.log.msg("Building placement plane: %o", eng.placement_plane);
 
+    // Generate scene objects!
+    init_elements( opts, eng );
 
-   /**
-   Initialize a single card object. TODO: Clean up material/geo handling.
-   @method init_card
-   */
-   function init_image( idx, val, opts, eng ) {
-
-      // Position
-      var pos_info = get_position( val, opts, eng );
-
-      // Texture
-      var texture = eng.rasterizer.paint( $(val), opts );
-      var material = (!opts.physics.enabled || !opts.physics.materials) ?
-         texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
-      var materials = new THREE.MeshFaceMaterial([
-         material, material, material, material,
-         material, material
-      ]);
-
-      // Mesh
-      var cube_geo = new THREE.BoxGeometry( pos_info.width, pos_info.height, pos_info.depth );
-      var mesh = opts.physics.enabled ?
-         new Physijs.BoxMesh( cube_geo, materials, 1000 ) :
-         new THREE.Mesh( cube_geo, materials );
-      mesh.position.copy( pos_info.pos );
-      mesh.castShadow = mesh.receiveShadow = false;
-      if( opts.generator.lookat )
-         mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
-      mesh.elem = $(val);
-
-      opts.creating && opts.creating( val, mesh );
-      eng.scene.add( mesh );
-      eng.card_coll.push( mesh );
-      eng.log.msg("Created element %d (%f, %f, %f) (size=%f x %f x %f): %o.", idx, pos_info.pos.x, pos_info.pos.y, pos_info.pos.z, pos_info.width, pos_info.height, pos_info.depth, mesh);
-      eng.log.msg("Texture = %o", texture);
-      opts.created && opts.created( val, mesh );
-
-      return mesh;
-   }
+    // // Now that objects have been placed in-frustum, we can change the
+    // // camera orientation. Rotation is in radians, here.
+    // eng.camera.rotation.x = -(Math.PI / 4);
+    // eng.camera.position.y = 300;
+    // eng.camera.position.z = 200;
+  }
 
 
 
-   /**
-   Retrieve the position, in 3D space, of a recruited HTML element.
-   @method init_card
-   */
-   function get_position( val, opts, eng ) {
+  /**
+  Initialize all objects.
+  @method init_elements
+  */
+  function init_elements( opts, eng ) {
+     var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
+     eng.side_mat = opts.physics.enabled ?
+        Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution ) :
+        mat;
 
-      // Get the position of the HTML element [1]
-      var parent_pos = $( opts.src.container ).offset();
-      var child_pos = $( val ).offset();
-      var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
-
-      // From that, compute the position of the top-left and bottom-right corner
-      // of the element as they would exist in 3D-land.
-      var topLeft = EXTROVERT.calc_position( pos.left, pos.top, eng.placement_plane );
-      var botRight = EXTROVERT.calc_position( pos.left + $(val).width(), pos.top + $(val).height(), eng.placement_plane );
-      // These return the topLeft and bottomRight coordinates of the MAIN FACE of the thing in WORLD coords
-
-      var block_width = Math.abs( botRight.x - topLeft.x );
-      var block_height = opts.block.depth;//Math.abs( topLeft.y - botRight.y );
-      var block_depth = Math.abs( topLeft.z - botRight.z );
-
-      // Offset by the half-height/width so the corners line up
-      return {
-         pos: new THREE.Vector3(
-            topLeft.x + (block_width / 2),
-            topLeft.y - (block_height / 2),
-            topLeft.z + (block_depth / 2)),
-         width: block_width,
-         depth: block_depth,
-         height: block_height
-      };
-   }
+     $( opts.src.selector ).each( function( idx, val ) {
+        init_image( idx, val, opts, eng );
+     });
+  }
 
 
 
-   /**
-   Module return.
-   */
-   //return my;
+  /**
+  Initialize a single element. TODO: Clean up material/geo handling.
+  @method init_card
+  */
+  function init_image( idx, val, opts, eng ) {
+
+     // Position
+     var pos_info = get_position( val, opts, eng );
+
+     // Texture
+     var texture = eng.rasterizer.paint( $(val), opts );
+     var material = (!opts.physics.enabled || !opts.physics.materials) ?
+        texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
+     var materials = new THREE.MeshFaceMaterial([
+        material, material, material, material,
+        material, material
+     ]);
+     
+     var mesh = EXTROVERT.create_object({ type: 'box', dims: [pos_info.width, pos_info.height, pos_info.depth], mat: materials, mass: 1000, pos: pos_info.pos });
+     mesh.castShadow = mesh.receiveShadow = false;
+     if( opts.generator.lookat )
+        mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
+     mesh.elem = $(val);
+
+     opts.creating && opts.creating( val, mesh );
+     eng.scene.add( mesh );
+     eng.card_coll.push( mesh );
+     opts.created && opts.created( val, mesh );
+
+     return mesh;
+  }
+
+
+
+  /**
+  Retrieve the position, in 3D space, of a recruited HTML element.
+  @method init_card
+  */
+  function get_position( val, opts, eng ) {
+
+     // Get the position of the HTML element [1]
+     var parent_pos = $( opts.src.container ).offset();
+     var child_pos = $( val ).offset();
+     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
+
+     // From that, compute the position of the top-left and bottom-right corner
+     // of the element as they would exist in 3D-land.
+     var topLeft = EXTROVERT.calc_position( pos.left, pos.top, eng.placement_plane );
+     var botRight = EXTROVERT.calc_position( pos.left + $(val).width(), pos.top + $(val).height(), eng.placement_plane );
+     // These return the topLeft and bottomRight coordinates of the MAIN FACE of the thing in WORLD coords
+
+     var block_width = Math.abs( botRight.x - topLeft.x );
+     var block_height = opts.block.depth;//Math.abs( topLeft.y - botRight.y );
+     var block_depth = Math.abs( topLeft.z - botRight.z );
+
+     // Offset by the half-height/width so the corners line up
+     return {
+        pos: [
+           topLeft.x + (block_width / 2),
+           topLeft.y - (block_height / 2),
+           topLeft.z + (block_depth / 2) ],
+        width: block_width,
+        depth: block_depth,
+        height: block_height
+     };
+  }
 
 
 
