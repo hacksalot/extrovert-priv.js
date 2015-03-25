@@ -61,7 +61,8 @@ An Extrovert.js generator that creates a 3D wall or tower.
                options.generator = _def_opts.generator;
             init_objects( options, eng );
          },
-         options: _def_opts
+         options: _def_opts,
+         init_cam_opts: _init_cam_opts
       };
    };
 

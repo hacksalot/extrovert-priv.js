@@ -54,7 +54,8 @@ An Extrovert.js generator for a 3D image gallery.
                options.generator = _def_opts.generator;
             init_objects( options, eng );
          },
-         options: _def_opts
+         options: _def_opts,
+         init_cam_opts: _init_cam_opts
       };
    };
 
