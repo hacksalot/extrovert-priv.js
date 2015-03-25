@@ -11,7 +11,7 @@ module.exports = function(grunt) {
             separator: ';'
          },
          dist: {
-            src: ['src/extrovert.js','src/**/*.js'],
+            src: ['src/extrovert.js', 'src/**/*.js', '!src/controls/f*.js', '!src/generators/gen-sample.js'],
             dest: 'dist/<%= pkg.name %>.js'
          }
       },
