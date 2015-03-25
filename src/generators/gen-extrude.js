@@ -12,12 +12,6 @@ An Extrovert.js generator for 3D extrusion.
 
 
    /**
-   Module object.
-   */
-   //var my = {};
-
-
-   /**
    Default options.
    */
    var _def_opts = {
@@ -25,13 +19,9 @@ An Extrovert.js generator for 3D extrusion.
          name: 'extrude',
          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
       },
-      camera: {
-         fov: 35,
-         near: 1,
-         far: 2000,
-         position: [0,0,800]
-      }
+      camera: { position: [0,0,800] }
    };
+
 
 
    /**
@@ -42,7 +32,8 @@ An Extrovert.js generator for 3D extrusion.
          generate: function( options, eng ) {
             if( !options.generator || typeof options.generator == 'string' )
                options.generator = _def_opts.generator;
-            init_objects( options, eng );
+              EXTROVERT.create_placement_plane( [0,0,200] );
+              init_things( options, eng );
          },
          options: _def_opts,
          init_cam_opts: null
@@ -50,30 +41,16 @@ An Extrovert.js generator for 3D extrusion.
    };
 
 
-   /**
-   Initialize scene props and objects. TODO: clean up object allocations.
-   @method init_objects
-   */
-   function init_objects( opts, eng ) {
-
-      //EXTROVERT.create_scene( opts );
-      //EXTROVERT.create_camera( opts.camera );
-      //EXTROVERT.fiat_lux( opts.lights );
-      EXTROVERT.create_placement_plane( [0,0,200] );
-      init_elements( opts, eng );
-   }
-
-
 
    /**
-   Initialize all card objects.
-   @method init_cards
+   Initialize all the things.
+   @method init_things
    */
-   function init_elements( opts, eng ) {
+   function init_things( opts, eng ) {
       var mat = new THREE.MeshLambertMaterial({ color: opts.generator.material.color });
       eng.side_mat = Physijs.createMaterial( mat, opts.generator.material.friction, opts.generator.material.restitution );
       $( opts.src.selector ).each( function( idx, val ) {
-         init_image( val, opts, eng );
+         init_thing( val, opts, eng );
       });
    }
 
@@ -83,7 +60,7 @@ An Extrovert.js generator for 3D extrusion.
    Initialize a single card object. TODO: Clean up material/geo handling.
    @method init_card
    */
-   function init_image( val, opts, eng ) {
+   function init_thing( val, opts, eng ) {
 
       // Position
       var pos_info = EXTROVERT.get_position( val, opts, eng );
@@ -119,16 +96,4 @@ An Extrovert.js generator for 3D extrusion.
 
 
 
-   /**
-   Module return.
-   */
-   //return my;
-
-
-
 }(window, $, THREE, EXTROVERT));
-
-// [1] Don't rely exclusively on .offset() or .position()
-//     See: http://bugs.jquery.com/ticket/11606
-//     var pos = $(val).offset();
-//     var pos = $(val).position();

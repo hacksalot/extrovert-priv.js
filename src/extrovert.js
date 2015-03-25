@@ -177,10 +177,18 @@ var EXTROVERT = (function (window, $, THREE) {
       transparent: true } );
     eng.log.msg("Building drag plane: %o", eng.drag_plane);
 
+    // Create scene, camera, lighting from options
     EXTROVERT.create_scene( options );
     EXTROVERT.create_camera( $.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
     EXTROVERT.fiat_lux( options.lights );
+
+    // Create world content/geometry
     eng.generator.generate( options, eng );
+
+    // Now that objects have been placed, update the final cam position
+    var oc = opts.camera;
+    oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
+    oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
   }
 
 

@@ -34,14 +34,14 @@ An Extrovert.js generator for a 3D image gallery.
       lights: [
          { type: 'point', color: 0xffffff, intensity: 1, distance: 10000 },
          { type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,0,300] },
-      ]      
+      ]
    };
-   
-   
-   
+
+
+
    var _init_cam_opts = {
       position: [0,0,800]
-   };   
+   };
 
 
    /**
@@ -66,11 +66,7 @@ An Extrovert.js generator for a 3D image gallery.
    */
    function init_objects( opts, eng ) {
 
-      EXTROVERT.create_scene( opts );
-      EXTROVERT.create_camera( $.extend(true, {}, opts.camera, _init_cam_opts) );
-      EXTROVERT.fiat_lux( opts.lights );
-
-      // Create the visible/collidable backplane. Place it on the 
+      // Create the visible/collidable backplane. Place it on the
       // camera's back frustum plane so it always fills the viewport.
       if( true ) {
 
@@ -101,12 +97,6 @@ An Extrovert.js generator for a 3D image gallery.
       EXTROVERT.create_placement_plane( [0,0,200] );
 
       init_elements( opts, eng );
-      
-      // Now that objects have been placed in-frustum, we can set the camera
-      // position and rotation to whatever the client specified.
-      var oc = opts.camera;
-      oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
-      oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );      
    }
 
 
@@ -154,7 +144,7 @@ An Extrovert.js generator for a 3D image gallery.
       if( opts.generator.lookat )
          mesh.lookAt( new THREE.Vector3(opts.generator.lookat[0], opts.generator.lookat[1], opts.generator.lookat[2]) );
       mesh.elem = $(val);
-      
+
       opts.creating && opts.creating( val, mesh );
       eng.scene.add( mesh );
       eng.card_coll.push( mesh );
@@ -163,9 +153,9 @@ An Extrovert.js generator for a 3D image gallery.
 
       return mesh;
    }
-   
-   
-   
+
+
+
    /**
    Module return.
    */
@@ -176,6 +166,6 @@ An Extrovert.js generator for a 3D image gallery.
 }(window, $, THREE, EXTROVERT));
 
 // [1] Don't rely exclusively on .offset() or .position()
-//     See: http://bugs.jquery.com/ticket/11606      
+//     See: http://bugs.jquery.com/ticket/11606
 //     var pos = $(val).offset();
 //     var pos = $(val).position();

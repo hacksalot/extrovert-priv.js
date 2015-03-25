@@ -44,8 +44,8 @@ An Extrovert.js generator that creates a 3D wall or tower.
          depth: 100
       }
    };
-   
-   
+
+
    var _init_cam_opts = {
       position: [0,0,800]
    };
@@ -73,18 +73,8 @@ An Extrovert.js generator that creates a 3D wall or tower.
    */
    function init_objects( opts, eng ) {
 
-      EXTROVERT.create_scene( opts );
-      EXTROVERT.create_camera( $.extend(true, {}, opts.camera, _init_cam_opts) );
-      EXTROVERT.fiat_lux( opts.lights );
       EXTROVERT.create_placement_plane( [0,0,200] );
-
       init_elements( opts, eng );
-      
-      // Now that objects have been placed in-frustum, we can set the camera
-      // position and rotation to whatever the client specified.
-      var oc = opts.camera;
-      oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
-      oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );      
    }
 
 

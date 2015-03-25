@@ -12,14 +12,6 @@ An Extrovert.js generator for a 3D city scene.
 
 
    /**
-   Module object.
-   */
-   //var my = {};
-
-
-   
-
-   /**
    Default options for this generator. Set defaults here. These will be merged
    in with any user-specified or engine-level options.
    */
@@ -41,7 +33,7 @@ An Extrovert.js generator for a 3D city scene.
 
 
    /**
-   Initial camera state. Regardless of how the user decides to orient the 
+   Initial camera state. Regardless of how the user decides to orient the
    camera, it needs to be created in this initial configuration so object
    placements work.
    */
@@ -51,7 +43,7 @@ An Extrovert.js generator for a 3D city scene.
          up: [0,0,-1]
    };
 
-   
+
 
    /**
    @class The built-in 'city' generator.
@@ -69,25 +61,15 @@ An Extrovert.js generator for a 3D city scene.
    };
 
 
+
    /**
    Initialize scene props and objects.
    @method init_objects
    */
    function init_objects( opts, eng ) {
-
-      EXTROVERT.create_scene( opts );
-      EXTROVERT.create_camera( $.extend(true, {}, opts.camera, _init_cam_opts) );
-      EXTROVERT.fiat_lux( opts.lights );
-
       init_ground( opts, eng );
       init_placement_plane( opts, eng );
       init_elements( opts, eng );
-
-      // Now that objects have been placed in-frustum, we can set the camera
-      // position and rotation to whatever the client specified.
-      var oc = opts.camera;
-      eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
-      eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
    }
 
 
@@ -100,7 +82,7 @@ An Extrovert.js generator for a 3D city scene.
       var planeHeight = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
       var plane_tex = opts.generator.background ?
          THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
-         
+
       plane_tex.wrapS = plane_tex.wrapT = THREE.RepeatWrapping;
       plane_tex.repeat.set( 100, 100 );
 
