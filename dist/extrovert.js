@@ -109,7 +109,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
     init_options( options );
-    init_renderer();
+    init_renderer( opts );
     init_world( opts, eng );
     init_canvas( opts );
     init_physics( opts );
@@ -164,7 +164,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
   /**
-  Generate the "world". Defers directly to the generator.
+  Generate the "world".
   @method init_world
   */
   function init_world( options, eng ) {
@@ -224,14 +224,15 @@ var EXTROVERT = (function (window, $, THREE) {
   Initialize the renderer.
   @method init_renderer
   */
-  function init_renderer() {
+  function init_renderer( opts ) {
     var cont = $( opts.src.container );
     var rect = cont[0].getBoundingClientRect();
     eng.width = rect.right - rect.left;
     eng.height = rect.bottom - rect.top;
-    eng.renderer = new THREE.WebGLRenderer();
+    eng.renderer = new THREE.WebGLRenderer({ antialias: true });
     eng.renderer.setPixelRatio( window.devicePixelRatio );
     eng.renderer.setSize( eng.width, eng.height );
+    opts.bkcolor && eng.renderer.setClearColor( opts.bkcolor );
     // Give the canvas a tabindex so it receives keyboard input and set the
     // position to relative so coordinates are canvas-local.
     // http://stackoverflow.com/a/3274697
@@ -830,8 +831,8 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 
 	// internals
 	this.target = new THREE.Vector3();
-   if( options.target )
-      this.target.set( options.target[0], options.target[1], options.target[2] );
+  if( options.target )
+    this.target.set( options.target[0], options.target[1], options.target[2] );
       
    /* these used to be globals */
 	var EPS = 0.000001;
@@ -864,23 +865,19 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 
 	// methods
 
-   function subscribe( event_name, handler, options ) {
-      if( !options || !options.ignore_events || options.ignore_events.indexOf( event_name ) === -1 ) {
-         _this.domElement.addEventListener( event_name, /*this[event_name]*/ handler, false );
-      }
-   }
+  function subscribe( event_name, handler, options ) {
+    if( !options || !options.ignore_events || options.ignore_events.indexOf( event_name ) === -1 ) {
+      _this.domElement.addEventListener( event_name, /*this[event_name]*/ handler, false );
+    }
+  }
 
 	this.handleResize = function () {
-
 		if ( _this.domElement === document ) {
-
 			this.screen.left = 0;
 			this.screen.top = 0;
 			this.screen.width = window.innerWidth;
 			this.screen.height = window.innerHeight;
-
 		} else {
-
 			var box = this.domElement.getBoundingClientRect();
 			// adjustments come from similar code in the jquery offset() function
 			var d = _this.domElement.ownerDocument.documentElement;
@@ -888,57 +885,42 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 			this.screen.top = box.top + window.pageYOffset - d.clientTop;
 			this.screen.width = box.width;
 			this.screen.height = box.height;
-
 		}
-
 	};
 
 
 	var getMouseOnScreen = ( function () {
-
 		var vector = new THREE.Vector2();
-
 		return function ( pageX, pageY ) {
-
 			vector.set(
 				( pageX - _this.screen.left ) / _this.screen.width,
 				( pageY - _this.screen.top ) / _this.screen.height
 			);
-
 			return vector;
-
 		};
-
-	}() );
+	}());
 
 	var getMouseOnCircle = ( function () {
-
 		var vector = new THREE.Vector2();
-
 		return function ( pageX, pageY ) {
-
 			vector.set(
 				( ( pageX - _this.screen.width * 0.5 - _this.screen.left ) / ( _this.screen.width * 0.5 ) ),
 				( ( _this.screen.height + 2 * ( _this.screen.top - pageY ) ) / _this.screen.width ) // screen.width intentional
 			);
-
 			return vector;
 		};
-
-	}() );
+	}());
 
 	this.rotateCamera = (function() {
-
 		var axis = new THREE.Vector3(),
-			quaternion = new THREE.Quaternion(),
-			eyeDirection = new THREE.Vector3(),
-			objectUpDirection = new THREE.Vector3(),
-			objectSidewaysDirection = new THREE.Vector3(),
-			moveDirection = new THREE.Vector3(),
-			angle;
+    quaternion = new THREE.Quaternion(),
+		eyeDirection = new THREE.Vector3(),
+		objectUpDirection = new THREE.Vector3(),
+		objectSidewaysDirection = new THREE.Vector3(),
+		moveDirection = new THREE.Vector3(),
+		angle;
 
 		return function () {
-
 			moveDirection.set( _moveCurr.x - _movePrev.x, _moveCurr.y - _movePrev.y, 0 );
 			angle = moveDirection.length();
 
@@ -986,72 +968,42 @@ THREE.TrackballControls = function ( object, domElement, options ) {
 
 
 	this.zoomCamera = function () {
-
 		var factor;
-
 		if ( _state === STATE.TOUCH_ZOOM_PAN ) {
-
 			factor = _touchZoomDistanceStart / _touchZoomDistanceEnd;
 			_touchZoomDistanceStart = _touchZoomDistanceEnd;
 			_eye.multiplyScalar( factor );
-
-		} else {
-
-			factor = 1.0 + ( _zoomEnd.y - _zoomStart.y ) * _this.zoomSpeed;
-
-			if ( factor !== 1.0 && factor > 0.0 ) {
-
-				_eye.multiplyScalar( factor );
-
-				if ( _this.staticMoving ) {
-
-					_zoomStart.copy( _zoomEnd );
-
-				} else {
-
-					_zoomStart.y += ( _zoomEnd.y - _zoomStart.y ) * this.dynamicDampingFactor;
-
-				}
-
-			}
-
 		}
-
+    else {
+			factor = 1.0 + ( _zoomEnd.y - _zoomStart.y ) * _this.zoomSpeed;
+			if ( factor !== 1.0 && factor > 0.0 ) {
+				_eye.multiplyScalar( factor );
+				if ( _this.staticMoving )
+					_zoomStart.copy( _zoomEnd );
+				else
+					_zoomStart.y += ( _zoomEnd.y - _zoomStart.y ) * this.dynamicDampingFactor;
+			}
+		}
 	};
 
 	this.panCamera = (function() {
-
 		var mouseChange = new THREE.Vector2(),
 			objectUp = new THREE.Vector3(),
 			pan = new THREE.Vector3();
-
 		return function () {
-
 			mouseChange.copy( _panEnd ).sub( _panStart );
-
 			if ( mouseChange.lengthSq() ) {
-
 				mouseChange.multiplyScalar( _eye.length() * _this.panSpeed );
-
 				pan.copy( _eye ).cross( _this.object.up ).setLength( mouseChange.x );
 				pan.add( objectUp.copy( _this.object.up ).setLength( mouseChange.y ) );
-
 				_this.object.position.add( pan );
 				_this.target.add( pan );
-
-				if ( _this.staticMoving ) {
-
+				if ( _this.staticMoving )
 					_panStart.copy( _panEnd );
-
-				} else {
-
+				else
 					_panStart.add( mouseChange.subVectors( _panEnd, _panStart ).multiplyScalar( _this.dynamicDampingFactor ) );
-
-				}
-
 			}
 		};
-
 	}());
 
 	this.checkDistances = function () {
@@ -2012,22 +1964,18 @@ A simple Extrovert HTML rasterizer.
 
 (function (window, $, THREE, EXTROVERT) {
 
-
-
-   EXTROVERT.paint_html = function () {
-      return {
-         paint: function( $val, opts ) {
-            /* TODO */
-            var texture = null;
-            return {
-               tex: texture,
-               mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
-            };
-         }
-      };
-   };
-
-
+  EXTROVERT.paint_html = function () {
+    return {
+      paint: function( $val, opts ) {
+        /* TODO */
+        var texture = null;
+        return {
+          tex: texture,
+          mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
+        };
+      }
+    };
+  };
 
 }(window, $, THREE, EXTROVERT));
 ;/**
@@ -2041,29 +1989,25 @@ A simple Extrovert image rasterizer.
 
 (function (window, $, THREE, EXTROVERT) {
 
-
-
-   EXTROVERT.paint_img_canvas = function () {
-      return {
-         paint: function( $val, opts ) {
-            var img = $val.get( 0 );
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            canvas.width = $val.width();
-            canvas.height = $val.height();
-            log.msg("Creating texture %d x %d (%d x %d)", img.clientWidth, img.clientHeight, canvas.width, canvas.height);
-            context.drawImage(img, 0, 0, img.clientWidth, img.clientHeight);
-            texture = new THREE.Texture( canvas );
-            texture.needsUpdate = true;
-            return {
-               tex: texture,
-               mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
-            };
-         }
-      };
-   };
-
-
+  EXTROVERT.paint_img_canvas = function () {
+    return {
+      paint: function( $val, opts ) {
+        var img = $val.get( 0 );
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        canvas.width = $val.width();
+        canvas.height = $val.height();
+        log.msg("Creating texture %d x %d (%d x %d)", img.clientWidth, img.clientHeight, canvas.width, canvas.height);
+        context.drawImage(img, 0, 0, img.clientWidth, img.clientHeight);
+        texture = new THREE.Texture( canvas );
+        texture.needsUpdate = true;
+        return {
+          tex: texture,
+          mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
+        };
+      }
+    };
+  };
 
 }(window, $, THREE, EXTROVERT));
 ;/**
@@ -2077,22 +2021,18 @@ A simple Extrovert image rasterizer.
 
 (function (window, $, THREE, EXTROVERT) {
 
-
-
-   EXTROVERT.paint_img = function () {
-      return {
-         paint: function( $val, opts ) {
-            var img = $val.get( 0 );
-            var texture = THREE.ImageUtils.loadTexture( img.src );
-            return {
-               tex: texture,
-               mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
-            };
-         }
-      };
-   };
-
-
+  EXTROVERT.paint_img = function () {
+    return {
+      paint: function( $val, opts ) {
+        var img = $val.get( 0 );
+        var texture = THREE.ImageUtils.loadTexture( img.src );
+        return {
+          tex: texture,
+          mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
+        };
+      }
+    };
+  };
 
 }(window, $, THREE, EXTROVERT));
 ;/**
@@ -2106,81 +2046,77 @@ A simple Extrovert HTML rasterizer.
 
 (function (window, $, THREE, EXTROVERT) {
 
+  EXTROVERT.paint_plain_text = function () {
+    return {
+      paint: function( $val, opts ) {
 
+        // Get the element content
+        var title_elem = $val.find( opts.src.title );
+        var title = title_elem.text();//.trim();
+        var content_elem = $val.find( opts.src.content );
+        var content = content_elem.text();//.trim();
 
-   EXTROVERT.paint_plain_text = function () {
-      return {
-         paint: function( $val, opts ) {
+        // Create a canvas element. TODO: Reuse a single canvas.
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        canvas.width = $val.width();
+        canvas.height = $val.height();
 
-            // Get the element content
-            var title_elem = $val.find( opts.src.title );
-            var title = title_elem.text();//.trim();
-            var content_elem = $val.find( opts.src.content );
-            var content = content_elem.text();//.trim();
+        // Fill the canvas with the background color
+        var bkColor = $val.css('background-color');
+        if(bkColor === 'rgba(0, 0, 0, 0)')
+          bkColor = 'rgb(0,0,0)';
+        context.fillStyle = bkColor;
+        context.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Create a canvas element. TODO: Reuse a single canvas.
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            canvas.width = $val.width();
-            canvas.height = $val.height();
+        // For photo backgrounds:
+        // var images = $val.children('img');
+        // if(images.length > 0)
+        // context.drawImage(images.get(0),0,0, canvas.width, canvas.height);
+        var has_photo = false;
 
-            // Fill the canvas with the background color
-            var bkColor = $val.css('background-color');
-            if(bkColor === 'rgba(0, 0, 0, 0)')
-               bkColor = 'rgb(0,0,0)';
-            context.fillStyle = bkColor;
-            context.fillRect(0, 0, canvas.width, canvas.height);
+        // Compute the size of the title text
+        var font_size = title_elem.css('font-size');
+        //context.font = "Bold " + font_size + " '" + title_elem.css('font-family') + "'";
 
-            // For photo backgrounds:
-            // var images = $val.children('img');
-            // if(images.length > 0)
-            // context.drawImage(images.get(0),0,0, canvas.width, canvas.height);
-            var has_photo = false;
+        context.font = title_elem.css('font');
 
-            // Compute the size of the title text
-            var font_size = title_elem.css('font-size');
-            //context.font = "Bold " + font_size + " '" + title_elem.css('font-family') + "'";
-            
-            context.font = title_elem.css('font');
-            
-            context.fillStyle = title_elem.css('color');
-            //context.textBaseline = 'top';
-            var line_height = 24;
-            var num_lines = EXTROVERT.Utils.wrap_text( context, title, 10, 10 + line_height, canvas.width - 20, line_height, true );
-            
-            // Paint the title's background panel
-            context.fillStyle = has_photo ? "rgba(0,0,0,0.75)" : EXTROVERT.Utils.shade_blend( -0.25, bkColor );
-            context.fillRect(0,0, canvas.width, 20 + num_lines * line_height);
+        context.fillStyle = title_elem.css('color');
+        //context.textBaseline = 'top';
+        var line_height = 24;
+        var num_lines = EXTROVERT.Utils.wrap_text( context, title, 10, 10 + line_height, canvas.width - 20, line_height, true );
 
-            // Paint the title text
-            context.fillStyle = title_elem.css('color');
-            EXTROVERT.Utils.wrap_text( context, title, 10, 10 + line_height, canvas.width - 20, line_height, false );
-            
-            // Paint the content text
-            //context.font = "Normal " + font_size + " '" + content_elem.css('font-family') + "'";
-            context.font = content_elem.css('font');
-            
-            var shim = $('<div id="_fetchSize" style="display: none;">Sample text</div>');
-            $( opts.src.container ).append( shim );
-            line_height = shim.text("x").height();
-            
-            //var TestDivLineHeight = $("#TestDiv").css("font-size", "12px").css("line-height", "1.25").text("x").height();
-            var massaged_content = content.replace('\n',' ');
-            
-            EXTROVERT.Utils.wrap_text( context, massaged_content, 10, 20 + (num_lines * line_height) + line_height, canvas.width - 20, line_height, false );
+        // Paint the title's background panel
+        context.fillStyle = has_photo ? "rgba(0,0,0,0.75)" : EXTROVERT.Utils.shade_blend( -0.25, bkColor );
+        context.fillRect(0,0, canvas.width, 20 + num_lines * line_height);
 
-            // Create a texture from the canvas
-            var texture = new THREE.Texture( canvas );
-            texture.needsUpdate = true;
-            return {
-               tex: texture,
-               mat: new THREE.MeshLambertMaterial( { map: texture/*, side: THREE.DoubleSide*/ } )
-            };
-         }
-      };
-   };
+        // Paint the title text
+        context.fillStyle = title_elem.css('color');
+        EXTROVERT.Utils.wrap_text( context, title, 10, 10 + line_height, canvas.width - 20, line_height, false );
 
+        // Paint the content text
+        //context.font = "Normal " + font_size + " '" + content_elem.css('font-family') + "'";
+        context.font = content_elem.css('font');
 
+        var shim = $('<div id="_fetchSize" style="display: none;">Sample text</div>');
+        $( opts.src.container ).append( shim );
+        line_height = shim.text("x").height();
+
+        //var TestDivLineHeight = $("#TestDiv").css("font-size", "12px").css("line-height", "1.25").text("x").height();
+        var massaged_content = content.replace('\n',' ');
+
+        EXTROVERT.Utils.wrap_text( context, massaged_content, 10, 20 + (num_lines * line_height) + line_height, canvas.width - 20, line_height, false );
+
+        // Create a texture from the canvas
+        var texture = new THREE.Texture( canvas );
+        texture.needsUpdate = true;
+        return {
+          tex: texture,
+          mat: new THREE.MeshLambertMaterial( { map: texture/*, side: THREE.DoubleSide*/ } )
+        };
+      }
+    };
+  };
 
 }(window, $, THREE, EXTROVERT));
 ;/**
@@ -2194,57 +2130,52 @@ A simple Extrovert HTML rasterizer.
 
 (function (window, $, THREE, EXTROVERT) {
 
+  EXTROVERT.paint_simple_html = function () {
+    return {
+      paint: function( $val, opts ) {
+        // Get the element content
+        var title_elem = $val.find( opts.src.title );
+        var title = title_elem.text().trim();
 
+        // Create a canvas element. TODO: Reuse a single canvas.
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        canvas.width = $val.width();
+        canvas.height = $val.height();
 
-   EXTROVERT.paint_simple_html = function () {
-      return {
-         paint: function( $val, opts ) {
-            // Get the element content
-            var title_elem = $val.find( opts.src.title );
-            var title = title_elem.text().trim();
+        // Paint on the canvas
+        var bkColor = $val.css('background-color');
+        if(bkColor === 'rgba(0, 0, 0, 0)')
+          bkColor = 'rgb(0,0,0)';
+        context.fillStyle = bkColor;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        var images = $val.children('img');
+        if(images.length > 0)
+          context.drawImage(images.get(0),0,0, canvas.width, canvas.height);
+        var font_size = title_elem.css('font-size');
+        //context.font = "Bold 18px 'Open Sans Condensed'";
+        context.font = "Bold " + font_size + " '" + title_elem.css('font-family') + "'";
+        context.fillStyle = title_elem.css('color');
+        context.textBaseline = 'top';
+        var line_height = 24;
+        var num_lines = EXTROVERT.Utils.wrap_text( context, title, 10, 10, canvas.width - 20, line_height, true );
+        if(images.length === 0)
+          context.fillStyle = EXTROVERT.Utils.shade_blend( -0.25, bkColor );
+        else
+          context.fillStyle = "rgba(0,0,0,0.75)";
+        context.fillRect(0,0, canvas.width, 20 + num_lines * line_height);
+        context.fillStyle = title_elem.css('color');
+        wrap_text( context, title, 10, 10, canvas.width - 20, line_height, false );
 
-            // Create a canvas element. TODO: Reuse a single canvas.
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            canvas.width = $val.width();
-            canvas.height = $val.height();
-
-            // Paint on the canvas
-            var bkColor = $val.css('background-color');
-            if(bkColor === 'rgba(0, 0, 0, 0)')
-               bkColor = 'rgb(0,0,0)';
-            context.fillStyle = bkColor;
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            var images = $val.children('img');
-            if(images.length > 0)
-               context.drawImage(images.get(0),0,0, canvas.width, canvas.height);
-            var font_size = title_elem.css('font-size');
-            //context.font = "Bold 18px 'Open Sans Condensed'";
-            context.font = "Bold " + font_size + " '" + title_elem.css('font-family') + "'";
-            context.fillStyle = title_elem.css('color');
-            context.textBaseline = 'top';
-            var line_height = 24;
-            var num_lines = EXTROVERT.Utils.wrap_text( context, title, 10, 10, canvas.width - 20, line_height, true );
-            if(images.length === 0)
-               context.fillStyle = EXTROVERT.Utils.shade_blend( -0.25, bkColor );
-            else
-               context.fillStyle = "rgba(0,0,0,0.75)";
-            context.fillRect(0,0, canvas.width, 20 + num_lines * line_height);
-            context.fillStyle = title_elem.css('color');
-            wrap_text( context, title, 10, 10, canvas.width - 20, line_height, false );
-
-            // Create a texture from the canvas
-            var texture = new THREE.Texture( canvas );
-            texture.needsUpdate = true;
-            return {
-               tex: texture,
-               mat: new THREE.MeshLambertMaterial( { map: texture/*, side: THREE.DoubleSide*/ } )
-            };
-         }
-      };
-   };
-
-
-
+        // Create a texture from the canvas
+        var texture = new THREE.Texture( canvas );
+        texture.needsUpdate = true;
+        return {
+          tex: texture,
+          mat: new THREE.MeshLambertMaterial( { map: texture/*, side: THREE.DoubleSide*/ } )
+        };
+      }
+    };
+  };
 
 }(window, $, THREE, EXTROVERT));

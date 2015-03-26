@@ -107,9 +107,8 @@ var EXTROVERT = (function (window, $, THREE) {
       });
     }
 
-
     init_options( options );
-    init_renderer();
+    init_renderer( opts );
     init_world( opts, eng );
     init_canvas( opts );
     init_physics( opts );
@@ -117,20 +116,15 @@ var EXTROVERT = (function (window, $, THREE) {
     init_events();
     init_timer();
     start();
+
     return true;
-  };
-
-
-  my.add = function( obj ) {
-
   };
 
 
 
   /**
-  Initialize engine options. Not the engine, the *options*. Here's where we
-  merge user, generator, and engine options into a new combined options object
-  and carry across other important settings.
+  Initialize engine options. Merge user, generator, and engine options into a 
+  new combined options object and carry across other important settings.
   @method init_options
   */
   function init_options( options ) {
@@ -147,7 +141,6 @@ var EXTROVERT = (function (window, $, THREE) {
     // Wire in generator options
     opts = $.extend(true, { }, defaults, eng.generator.options );
     opts = $.extend(true, opts, options );
-    eng.log.msg("Options: %o", opts);
     // Carry across physics
     if( opts.physics.enabled ) {
       Physijs.scripts.worker = opts.physics.physijs.worker;
@@ -164,7 +157,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
   /**
-  Generate the "world". Defers directly to the generator.
+  Generate the "world".
   @method init_world
   */
   function init_world( options, eng ) {
@@ -176,7 +169,6 @@ var EXTROVERT = (function (window, $, THREE) {
       color: 0x000000,
       opacity: 0.25,
       transparent: true } );
-    eng.log.msg("Building drag plane: %o", eng.drag_plane);
 
     // Create scene, camera, lighting from options
     EXTROVERT.create_scene( options );
@@ -224,14 +216,15 @@ var EXTROVERT = (function (window, $, THREE) {
   Initialize the renderer.
   @method init_renderer
   */
-  function init_renderer() {
+  function init_renderer( opts ) {
     var cont = $( opts.src.container );
     var rect = cont[0].getBoundingClientRect();
     eng.width = rect.right - rect.left;
     eng.height = rect.bottom - rect.top;
-    eng.renderer = new THREE.WebGLRenderer();
+    eng.renderer = new THREE.WebGLRenderer({ antialias: true });
     eng.renderer.setPixelRatio( window.devicePixelRatio );
     eng.renderer.setSize( eng.width, eng.height );
+    opts.bkcolor && eng.renderer.setClearColor( opts.bkcolor );
     // Give the canvas a tabindex so it receives keyboard input and set the
     // position to relative so coordinates are canvas-local.
     // http://stackoverflow.com/a/3274697
@@ -239,7 +232,6 @@ var EXTROVERT = (function (window, $, THREE) {
     eng.renderer.domElement.style += ' position: relative;';
     eng.renderer.autoClearStencil = false;
     eng.renderer.getContext().clearStencil = function() { };
-    eng.log.msg( "Renderer: %o", eng.renderer );
   }
 
 
@@ -750,7 +742,6 @@ var EXTROVERT = (function (window, $, THREE) {
     eng.scene.updateMatrix();
     eng.placement_plane.updateMatrix();
     eng.placement_plane.updateMatrixWorld();
-    eng.log.msg("Building placement plane: %o", eng.placement_plane);
     return eng.placement_plane;
   };
 
@@ -767,7 +758,6 @@ var EXTROVERT = (function (window, $, THREE) {
     eng.camera.aspect = eng.width / eng.height;
     eng.camera.updateProjectionMatrix();
     eng.renderer.setSize( eng.width, eng.height );
-    eng.log.msg("window_resize( %d, %d a=%s)", eng.width, eng.height, eng.camera.aspect.toString());
   }
 
 

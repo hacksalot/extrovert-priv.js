@@ -9,21 +9,17 @@ A simple Extrovert HTML rasterizer.
 
 (function (window, $, THREE, EXTROVERT) {
 
-
-
-   EXTROVERT.paint_html = function () {
-      return {
-         paint: function( $val, opts ) {
-            /* TODO */
-            var texture = null;
-            return {
-               tex: texture,
-               mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
-            };
-         }
-      };
-   };
-
-
+  EXTROVERT.paint_html = function () {
+    return {
+      paint: function( $val, opts ) {
+        /* TODO */
+        var texture = null;
+        return {
+          tex: texture,
+          mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
+        };
+      }
+    };
+  };
 
 }(window, $, THREE, EXTROVERT));

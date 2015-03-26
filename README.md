@@ -41,17 +41,16 @@ EXTROVERT.init( opts );
 
 ## Development Roadmap ##
 
-We're aiming for a production 1.0.0 release of the Extrovert library on April 15th, 2015. Immediate focus:
+Extrovert.js is in active development. Stuff we're currently focusing on:
 
 - Remove hard jQuery dependency.
 - Remove hard Three.js dependency.
 - Better IE / Safari and Linux support.
+- jQuery plugin version
 - More generators!
 - More rasterizers!
-- More control schemes!
+- More controllers!
 - Implement [bin packing](http://codeincomplete.com/posts/2011/5/7/bin_packing/) in the engine.
 - HTML-to-SVG texture rasterization.
 - Additional physics libraries.
-- Support plugin versions of the library.
 - Additional samples and docs.
-
