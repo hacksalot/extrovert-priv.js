@@ -107,7 +107,6 @@ var EXTROVERT = (function (window, $, THREE) {
       });
     }
 
-
     init_options( options );
     init_renderer( opts );
     init_world( opts, eng );
@@ -117,20 +116,15 @@ var EXTROVERT = (function (window, $, THREE) {
     init_events();
     init_timer();
     start();
+
     return true;
-  };
-
-
-  my.add = function( obj ) {
-
   };
 
 
 
   /**
-  Initialize engine options. Not the engine, the *options*. Here's where we
-  merge user, generator, and engine options into a new combined options object
-  and carry across other important settings.
+  Initialize engine options. Merge user, generator, and engine options into a 
+  new combined options object and carry across other important settings.
   @method init_options
   */
   function init_options( options ) {
@@ -147,7 +141,6 @@ var EXTROVERT = (function (window, $, THREE) {
     // Wire in generator options
     opts = $.extend(true, { }, defaults, eng.generator.options );
     opts = $.extend(true, opts, options );
-    eng.log.msg("Options: %o", opts);
     // Carry across physics
     if( opts.physics.enabled ) {
       Physijs.scripts.worker = opts.physics.physijs.worker;
@@ -176,7 +169,6 @@ var EXTROVERT = (function (window, $, THREE) {
       color: 0x000000,
       opacity: 0.25,
       transparent: true } );
-    eng.log.msg("Building drag plane: %o", eng.drag_plane);
 
     // Create scene, camera, lighting from options
     EXTROVERT.create_scene( options );
@@ -240,7 +232,6 @@ var EXTROVERT = (function (window, $, THREE) {
     eng.renderer.domElement.style += ' position: relative;';
     eng.renderer.autoClearStencil = false;
     eng.renderer.getContext().clearStencil = function() { };
-    eng.log.msg( "Renderer: %o", eng.renderer );
   }
 
 
@@ -751,7 +742,6 @@ var EXTROVERT = (function (window, $, THREE) {
     eng.scene.updateMatrix();
     eng.placement_plane.updateMatrix();
     eng.placement_plane.updateMatrixWorld();
-    eng.log.msg("Building placement plane: %o", eng.placement_plane);
     return eng.placement_plane;
   };
 
@@ -768,7 +758,6 @@ var EXTROVERT = (function (window, $, THREE) {
     eng.camera.aspect = eng.width / eng.height;
     eng.camera.updateProjectionMatrix();
     eng.renderer.setSize( eng.width, eng.height );
-    eng.log.msg("window_resize( %d, %d a=%s)", eng.width, eng.height, eng.camera.aspect.toString());
   }
 
 
@@ -1874,9 +1863,11 @@ An Extrovert.js generator for a 3D image gallery.
         },
         camera: { position: [0,0,3200], far: 10000 },
         lights: [
-          { type: 'point', color: 0xffffff, intensity: 1, distance: 10000 },
-          { type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,0,300] },
-        ]
+          { type: 'point', color: 0xffffff, intensity: 1, distance: 10000, pos: [0,0,3200] },
+          //{ type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,0,300] },
+          { type: 'ambient', color: 0x343434 }
+        ],
+        block: { depth: 20 }
       },
 
       init_cam_opts: { position: [0,0,800] }

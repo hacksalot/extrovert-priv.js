@@ -53,9 +53,11 @@ An Extrovert.js generator for a 3D image gallery.
         },
         camera: { position: [0,0,3200], far: 10000 },
         lights: [
-          { type: 'point', color: 0xffffff, intensity: 1, distance: 10000 },
-          { type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,0,300] },
-        ]
+          { type: 'point', color: 0xffffff, intensity: 1, distance: 10000, pos: [0,0,3200] },
+          //{ type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,0,300] },
+          { type: 'ambient', color: 0x343434 }
+        ],
+        block: { depth: 20 }
       },
 
       init_cam_opts: { position: [0,0,800] }
