@@ -233,7 +233,7 @@ EXTROVERT.Utils = (function (window, THREE) {
           if (deep && copy && (my.is_plain_object(copy) || (copyIsArray = (copy.constructor === Array)))) {
             if (copyIsArray) {
               copyIsArray = false;
-              clone = src && jQuery.isArray(src) ? src : [];
+              clone = src && (src.constructor === Array) ? src : [];
             } else {
               clone = src && my.is_plain_object(src) ? src : {};
             }

@@ -5,6 +5,26 @@ module.exports = function(grunt) {
 
       pkg: grunt.file.readJSON('package.json'),
 
+      connect: {
+        options: {
+          hostname: 'localhost',
+          port: 8000,
+        },
+        // Set up server for automated unit tests
+        auto: {
+          options: {
+            base: '.'
+          }
+        },
+        // Set up server for manual tests
+        manual: {
+          options: {
+            base: '.',
+            keepalive: true
+          }
+        }
+
+      },
 
       concat: {
          options: {
@@ -30,7 +50,11 @@ module.exports = function(grunt) {
 
 
       qunit: {
-         files: ['test/**/*.html']
+        test1: {
+          options: {
+            urls: ['http://localhost:8000/test/auto-tests.html']
+          }
+        }
       },
 
 
@@ -46,13 +70,8 @@ module.exports = function(grunt) {
             },
             expr: true
          }
-      },
-
-
-      watch: {
-         files: ['<%= jshint.files %>'],
-         tasks: ['jshint', 'qunit']
       }
+
 
 
    });
@@ -60,8 +79,9 @@ module.exports = function(grunt) {
    grunt.loadNpmTasks('grunt-contrib-uglify');
    grunt.loadNpmTasks('grunt-contrib-jshint');
    grunt.loadNpmTasks('grunt-contrib-qunit');
-   grunt.loadNpmTasks('grunt-contrib-watch');
    grunt.loadNpmTasks('grunt-contrib-concat');
-   grunt.registerTask('test', ['jshint', 'qunit']);
+   grunt.loadNpmTasks('grunt-contrib-connect');
    grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
+   grunt.registerTask('test', ['default', 'connect:auto', 'qunit']);
+   grunt.registerTask('testmanual', ['default', 'connect:manual']);
 };
