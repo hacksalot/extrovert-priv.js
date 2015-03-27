@@ -139,8 +139,8 @@ var EXTROVERT = (function (window, $, THREE) {
       eng.generator = new EXTROVERT[ options.generator.name ]();
     }
     // Wire in generator options
-    opts = $.extend(true, { }, defaults, eng.generator.options );
-    opts = $.extend(true, opts, options );
+    opts = EXTROVERT.Utils.extend(true, { }, defaults, eng.generator.options );
+    opts = EXTROVERT.Utils.extend(true, opts, options );
     // Carry across physics
     if( opts.physics.enabled ) {
       Physijs.scripts.worker = opts.physics.physijs.worker;
@@ -172,7 +172,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
     // Create scene, camera, lighting from options
     EXTROVERT.create_scene( options );
-    EXTROVERT.create_camera( $.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
+    EXTROVERT.create_camera( EXTROVERT.Utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
     EXTROVERT.fiat_lux( options.lights );
 
     // Create world content/geometry

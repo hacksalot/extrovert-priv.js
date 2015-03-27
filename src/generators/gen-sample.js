@@ -35,7 +35,7 @@ A sample Extrovert generator for demonstration purposes.
    EXTROVERT.sample = function() {
       return {
          sample: function( options, eng ) {
-            var new_opts = $.extend(true, { }, _def_opts, options);
+            var new_opts = EXTROVERT.Utils.extend(true, { }, _def_opts, options);
             if( !new_opts.generator || typeof new_opts.generator == 'string' )
                new_opts.generator = _def_opts.generator;
             init_objects( new_opts, eng );
