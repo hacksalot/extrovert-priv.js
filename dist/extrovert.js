@@ -3,7 +3,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 @module extrovert.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
-@license MIT
 @version 1.0
 */
 
@@ -87,6 +86,8 @@ var EXTROVERT = (function (window, THREE) {
   */
   var opts = null;
 
+  var _utils = null;
+
 
 
   /**
@@ -94,7 +95,10 @@ var EXTROVERT = (function (window, THREE) {
   @method init
   */
   my.init = function( options ) {
-    if( !EXTROVERT.Utils.detect_webgl() ) return false;
+
+    _utils = EXTROVERT.Utils;
+
+    if( !_utils.detect_webgl() ) return false;
 
     // Special handling for IE
     var ua = window.navigator.userAgent;
@@ -123,14 +127,13 @@ var EXTROVERT = (function (window, THREE) {
 
 
   /**
-  Initialize engine options. Merge user, generator, and engine options into a 
+  Initialize engine options. Merge user, generator, and engine options into a
   new combined options object and carry across other important settings.
   @method init_options
   */
   function init_options( options ) {
-    // Set up a logger
-    eng.log = EXTROVERT.Utils.log;
-    // Instantiate the generator
+    eng.log = _utils.log;
+
     if( !options.generator )
       eng.generator = new EXTROVERT.float();
     else if (typeof options.generator == 'string')
@@ -138,15 +141,15 @@ var EXTROVERT = (function (window, THREE) {
     else {
       eng.generator = new EXTROVERT[ options.generator.name ]();
     }
-    // Wire in generator options
-    opts = EXTROVERT.Utils.extend(true, { }, defaults, eng.generator.options );
-    opts = EXTROVERT.Utils.extend(true, opts, options );
-    // Carry across physics
+
+    opts = _utils.extend(true, { }, defaults, eng.generator.options );
+    opts = _utils.extend(true, opts, options );
+
     if( opts.physics.enabled ) {
       Physijs.scripts.worker = opts.physics.physijs.worker;
       Physijs.scripts.ammo = opts.physics.physijs.ammo;
     }
-    // Instantiate a rasterizer
+
     if( typeof opts.rasterizer == 'string' )
       eng.rasterizer = new EXTROVERT[ 'paint_' + opts.rasterizer ]();
     else
@@ -161,7 +164,6 @@ var EXTROVERT = (function (window, THREE) {
   @method init_world
   */
   function init_world( options, eng ) {
-    // Create an invisible, untouchable drag plane for drag-drop
     eng.drag_plane = EXTROVERT.create_object( {
       type: 'plane',
       dims: [2000,2000,8],
@@ -170,18 +172,13 @@ var EXTROVERT = (function (window, THREE) {
       opacity: 0.25,
       transparent: true } );
 
-    // Create scene, camera, lighting from options
     EXTROVERT.create_scene( options );
-    EXTROVERT.create_camera( EXTROVERT.Utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
+    EXTROVERT.create_camera( _utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
     EXTROVERT.fiat_lux( options.lights );
 
-    // Create world content/geometry
     eng.generator.init && eng.generator.init( options, eng );
-
     create_scene_objects( eng.scene, options );
-
     eng.scene.updateMatrix();
-
 
     var elems = document.querySelectorAll( options.src.selector ); // IE8+
     var idx, length = elems.length;
@@ -196,7 +193,7 @@ var EXTROVERT = (function (window, THREE) {
       mesh.elem = elem;
       options.created && options.created( elem, mesh );
     }
-    
+
     // Now that objects have been placed, update the final cam position
     var oc = options.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
@@ -221,7 +218,7 @@ var EXTROVERT = (function (window, THREE) {
   @method init_renderer
   */
   function init_renderer( opts ) {
-    var cont = EXTROVERT.Utils.$( opts.src.container );
+    var cont = _utils.$( opts.src.container );
     var rect = cont.getBoundingClientRect();
     eng.width = rect.right - rect.left;
     eng.height = rect.bottom - rect.top;
@@ -246,7 +243,7 @@ var EXTROVERT = (function (window, THREE) {
   */
   function init_canvas( opts ) {
     var action = opts.target.action || 'append';
-    var target_container = EXTROVERT.Utils.$( opts.target.container );
+    var target_container = _utils.$( opts.target.container );
     if( action === 'append' )
       target_container.appendChild( eng.renderer.domElement );
     else if( action === 'replace' || action === 'replaceWith' ) {
@@ -614,10 +611,10 @@ var EXTROVERT = (function (window, THREE) {
         eng.drag_plane.position.copy( eng.selected.position );
         eng.offset.copy( intersects[ 0 ].point ).sub( eng.selected.position );
         if( opts.physics.enabled ) {
-          eng.selected.setAngularFactor( EXTROVERT.Utils.VZERO );
-          eng.selected.setLinearFactor( EXTROVERT.Utils.VZERO );
-          eng.selected.setAngularVelocity( EXTROVERT.Utils.VZERO );
-          eng.selected.setLinearVelocity( EXTROVERT.Utils.VZERO );
+          eng.selected.setAngularFactor( _utils.VZERO );
+          eng.selected.setLinearFactor( _utils.VZERO );
+          eng.selected.setAngularVelocity( _utils.VZERO );
+          eng.selected.setLinearVelocity( _utils.VZERO );
         }
         else {
           eng.selected.temp_velocity = eng.selected.velocity.clone();
@@ -709,8 +706,8 @@ var EXTROVERT = (function (window, THREE) {
   my.get_position = function( val, opts, eng ) {
 
     // Get the position of the HTML element [1]
-    var parent_pos = EXTROVERT.Utils.offset( EXTROVERT.Utils.$( opts.src.container ) );
-    var child_pos = EXTROVERT.Utils.offset( val );
+    var parent_pos = _utils.offset( _utils.$( opts.src.container ) );
+    var child_pos = _utils.offset( val );
     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
     // From that, compute the position of the top-left and bottom-right corner
@@ -1617,6 +1614,35 @@ EXTROVERT.Utils = (function (window, THREE) {
   })();
 
 
+  my.get_computed_style = function( el, styleProp ) {
+    var value, defaultView = el.ownerDocument.defaultView;
+    // W3C standard way:
+    if (defaultView && defaultView.getComputedStyle) {
+      // sanitize property name to css notation (hypen separated words eg. font-Size)
+      styleProp = styleProp.replace(/([A-Z])/g, "-$1").toLowerCase();
+      return defaultView.getComputedStyle(el, null).getPropertyValue(styleProp);
+    } else if (el.currentStyle) { // IE
+      // sanitize property name to camelCase
+      styleProp = styleProp.replace(/\-(\w)/g, function(str, letter) {
+        return letter.toUpperCase();
+      });
+      value = el.currentStyle[styleProp];
+      // convert other units to pixels on IE
+      if (/^\d+(em|pt|%|ex)?$/i.test(value)) { 
+        return (function(value) {
+          var oldLeft = el.style.left, oldRsLeft = el.runtimeStyle.left;
+          el.runtimeStyle.left = el.currentStyle.left;
+          el.style.left = value || 0;
+          value = el.style.pixelLeft + "px";
+          el.style.left = oldLeft;
+          el.runtimeStyle.left = oldRsLeft;
+          return value;
+        })(value);
+      }
+      return value;
+    }
+  };
+  
 
   /**
   Simple jQuery-like selector. We don't want to pull in jQuery itself, and at 8k
@@ -1655,7 +1681,7 @@ An Extrovert.js generator for a 3D city scene.
 @version 1.0
 */
 
-(function (window, $, THREE, EXTROVERT) {
+(function (window, THREE, EXTROVERT) {
 
   EXTROVERT.city = function() {
 
@@ -1678,7 +1704,7 @@ An Extrovert.js generator for a 3D city scene.
         return get_position( obj, _opts, _eng );
       },
       rasterize: function( obj ) {
-        var texture = _eng.rasterizer.paint( $(obj), _opts );
+        var texture = _eng.rasterizer.paint( obj, _opts );
         var material = (!_opts.physics.enabled || !_opts.physics.materials) ?
           texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
         return new THREE.MeshFaceMaterial([ material, material, material, material, material, material ]);
@@ -1721,14 +1747,14 @@ An Extrovert.js generator for a 3D city scene.
   function get_position( val, opts, eng ) {
 
      // Get the position of the HTML element [1]
-     var parent_pos = $( opts.src.container ).offset();
-     var child_pos = $( val ).offset();
+     var parent_pos = EXTROVERT.Utils.offset( EXTROVERT.Utils.$( opts.src.container ) );
+     var child_pos = EXTROVERT.Utils.offset( val );
      var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
      // From that, compute the position of the top-left and bottom-right corner
      // of the element as they would exist in 3D-land.
      var topLeft = EXTROVERT.calc_position( pos.left, pos.top, eng.placement_plane );
-     var botRight = EXTROVERT.calc_position( pos.left + $(val).width(), pos.top + $(val).height(), eng.placement_plane );
+     var botRight = EXTROVERT.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
      // These return the topLeft and bottomRight coordinates of the MAIN FACE of the thing in WORLD coords
 
      var block_width = Math.abs( botRight.x - topLeft.x );
@@ -1747,12 +1773,7 @@ An Extrovert.js generator for a 3D city scene.
      };
   }
 
-}(window, $, THREE, EXTROVERT));
-
-// [1] Don't rely exclusively on .offset() or .position()
-//     See: http://bugs.jquery.com/ticket/11606
-//     var pos = $(val).offset();
-//     var pos = $(val).position();
+}(window, THREE, EXTROVERT));
 ;/**
 An Extrovert.js generator for 3D extrusion.
 @module gen-extrude.js
@@ -1762,7 +1783,7 @@ An Extrovert.js generator for 3D extrusion.
 @version 1.0
 */
 
-(function (window, $, THREE, EXTROVERT) {
+(function (window, THREE, EXTROVERT) {
 
   EXTROVERT.extrude = function() {
 
@@ -1786,7 +1807,7 @@ An Extrovert.js generator for 3D extrusion.
       },
 
       rasterize: function( obj ) {
-        var texture = _eng.rasterizer.paint( $(obj), _opts );
+        var texture = _eng.rasterizer.paint( obj, _opts );
         var material = (!_opts.physics.enabled || !_opts.physics.materials) ?
           texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
         return new THREE.MeshFaceMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
@@ -1812,7 +1833,7 @@ An Extrovert.js generator for 3D extrusion.
     };
   };
 
-}(window, $, THREE, EXTROVERT));
+}(window, THREE, EXTROVERT));
 ;/**
 An Extrovert.js generator for a floating scene.
 @module gen-float.js
@@ -1822,7 +1843,7 @@ An Extrovert.js generator for a floating scene.
 @version 1.0
 */
 
-(function (window, $, THREE, EXTROVERT) {
+(function (window, THREE, EXTROVERT) {
 
   EXTROVERT.float = function() {
 
@@ -1841,7 +1862,7 @@ An Extrovert.js generator for a floating scene.
         return get_position( obj, _opts, _eng );
       },
       rasterize: function( obj ) {
-        var texture = _eng.rasterizer.paint( $(obj), _opts );
+        var texture = _eng.rasterizer.paint( obj, _opts );
         var material = (!_opts.physics.enabled || !_opts.physics.materials) ?
           texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
         return new THREE.MeshFaceMaterial([ material, material, material, material, material, material ]);
@@ -1885,14 +1906,14 @@ An Extrovert.js generator for a floating scene.
   function get_position( val, opts, eng ) {
 
      // Get the position of the HTML element [1]
-     var parent_pos = $( opts.src.container ).offset();
-     var child_pos = $( val ).offset();
+     var parent_pos = EXTROVERT.Utils.offset( EXTROVERT.Utils.$( opts.src.container ) );
+     var child_pos = EXTROVERT.Utils.offset( val );
      var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
      // From that, compute the position of the top-left and bottom-right corner
      // of the element as they would exist in 3D-land.
      var topLeft = EXTROVERT.calc_position( pos.left, pos.top, eng.placement_plane );
-     var botRight = EXTROVERT.calc_position( pos.left + $(val).width(), pos.top + $(val).height(), eng.placement_plane );
+     var botRight = EXTROVERT.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
      // These return the topLeft and bottomRight coordinates of the MAIN FACE of the thing in WORLD coords
 
      var block_width = Math.abs( botRight.x - topLeft.x );
@@ -1911,12 +1932,7 @@ An Extrovert.js generator for a floating scene.
      };
   }
 
-}(window, $, THREE, EXTROVERT));
-
-// [1] Don't rely exclusively on .offset() or .position()
-//     See: http://bugs.jquery.com/ticket/11606
-//     var pos = $(val).offset();
-//     var pos = $(val).position();
+}(window, THREE, EXTROVERT));
 ;/**
 An Extrovert.js generator for a 3D image gallery.
 @module gen-gallery.js
@@ -1926,7 +1942,7 @@ An Extrovert.js generator for a 3D image gallery.
 @version 1.0
 */
 
-(function (window, $, THREE, EXTROVERT) {
+(function (window, THREE, EXTROVERT) {
 
   EXTROVERT.gallery = function() {
 
@@ -1950,7 +1966,7 @@ An Extrovert.js generator for a 3D image gallery.
       },
 
       rasterize: function( obj ) {
-        var texture = _eng.rasterizer.paint( $(obj), _opts );
+        var texture = _eng.rasterizer.paint( obj, _opts );
         var material = (!_opts.physics.enabled || !_opts.physics.materials) ?
           texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
         return new THREE.MeshFaceMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
@@ -1983,7 +1999,7 @@ An Extrovert.js generator for a 3D image gallery.
     };
   };
 
-}(window, $, THREE, EXTROVERT));
+}(window, THREE, EXTROVERT));
 ;/**
 An Extrovert.js generator that creates a 3D wall or tower.
 @module gen-wall.js
@@ -1993,7 +2009,7 @@ An Extrovert.js generator that creates a 3D wall or tower.
 @version 1.0
 */
 
-(function (window, $, THREE, EXTROVERT) {
+(function (window, THREE, EXTROVERT) {
 
   EXTROVERT.wall = function() {
 
@@ -2017,7 +2033,7 @@ An Extrovert.js generator that creates a 3D wall or tower.
       },
 
       rasterize: function( obj ) {
-        var texture = _eng.rasterizer.paint( $(obj), _opts );
+        var texture = _eng.rasterizer.paint( obj, _opts );
         var material = (!_opts.physics.enabled || !_opts.physics.materials) ?
           texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
         return new THREE.MeshFaceMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
@@ -2052,7 +2068,7 @@ An Extrovert.js generator that creates a 3D wall or tower.
     };
   };
 
-}(window, $, THREE, EXTROVERT));
+}(window, THREE, EXTROVERT));
 ;/**
 A simple Extrovert HTML rasterizer.
 @module paint-html.js
@@ -2119,22 +2135,21 @@ A simple Extrovert image rasterizer.
 @version 1.0
 */
 
-(function (window, $, THREE, EXTROVERT) {
+(function (window, THREE, EXTROVERT) {
 
   EXTROVERT.paint_img = function () {
     return {
-      paint: function( $val, opts ) {
-        var img = $val.get( 0 );
-        var texture = THREE.ImageUtils.loadTexture( img.src );
+      paint: function( img, opts ) {
+        var t = THREE.ImageUtils.loadTexture( img.src ); 
         return {
-          tex: texture,
-          mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
+          tex: t,
+          mat: new THREE.MeshLambertMaterial( { map: t } )
         };
       }
     };
   };
 
-}(window, $, THREE, EXTROVERT));
+}(window, THREE, EXTROVERT));
 ;/**
 A simple Extrovert HTML rasterizer.
 @module paint-plain-text.js
@@ -2148,22 +2163,25 @@ A simple Extrovert HTML rasterizer.
 
   EXTROVERT.paint_plain_text = function () {
     return {
-      paint: function( $val, opts ) {
+      paint: function( val, opts ) {
+
+        var _utils = EXTROVERT.Utils;
 
         // Get the element content
-        var title_elem = $val.find( opts.src.title );
-        var title = title_elem.text();//.trim();
-        var content_elem = $val.find( opts.src.content );
-        var content = content_elem.text();//.trim();
+        var title_elem = val.querySelector( opts.src.title );
+        var title = title_elem.innerHTML;//.text();//.trim();
+        var content_elem = val.querySelector( opts.src.content );
+        var content = content_elem.innerHTML;//text();//.trim();
 
         // Create a canvas element. TODO: Reuse a single canvas.
         var canvas = document.createElement('canvas');
         var context = canvas.getContext('2d');
-        canvas.width = $val.width();
-        canvas.height = $val.height();
+        canvas.width = val.offsetWidth;
+        canvas.height = val.offsetHeight;
 
         // Fill the canvas with the background color
-        var bkColor = $val.css('background-color');
+        //var bkColor = $val.css('background-color');
+        var bkColor = _utils.get_computed_style(val, 'background-color');
         if(bkColor === 'rgba(0, 0, 0, 0)')
           bkColor = 'rgb(0,0,0)';
         context.fillStyle = bkColor;
@@ -2176,36 +2194,36 @@ A simple Extrovert HTML rasterizer.
         var has_photo = false;
 
         // Compute the size of the title text
-        var font_size = title_elem.css('font-size');
-        //context.font = "Bold " + font_size + " '" + title_elem.css('font-family') + "'";
+        context.font = _utils.get_computed_style( title_elem, 'font');
 
-        context.font = title_elem.css('font');
-
-        context.fillStyle = title_elem.css('color');
+        context.fillStyle = _utils.get_computed_style( title_elem, 'color');
         //context.textBaseline = 'top';
-        var line_height = 24;
-        var num_lines = EXTROVERT.Utils.wrap_text( context, title, 10, 10 + line_height, canvas.width - 20, line_height, true );
+        var title_line_height = 24;
+        var num_lines = _utils.wrap_text( context, title, 10, 10 + title_line_height, canvas.width - 20, title_line_height, true );
 
         // Paint the title's background panel
-        context.fillStyle = has_photo ? "rgba(0,0,0,0.75)" : EXTROVERT.Utils.shade_blend( -0.25, bkColor );
-        context.fillRect(0,0, canvas.width, 20 + num_lines * line_height);
+        context.fillStyle = has_photo ? "rgba(0,0,0,0.75)" : _utils.shade_blend( -0.25, bkColor );
+        context.fillRect(0,0, canvas.width, 20 + num_lines * title_line_height);
 
         // Paint the title text
-        context.fillStyle = title_elem.css('color');
-        EXTROVERT.Utils.wrap_text( context, title, 10, 10 + line_height, canvas.width - 20, line_height, false );
+        context.fillStyle = _utils.get_computed_style( title_elem, 'color');
+        _utils.wrap_text( context, title, 10, 10 + title_line_height, canvas.width - 20, title_line_height, false );
 
         // Paint the content text
-        //context.font = "Normal " + font_size + " '" + content_elem.css('font-family') + "'";
-        context.font = content_elem.css('font');
+        context.font = _utils.get_computed_style( content_elem, 'font');
 
-        var shim = $('<div id="_fetchSize" style="display: none;">Sample text</div>');
-        $( opts.src.container ).append( shim );
-        line_height = shim.text("x").height();
+        var shim = '<div id="_fetchSize" style="display: none;">Sample text</div>';
+        _utils.$( opts.src.container ).insertAdjacentHTML('beforeend', shim);
+        //$( opts.src.container ).append( shim );
+        //line_height = shim.text("x").height();
+        shim = EXTROVERT.Utils.$('#_fetchSize');
+        shim.innerHTML = 'x';
+        var line_height = shim.offsetHeight;
 
         //var TestDivLineHeight = $("#TestDiv").css("font-size", "12px").css("line-height", "1.25").text("x").height();
         var massaged_content = content.replace('\n',' ');
 
-        EXTROVERT.Utils.wrap_text( context, massaged_content, 10, 20 + (num_lines * line_height) + line_height, canvas.width - 20, line_height, false );
+        _utils.wrap_text( context, massaged_content, 10, 20 + (num_lines * title_line_height) + line_height, canvas.width - 20, line_height, false );
 
         // Create a texture from the canvas
         var texture = new THREE.Texture( canvas );

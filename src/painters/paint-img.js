@@ -7,19 +7,18 @@ A simple Extrovert image rasterizer.
 @version 1.0
 */
 
-(function (window, $, THREE, EXTROVERT) {
+(function (window, THREE, EXTROVERT) {
 
   EXTROVERT.paint_img = function () {
     return {
-      paint: function( $val, opts ) {
-        var img = $val.get( 0 );
-        var texture = THREE.ImageUtils.loadTexture( img.src );
+      paint: function( img, opts ) {
+        var t = THREE.ImageUtils.loadTexture( img.src ); 
         return {
-          tex: texture,
-          mat: new THREE.MeshLambertMaterial( { map: texture, side: THREE.FrontSide } )
+          tex: t,
+          mat: new THREE.MeshLambertMaterial( { map: t } )
         };
       }
     };
   };
 
-}(window, $, THREE, EXTROVERT));
+}(window, THREE, EXTROVERT));

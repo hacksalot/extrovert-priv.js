@@ -7,7 +7,7 @@ An Extrovert.js generator that creates a 3D wall or tower.
 @version 1.0
 */
 
-(function (window, $, THREE, EXTROVERT) {
+(function (window, THREE, EXTROVERT) {
 
   EXTROVERT.wall = function() {
 
@@ -31,7 +31,7 @@ An Extrovert.js generator that creates a 3D wall or tower.
       },
 
       rasterize: function( obj ) {
-        var texture = _eng.rasterizer.paint( $(obj), _opts );
+        var texture = _eng.rasterizer.paint( obj, _opts );
         var material = (!_opts.physics.enabled || !_opts.physics.materials) ?
           texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
         return new THREE.MeshFaceMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
@@ -66,4 +66,4 @@ An Extrovert.js generator that creates a 3D wall or tower.
     };
   };
 
-}(window, $, THREE, EXTROVERT));
+}(window, THREE, EXTROVERT));

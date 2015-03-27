@@ -7,7 +7,7 @@ A sample Extrovert generator for demonstration purposes.
 @version 1.0
 */
 
-(function (window, $, THREE, EXTROVERT) {
+(function (window, THREE, EXTROVERT) {
 
 
 
@@ -52,5 +52,5 @@ A sample Extrovert generator for demonstration purposes.
 
 
 
-}(window, $, THREE, EXTROVERT));
+}(window, THREE, EXTROVERT));
 

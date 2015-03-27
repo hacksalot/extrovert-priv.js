@@ -7,7 +7,7 @@ An Extrovert.js generator for a 3D city scene.
 @version 1.0
 */
 
-(function (window, $, THREE, EXTROVERT) {
+(function (window, THREE, EXTROVERT) {
 
   EXTROVERT.city = function() {
 
@@ -30,7 +30,7 @@ An Extrovert.js generator for a 3D city scene.
         return get_position( obj, _opts, _eng );
       },
       rasterize: function( obj ) {
-        var texture = _eng.rasterizer.paint( $(obj), _opts );
+        var texture = _eng.rasterizer.paint( obj, _opts );
         var material = (!_opts.physics.enabled || !_opts.physics.materials) ?
           texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
         return new THREE.MeshFaceMaterial([ material, material, material, material, material, material ]);
@@ -73,14 +73,14 @@ An Extrovert.js generator for a 3D city scene.
   function get_position( val, opts, eng ) {
 
      // Get the position of the HTML element [1]
-     var parent_pos = $( opts.src.container ).offset();
-     var child_pos = $( val ).offset();
+     var parent_pos = EXTROVERT.Utils.offset( EXTROVERT.Utils.$( opts.src.container ) );
+     var child_pos = EXTROVERT.Utils.offset( val );
      var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
      // From that, compute the position of the top-left and bottom-right corner
      // of the element as they would exist in 3D-land.
      var topLeft = EXTROVERT.calc_position( pos.left, pos.top, eng.placement_plane );
-     var botRight = EXTROVERT.calc_position( pos.left + $(val).width(), pos.top + $(val).height(), eng.placement_plane );
+     var botRight = EXTROVERT.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
      // These return the topLeft and bottomRight coordinates of the MAIN FACE of the thing in WORLD coords
 
      var block_width = Math.abs( botRight.x - topLeft.x );
@@ -99,9 +99,4 @@ An Extrovert.js generator for a 3D city scene.
      };
   }
 
-}(window, $, THREE, EXTROVERT));
-
-// [1] Don't rely exclusively on .offset() or .position()
-//     See: http://bugs.jquery.com/ticket/11606
-//     var pos = $(val).offset();
-//     var pos = $(val).position();
+}(window, THREE, EXTROVERT));
