@@ -7,16 +7,16 @@ A simple Extrovert image rasterizer.
 @version 1.0
 */
 
-(function (window, $, THREE, EXTROVERT) {
+(function (window, THREE, EXTROVERT) {
 
   EXTROVERT.paint_img_canvas = function () {
     return {
-      paint: function( $val, opts ) {
-        var img = $val.get( 0 );
+      paint: function( val, opts ) {
+        var img = val;
         var canvas = document.createElement('canvas');
         var context = canvas.getContext('2d');
-        canvas.width = $val.width();
-        canvas.height = $val.height();
+        canvas.width = val.offsetWidth;
+        canvas.height = val.offsetHeight;
         log.msg("Creating texture %d x %d (%d x %d)", img.clientWidth, img.clientHeight, canvas.width, canvas.height);
         context.drawImage(img, 0, 0, img.clientWidth, img.clientHeight);
         texture = new THREE.Texture( canvas );
@@ -29,4 +29,4 @@ A simple Extrovert image rasterizer.
     };
   };
 
-}(window, $, THREE, EXTROVERT));
+}(window, THREE, EXTROVERT));
