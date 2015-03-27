@@ -38,6 +38,7 @@ module.exports = function(grunt) {
         files: {
           'dist/<%= pkg.name %>.js': '<%= concat.dist.sources.extro %>',
           'dist/<%= pkg.name %>.all.js': '<%= concat.dist.sources.merged %>',
+          'dist/<%= pkg.name %>.deps.js': '<%= concat.dist.sources.deps %>'
         }
       }
     },
@@ -50,7 +51,8 @@ module.exports = function(grunt) {
       dist: {
         files: {
           'dist/<%= pkg.name %>.min.js': ['dist/<%= pkg.name %>.js'],
-          'dist/<%= pkg.name %>.all.min.js': ['dist/<%= pkg.name %>.all.js']
+          'dist/<%= pkg.name %>.all.min.js': ['dist/<%= pkg.name %>.all.js'],
+          'dist/<%= pkg.name %>.deps.min.js': ['dist/<%= pkg.name %>.deps.js']
         }
       }
     },
