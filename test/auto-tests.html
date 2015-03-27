@@ -29,12 +29,20 @@
         propa: 'a',
         generator: {
           name: 'gallery'
+        },
+        sub: {
+          sub_a: {
+            val: 'foo'
+          }
         }
       };
       var def_opts = {
         propb: 'b',
         generator: {
           name: 'wall'
+        },
+        sub: {
+          val: 'bar'
         }
       };
 
@@ -42,6 +50,8 @@
       assert.strictEqual( combined.generator.name, 'gallery' );
       assert.strictEqual( combined.propa, 'a' );
       assert.strictEqual( combined.propb, 'b' );
+      assert.strictEqual( combined.sub.val, 'bar' );
+      assert.strictEqual( combined.sub.sub_a.val, 'foo' );
     });
 
 
