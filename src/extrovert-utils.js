@@ -181,7 +181,7 @@ EXTROVERT.Utils = (function (window, THREE) {
     // - Any object or value whose internal [[Class]] property is not "[object Object]"
     // - DOM nodes
     // - window
-    if (jQuery.type(obj) !== "object" || obj.nodeType || (obj !== null && obj === obj.window)) {
+    if ((typeof obj !== "object") || obj.nodeType || (obj !== null && obj === obj.window)) {
       return false;
     }
 
@@ -193,7 +193,7 @@ EXTROVERT.Utils = (function (window, THREE) {
     // |obj| is a plain object, created by {} or constructed with new Object
     return true;
   };
-  
+
 
   /**
   Industrial-strength plain JavaScript version of .extend based on jQuery sources.
@@ -252,6 +252,36 @@ EXTROVERT.Utils = (function (window, THREE) {
   };
 
 
+  my.offset = function( elem ) {
+    var docElem, win;//, elem = this[0];
+    var box = {
+        top: 0,
+        left: 0
+    };
+
+    doc = elem && elem.ownerDocument;
+    if (!doc) return;
+
+    docElem = doc.documentElement;
+
+    // Make sure it's not a disconnected DOM node
+    // if (!jQuery.contains(docElem, elem)) {
+        // return box;
+    // }
+
+    // If we don't have gBCR, just use 0,0 rather than error
+    // BlackBerry 5, iOS 3 (original iPhone)
+    if (elem.getBoundingClientRect !== undefined) {
+      box = elem.getBoundingClientRect();
+    }
+    win = (doc !== null && doc === doc.window) ? doc : doc.nodeType === 9 && doc.defaultView;
+    return {
+      top: box.top + win.pageYOffset - docElem.clientTop,
+      left: box.left + win.pageXOffset - docElem.clientLeft
+    };
+  };
+
+
   /**
   Message logger from http://stackoverflow.com/a/25867340.
   @class log
@@ -272,6 +302,23 @@ EXTROVERT.Utils = (function (window, THREE) {
       }
     };
   })();
+
+
+
+  /**
+  Simple jQuery-like selector. We don't want to pull in jQuery itself, and at 8k
+  minified, a standalone selector library like Sizzle is overkill, so we roll a
+  simple one in the style of
+  http://blog.garstasio.com/you-dont-need-jquery/selectors/#see-a-pattern?
+  */
+  my.$ = function(selector) {
+    var selectorType = 'querySelectorAll';
+    if (selector.indexOf('#') === 0) {
+        selectorType = 'getElementById';
+        selector = selector.substr(1, selector.length);
+    }
+    return document[selectorType](selector);
+  };
 
 
 

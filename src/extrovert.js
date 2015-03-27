@@ -7,7 +7,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 @version 1.0
 */
 
-var EXTROVERT = (function (window, $, THREE) {
+var EXTROVERT = (function (window, THREE) {
 
 
 
@@ -182,17 +182,21 @@ var EXTROVERT = (function (window, $, THREE) {
 
     eng.scene.updateMatrix();
 
-    $( options.src.selector ).each( function( idx, elem ) {
+
+    var elems = document.querySelectorAll( options.src.selector ); // IE8+
+    var idx, length = elems.length;
+    for(idx = 0; idx < length; ++idx) {
+      var elem = elems[ idx ];
       var mesh = eng.generator.generate( elem );
       mesh.updateMatrix();
       mesh.updateMatrixWorld();
       options.creating && options.creating( elem, mesh );
       eng.scene.add( mesh );
       eng.objects.push( mesh );
-      mesh.elem = $(elem);
+      mesh.elem = elem;
       options.created && options.created( elem, mesh );
-    });
-
+    }
+    
     // Now that objects have been placed, update the final cam position
     var oc = options.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
@@ -217,8 +221,8 @@ var EXTROVERT = (function (window, $, THREE) {
   @method init_renderer
   */
   function init_renderer( opts ) {
-    var cont = $( opts.src.container );
-    var rect = cont[0].getBoundingClientRect();
+    var cont = EXTROVERT.Utils.$( opts.src.container );
+    var rect = cont.getBoundingClientRect();
     eng.width = rect.right - rect.left;
     eng.height = rect.bottom - rect.top;
     eng.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -241,8 +245,14 @@ var EXTROVERT = (function (window, $, THREE) {
   return an empty (zero-size) result until this happens.
   */
   function init_canvas( opts ) {
-    var action = opts.target.action || 'append'; // call .append or .replaceWith
-    $( opts.target.container )[ action ]( eng.renderer.domElement );
+    var action = opts.target.action || 'append';
+    var target_container = EXTROVERT.Utils.$( opts.target.container );
+    if( action === 'append' )
+      target_container.appendChild( eng.renderer.domElement );
+    else if( action === 'replace' || action === 'replaceWith' ) {
+      target_container.parentNode.insertBefore( eng.renderer.domElement, target_container );
+      target_container.parentNode.removeChild( target_container );
+    }
   }
 
 
@@ -433,9 +443,6 @@ var EXTROVERT = (function (window, $, THREE) {
   @method start
   */
   function start() {
-    // Okay so things that rely on getBoundingClientRect wont work til this has happened
-    //...but we're doing this in init_canvas
-    //$( opts.target.container ).replaceWith( eng.renderer.domElement );
     opts.onload && opts.onload(); // Fire the 'onload' event
     animate();
   }
@@ -511,7 +518,9 @@ var EXTROVERT = (function (window, $, THREE) {
     if( !light_opts || light_opts.length === 0 )
       return;
 
-    $.each( light_opts, function(idx, val) {
+    for( var idx = 0; idx < light_opts.length; idx++ ) {
+
+      var val = light_opts[ idx ];
 
       if( val.type === 'ambient' ) {
         new_light = new THREE.AmbientLight( val.color );
@@ -535,7 +544,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
       eng.scene.add( new_light );
       lights.push( new_light );
-    });
+    }
 
     return lights;
   };
@@ -700,14 +709,14 @@ var EXTROVERT = (function (window, $, THREE) {
   my.get_position = function( val, opts, eng ) {
 
     // Get the position of the HTML element [1]
-    var parent_pos = $( opts.src.container ).offset();
-    var child_pos = $( val ).offset();
+    var parent_pos = EXTROVERT.Utils.offset( EXTROVERT.Utils.$( opts.src.container ) );
+    var child_pos = EXTROVERT.Utils.offset( val );
     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
     // From that, compute the position of the top-left and bottom-right corner
     // of the element as they would exist in 3D-land.
     var topLeft = EXTROVERT.calc_position( pos.left, pos.top, eng.placement_plane );
-    var botRight = EXTROVERT.calc_position( pos.left + $(val).width(), pos.top + $(val).height(), eng.placement_plane );
+    var botRight = EXTROVERT.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
     var block_width = Math.abs( botRight.x - topLeft.x );
     var block_height = Math.abs( topLeft.y - botRight.y );
 
@@ -783,7 +792,7 @@ var EXTROVERT = (function (window, $, THREE) {
 
 
 
-}(window, $, THREE));
+}(window, THREE));
 // [1]: FireFox doesn't support .offsetX:
 //      https://bugzilla.mozilla.org/show_bug.cgi?id=69787
 //      http://stackoverflow.com/q/11334452
