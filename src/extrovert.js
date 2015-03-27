@@ -3,7 +3,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 @module extrovert.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
-@license MIT
 @version 1.0
 */
 
@@ -87,6 +86,8 @@ var EXTROVERT = (function (window, THREE) {
   */
   var opts = null;
 
+  var _utils = null;
+
 
 
   /**
@@ -94,7 +95,10 @@ var EXTROVERT = (function (window, THREE) {
   @method init
   */
   my.init = function( options ) {
-    if( !EXTROVERT.Utils.detect_webgl() ) return false;
+
+    _utils = EXTROVERT.Utils;
+
+    if( !_utils.detect_webgl() ) return false;
 
     // Special handling for IE
     var ua = window.navigator.userAgent;
@@ -123,14 +127,13 @@ var EXTROVERT = (function (window, THREE) {
 
 
   /**
-  Initialize engine options. Merge user, generator, and engine options into a 
+  Initialize engine options. Merge user, generator, and engine options into a
   new combined options object and carry across other important settings.
   @method init_options
   */
   function init_options( options ) {
-    // Set up a logger
-    eng.log = EXTROVERT.Utils.log;
-    // Instantiate the generator
+    eng.log = _utils.log;
+
     if( !options.generator )
       eng.generator = new EXTROVERT.float();
     else if (typeof options.generator == 'string')
@@ -138,15 +141,15 @@ var EXTROVERT = (function (window, THREE) {
     else {
       eng.generator = new EXTROVERT[ options.generator.name ]();
     }
-    // Wire in generator options
-    opts = EXTROVERT.Utils.extend(true, { }, defaults, eng.generator.options );
-    opts = EXTROVERT.Utils.extend(true, opts, options );
-    // Carry across physics
+
+    opts = _utils.extend(true, { }, defaults, eng.generator.options );
+    opts = _utils.extend(true, opts, options );
+
     if( opts.physics.enabled ) {
       Physijs.scripts.worker = opts.physics.physijs.worker;
       Physijs.scripts.ammo = opts.physics.physijs.ammo;
     }
-    // Instantiate a rasterizer
+
     if( typeof opts.rasterizer == 'string' )
       eng.rasterizer = new EXTROVERT[ 'paint_' + opts.rasterizer ]();
     else
@@ -161,7 +164,6 @@ var EXTROVERT = (function (window, THREE) {
   @method init_world
   */
   function init_world( options, eng ) {
-    // Create an invisible, untouchable drag plane for drag-drop
     eng.drag_plane = EXTROVERT.create_object( {
       type: 'plane',
       dims: [2000,2000,8],
@@ -170,18 +172,13 @@ var EXTROVERT = (function (window, THREE) {
       opacity: 0.25,
       transparent: true } );
 
-    // Create scene, camera, lighting from options
     EXTROVERT.create_scene( options );
-    EXTROVERT.create_camera( EXTROVERT.Utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
+    EXTROVERT.create_camera( _utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
     EXTROVERT.fiat_lux( options.lights );
 
-    // Create world content/geometry
     eng.generator.init && eng.generator.init( options, eng );
-
     create_scene_objects( eng.scene, options );
-
     eng.scene.updateMatrix();
-
 
     var elems = document.querySelectorAll( options.src.selector ); // IE8+
     var idx, length = elems.length;
@@ -196,7 +193,7 @@ var EXTROVERT = (function (window, THREE) {
       mesh.elem = elem;
       options.created && options.created( elem, mesh );
     }
-    
+
     // Now that objects have been placed, update the final cam position
     var oc = options.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
@@ -221,7 +218,7 @@ var EXTROVERT = (function (window, THREE) {
   @method init_renderer
   */
   function init_renderer( opts ) {
-    var cont = EXTROVERT.Utils.$( opts.src.container );
+    var cont = _utils.$( opts.src.container );
     var rect = cont.getBoundingClientRect();
     eng.width = rect.right - rect.left;
     eng.height = rect.bottom - rect.top;
@@ -246,7 +243,7 @@ var EXTROVERT = (function (window, THREE) {
   */
   function init_canvas( opts ) {
     var action = opts.target.action || 'append';
-    var target_container = EXTROVERT.Utils.$( opts.target.container );
+    var target_container = _utils.$( opts.target.container );
     if( action === 'append' )
       target_container.appendChild( eng.renderer.domElement );
     else if( action === 'replace' || action === 'replaceWith' ) {
@@ -614,10 +611,10 @@ var EXTROVERT = (function (window, THREE) {
         eng.drag_plane.position.copy( eng.selected.position );
         eng.offset.copy( intersects[ 0 ].point ).sub( eng.selected.position );
         if( opts.physics.enabled ) {
-          eng.selected.setAngularFactor( EXTROVERT.Utils.VZERO );
-          eng.selected.setLinearFactor( EXTROVERT.Utils.VZERO );
-          eng.selected.setAngularVelocity( EXTROVERT.Utils.VZERO );
-          eng.selected.setLinearVelocity( EXTROVERT.Utils.VZERO );
+          eng.selected.setAngularFactor( _utils.VZERO );
+          eng.selected.setLinearFactor( _utils.VZERO );
+          eng.selected.setAngularVelocity( _utils.VZERO );
+          eng.selected.setLinearVelocity( _utils.VZERO );
         }
         else {
           eng.selected.temp_velocity = eng.selected.velocity.clone();
@@ -709,8 +706,8 @@ var EXTROVERT = (function (window, THREE) {
   my.get_position = function( val, opts, eng ) {
 
     // Get the position of the HTML element [1]
-    var parent_pos = EXTROVERT.Utils.offset( EXTROVERT.Utils.$( opts.src.container ) );
-    var child_pos = EXTROVERT.Utils.offset( val );
+    var parent_pos = _utils.offset( _utils.$( opts.src.container ) );
+    var child_pos = _utils.offset( val );
     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
     // From that, compute the position of the top-left and bottom-right corner
