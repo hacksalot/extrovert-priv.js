@@ -35,6 +35,10 @@ var EXTROVERT = (function (window, THREE) {
       near: 1,
       far: 2000
     },
+    controls: {
+      allow_drag: false,
+      type: 'trackball'
+    },
     physics: {
       enabled: true,
       materials: false,
@@ -164,34 +168,51 @@ var EXTROVERT = (function (window, THREE) {
   @method init_world
   */
   function init_world( options, eng ) {
-    eng.drag_plane = EXTROVERT.create_object( {
-      type: 'plane',
-      dims: [2000,2000,8],
-      visible: false,
-      color: 0x000000,
-      opacity: 0.25,
-      transparent: true } );
 
+    // Create scene, camera, lighting
     EXTROVERT.create_scene( options );
     EXTROVERT.create_camera( _utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
     EXTROVERT.fiat_lux( options.lights );
 
+    // Create an invisible plane for drag and drop
+    if( options.controls.allow_drag ) {
+      eng.drag_plane = EXTROVERT.create_object( {
+        type: 'plane',
+        dims: [2000,2000,8],
+        visible: false,
+        color: 0x000000,
+        opacity: 0.25,
+        transparent: true } );
+    }
+
+    // Initialize the generator and create predefined scene objects
     eng.generator.init && eng.generator.init( options, eng );
     create_scene_objects( eng.scene, options );
     eng.scene.updateMatrix();
 
-    var elems = document.querySelectorAll( options.src.selector ); // IE8+
-    var idx, length = elems.length;
-    for(idx = 0; idx < length; ++idx) {
-      var elem = elems[ idx ];
-      var mesh = eng.generator.generate( elem );
-      mesh.updateMatrix();
-      mesh.updateMatrixWorld();
-      options.creating && options.creating( elem, mesh );
-      eng.scene.add( mesh );
-      eng.objects.push( mesh );
-      mesh.elem = elem;
-      options.created && options.created( elem, mesh );
+    // Transform source data into 3D geometry
+    // (options.src.selector can be a string or a function or undefined)
+    if( options.src.selector ) {
+      var elems = ( typeof options.src.selector === 'string' ) ?
+        document.querySelectorAll( options.src.selector ) :
+        options.src.selector();
+
+      var idx, length = elems.length;
+      for(idx = 0; idx < length; ++idx) {
+        var elem = elems[ idx ];
+        var mesh = eng.generator.generate( elem );
+        mesh.updateMatrix();
+        mesh.updateMatrixWorld();
+        options.creating && options.creating( elem, mesh );
+        eng.scene.add( mesh );
+        eng.objects.push( mesh );
+        mesh.elem = elem;
+        options.created && options.created( elem, mesh );
+      }
+    }
+    // No options.src.selector? Dealing with arbitrary off-page data
+    else {
+      eng.generator.generate();
     }
 
     // Now that objects have been placed, update the final cam position
@@ -214,7 +235,7 @@ var EXTROVERT = (function (window, THREE) {
 
 
   /**
-  Initialize the renderer.
+  Initialize the renderer. TODO: Support CanvasRenderer
   @method init_renderer
   */
   function init_renderer( opts ) {

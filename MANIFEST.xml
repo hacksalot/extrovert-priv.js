@@ -13,15 +13,30 @@
                 <File name="src\generators\gen-gallery.js" />
                 <File name="src\generators\gen-sample.js" />
                 <File name="src\generators\gen-wall.js" />
+                <File name="src\generators\gen-page.js" />
             </Folder>
             <Folder name="painters">
                 <File name="src\painters\paint-html.js" />
                 <File name="src\painters\paint-img-canvas.js" />
                 <File name="src\painters\paint-img.js" />
+                <File name="src\painters\paint-plain-text.js" />
                 <File name="src\painters\paint-simple-html.js" />
+            </Folder>
+            <Folder name="renderers">
+                <File name="src\renderers\css-renderer.js" />
             </Folder>
             <File name="src\extrovert-utils.js" />
             <File name="src\extrovert.js" />
+        </Folder>
+        <Folder name="test">
+            <Folder name="img">
+                <File name="test\img\ace_of_clubs.png" />
+                <File name="test\img\ace_of_diamonds.png" />
+                <File name="test\img\ace_of_hearts.png" />
+                <File name="test\img\ace_of_spades.png" />
+            </Folder>
+            <File name="test\auto-tests.html" />
+            <File name="test\browser-tests.html" />
         </Folder>
         <File name=".gitattributes" />
         <File name=".gitignore" />
