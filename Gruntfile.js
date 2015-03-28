@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
 
   var opts = {
-  
+
     pkg: grunt.file.readJSON('package.json'),
 
     connect: {
@@ -32,7 +32,7 @@ module.exports = function(grunt) {
       dist: {
         sources: {
           extro: ['src/extrovert.js', 'src/**/*.js', '!src/controls/f*.js', '!src/generators/gen-sample.js'],
-          deps: ['bower_components/threejs/build/three.min.js', 'bower_components/physijs/physi.js', 'bower_components/physijs/physijs_worker.js'],
+          deps: ['bower_components/threejs/build/three.min.js', 'bower_components/physijs/physi.js'/*, 'bower_components/physijs/physijs_worker.js'*/],
           merged: null
         },
         files: {
@@ -40,6 +40,20 @@ module.exports = function(grunt) {
           'dist/<%= pkg.name %>.all.js': '<%= concat.dist.sources.merged %>',
           'dist/<%= pkg.name %>.deps.js': '<%= concat.dist.sources.deps %>'
         }
+      }
+    },
+
+
+    copy: {
+      physijs: {
+        files: [
+        {
+           expand: true,
+           flatten: true,
+           src: ['bower_components/physijs/physijs_worker.js'],
+           dest: 'dist'
+        },
+        ]
       }
     },
 
@@ -81,16 +95,17 @@ module.exports = function(grunt) {
       }
     }
   };
-   
+
   grunt.initConfig( opts );
 
   opts.concat.dist.sources.merged = opts.concat.dist.sources.deps.concat( opts.concat.dist.sources.extro );
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-qunit');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-connect');
-  grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'concat', 'copy', 'uglify']);
   grunt.registerTask('test', ['default', 'connect:auto', 'qunit']);
   grunt.registerTask('testmanual', ['default', 'connect:manual']);
 };
