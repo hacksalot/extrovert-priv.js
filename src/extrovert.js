@@ -39,7 +39,7 @@ var EXTROVERT = (function (window, THREE) {
       enabled: true,
       materials: false,
       physijs: {
-        worker: 'pjsworker.js',
+        worker: '../js/pjsworker.js',
         ammo: 'ammo.js'
       }
     },
@@ -219,6 +219,8 @@ var EXTROVERT = (function (window, THREE) {
   */
   function init_renderer( opts ) {
     var cont = _utils.$( opts.src.container );
+    if( cont.length !== undefined )
+      cont = cont[0];
     var rect = cont.getBoundingClientRect();
     eng.width = rect.right - rect.left;
     eng.height = rect.bottom - rect.top;
@@ -244,6 +246,7 @@ var EXTROVERT = (function (window, THREE) {
   function init_canvas( opts ) {
     var action = opts.target.action || 'append';
     var target_container = _utils.$( opts.target.container );
+    if( target_container.length !== undefined ) target_container = target_container[0];
     if( action === 'append' )
       target_container.appendChild( eng.renderer.domElement );
     else if( action === 'replace' || action === 'replaceWith' ) {
@@ -706,7 +709,9 @@ var EXTROVERT = (function (window, THREE) {
   my.get_position = function( val, opts, eng ) {
 
     // Get the position of the HTML element [1]
-    var parent_pos = _utils.offset( _utils.$( opts.src.container ) );
+    var src_cont = _utils.$( opts.src.container );
+    if(src_cont.length !== undefined) src_cont = src_cont[0];
+    var parent_pos = _utils.offset( src_cont );
     var child_pos = _utils.offset( val );
     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
