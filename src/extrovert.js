@@ -22,11 +22,11 @@ var EXTROVERT = (function (window, THREE) {
   Default engine options. Will be smushed together with generator and user options.
   */
   var defaults = {
-    src: {
-      selector: 'div',
-      title: 'h2',
-      container: '#container'
-    },
+    // src: {
+      // selector: 'div',
+      // title: 'h2',
+      // container: '#container'
+    // },
     generator: 'gallery',
     rasterizer: 'img',
     gravity: [0,0,0],
@@ -135,19 +135,22 @@ var EXTROVERT = (function (window, THREE) {
   new combined options object and carry across other important settings.
   @method init_options
   */
-  function init_options( options ) {
+  function init_options( user_opts ) {
     eng.log = _utils.log;
 
-    if( !options.generator )
+    if( !user_opts.generator )
       eng.generator = new EXTROVERT.float();
-    else if (typeof options.generator == 'string')
-      eng.generator = new EXTROVERT[ options.generator ]();
-    else {
-      eng.generator = new EXTROVERT[ options.generator.name ]();
-    }
+    else if (typeof user_opts.generator == 'string')
+      eng.generator = new EXTROVERT[ user_opts.generator ]();
+    else
+      eng.generator = new EXTROVERT[ user_opts.generator.name ]();
 
     opts = _utils.extend(true, { }, defaults, eng.generator.options );
-    opts = _utils.extend(true, opts, options );
+    opts = _utils.extend(true, opts, user_opts );
+
+    if( typeof opts.generator === 'string' ) {
+      opts.generator = _utils.extend(true, opts.generator, eng.generator.options.generator);
+    }
 
     if( opts.physics.enabled ) {
       Physijs.scripts.worker = opts.physics.physijs.worker;
@@ -192,7 +195,7 @@ var EXTROVERT = (function (window, THREE) {
 
     // Transform source data into 3D geometry
     // (options.src.selector can be a string or a function or undefined)
-    if( options.src.selector ) {
+    if( options.src && options.src.selector ) {
       var elems = ( typeof options.src.selector === 'string' ) ?
         document.querySelectorAll( options.src.selector ) :
         options.src.selector();
@@ -239,12 +242,20 @@ var EXTROVERT = (function (window, THREE) {
   @method init_renderer
   */
   function init_renderer( opts ) {
-    var cont = _utils.$( opts.src.container );
-    if( cont.length !== undefined )
-      cont = cont[0];
-    var rect = cont.getBoundingClientRect();
-    eng.width = rect.right - rect.left;
-    eng.height = rect.bottom - rect.top;
+    
+    if( opts.src && opts.src.container ) {
+      var cont = _utils.$( opts.src.container );
+      if( cont.length !== undefined )
+        cont = cont[0];
+      var rect = cont.getBoundingClientRect();
+      eng.width = rect.right - rect.left;
+      eng.height = rect.bottom - rect.top;
+    }
+    else {
+      eng.width = window.innerWidth;
+      eng.height = window.innerHeight;
+    }
+
     eng.renderer = new THREE.WebGLRenderer({ antialias: true });
     eng.renderer.setPixelRatio( window.devicePixelRatio );
     eng.renderer.setSize( eng.width, eng.height );
@@ -265,14 +276,16 @@ var EXTROVERT = (function (window, THREE) {
   return an empty (zero-size) result until this happens.
   */
   function init_canvas( opts ) {
-    var action = opts.target.action || 'append';
-    var target_container = _utils.$( opts.target.container );
-    if( target_container.length !== undefined ) target_container = target_container[0];
-    if( action === 'append' )
-      target_container.appendChild( eng.renderer.domElement );
-    else if( action === 'replace' || action === 'replaceWith' ) {
-      target_container.parentNode.insertBefore( eng.renderer.domElement, target_container );
-      target_container.parentNode.removeChild( target_container );
+    if( opts.target && opts.target.container ) {
+      var action = opts.target.action || 'append';
+      var target_container = _utils.$( opts.target.container );
+      if( target_container.length !== undefined ) target_container = target_container[0];
+      if( action === 'append' )
+        target_container.appendChild( eng.renderer.domElement );
+      else if( action === 'replace' || action === 'replaceWith' ) {
+        target_container.parentNode.insertBefore( eng.renderer.domElement, target_container );
+        target_container.parentNode.removeChild( target_container );
+      }
     }
   }
 
@@ -315,8 +328,8 @@ var EXTROVERT = (function (window, THREE) {
     var cam = copts.type != 'orthographic' ?
       new THREE.PerspectiveCamera( copts.fov, eng.width / eng.height, copts.near, copts.far ) :
       new THREE.OrthographicCamera( copts.left, copts.right, copts.top, copts.bottom, copts.near, copts.far );
-    cam.position.set( copts.position[0], copts.position[1], copts.position[2] );
     eng.camera = cam;
+    copts.position && cam.position.set( copts.position[0], copts.position[1], copts.position[2] );
     if( copts.up ) cam.up.set( copts.up[0], copts.up[1], copts.up[2] );
     if( copts.lookat ) cam.lookAt( new THREE.Vector3( copts.lookat[0], copts.lookat[1], copts.lookat[2] ) );
     // TODO: Are any of these calls still necessary?
@@ -521,6 +534,8 @@ var EXTROVERT = (function (window, THREE) {
 
     eng.controls && eng.controls.enabled && eng.controls.update( /*eng.clock.getDelta()*/ );
     eng.renderer.clear();
+
+    eng.css_renderer && eng.css_renderer.render( eng.css_scene, eng.camera );
     eng.renderer.render( eng.scene, eng.camera );
   }
 
