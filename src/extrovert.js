@@ -171,6 +171,9 @@ var EXTROVERT = (function (window, THREE) {
   @method init_world
   */
   function init_world( options, eng ) {
+  
+    THREE.ImageUtils.crossOrigin = '*';
+    THREE.Loader.prototype.crossOrigin = '*';  
 
     // Create scene, camera, lighting
     EXTROVERT.create_scene( options );
@@ -196,8 +199,11 @@ var EXTROVERT = (function (window, THREE) {
     // Transform source data into 3D geometry
     // (options.src.selector can be a string or a function or undefined)
     if( options.src && options.src.selector ) {
+      var cont = _utils.$( options.src.container );
+      if( cont.length !== undefined ) cont = cont[0];
+
       var elems = ( typeof options.src.selector === 'string' ) ?
-        document.querySelectorAll( options.src.selector ) :
+        cont.querySelectorAll( options.src.selector ) :
         options.src.selector();
 
       var idx, length = elems.length;

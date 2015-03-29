@@ -52,7 +52,8 @@ An Extrovert.js generator for 3D extrusion.
           material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
         },
         camera: { position: [0,0,800] },
-        block: { depth: 100 }
+        block: { depth: 100 },
+        lights: [{ type: 'ambient', color: 0xffffff }]
       }
     };
   };
