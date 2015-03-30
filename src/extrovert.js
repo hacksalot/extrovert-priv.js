@@ -177,10 +177,9 @@ var EXTRO = (function (window, THREE) {
     THREE.ImageUtils.crossOrigin = '*';
     THREE.Loader.prototype.crossOrigin = '*';
 
-    // Create scene, camera, lighting
+    // Create scene, camera
     EXTRO.create_scene( options );
     EXTRO.create_camera( _utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
-    EXTRO.fiat_lux( options.lights );
 
     // Create an invisible plane for drag and drop
     if( options.controls.allow_drag ) {
@@ -230,6 +229,9 @@ var EXTRO = (function (window, THREE) {
     var oc = options.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
     oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
+    
+    // Create lights AFTER final cam positioning
+    EXTRO.fiat_lux( options.lights );
   }
 
 
