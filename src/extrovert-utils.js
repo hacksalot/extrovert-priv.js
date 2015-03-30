@@ -265,7 +265,7 @@ EXTRO.Utils = (function (window, THREE) {
         left: 0
     };
 
-    doc = elem && elem.ownerDocument;
+    var doc = elem && elem.ownerDocument;
     if (!doc) return;
 
     docElem = doc.documentElement;
