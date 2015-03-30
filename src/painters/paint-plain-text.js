@@ -7,13 +7,13 @@ A simple Extrovert HTML rasterizer.
 @version 1.0
 */
 
-(function (window, THREE, EXTROVERT) {
+(function (window, THREE, EXTRO) {
 
-  EXTROVERT.paint_plain_text = function () {
+  EXTRO.paint_plain_text = function () {
     return {
       paint: function( val, opts ) {
 
-        var _utils = EXTROVERT.Utils;
+        var _utils = EXTRO.Utils;
 
         // Get the element content
         var title_elem = val.querySelector( opts.src.title );
@@ -64,7 +64,7 @@ A simple Extrovert HTML rasterizer.
         _utils.$( opts.src.container ).insertAdjacentHTML('beforeend', shim);
         //$( opts.src.container ).append( shim );
         //line_height = shim.text("x").height();
-        shim = EXTROVERT.Utils.$('#_fetchSize');
+        shim = EXTRO.Utils.$('#_fetchSize');
         shim.innerHTML = 'x';
         var line_height = shim.offsetHeight;
 
@@ -84,4 +84,4 @@ A simple Extrovert HTML rasterizer.
     };
   };
 
-}(window, THREE, EXTROVERT));
+}(window, THREE, EXTRO));

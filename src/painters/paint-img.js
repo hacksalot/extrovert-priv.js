@@ -7,9 +7,9 @@ A simple Extrovert image rasterizer.
 @version 1.0
 */
 
-(function (window, THREE, EXTROVERT) {
+(function (window, THREE, EXTRO) {
 
-  EXTROVERT.paint_img = function () {
+  EXTRO.paint_img = function () {
     return {
       paint: function( img, opts ) {
         var t = THREE.ImageUtils.loadTexture( img.src ); 
@@ -21,4 +21,4 @@ A simple Extrovert image rasterizer.
     };
   };
 
-}(window, THREE, EXTROVERT));
+}(window, THREE, EXTRO));

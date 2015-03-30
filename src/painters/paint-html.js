@@ -7,9 +7,9 @@ A simple Extrovert HTML rasterizer.
 @version 1.0
 */
 
-(function (window, THREE, EXTROVERT) {
+(function (window, THREE, EXTRO) {
 
-  EXTROVERT.paint_html = function () {
+  EXTRO.paint_html = function () {
     return {
       paint: do_paint
     };
@@ -51,4 +51,4 @@ A simple Extrovert HTML rasterizer.
 
   }
 
-}(window, THREE, EXTROVERT));
+}(window, THREE, EXTRO));

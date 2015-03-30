@@ -7,9 +7,9 @@ An Extrovert.js generator for a 3D image gallery.
 @version 1.0
 */
 
-(function (window, THREE, EXTROVERT) {
+(function (window, THREE, EXTRO) {
 
-  EXTROVERT.gallery = function() {
+  EXTRO.gallery = function() {
 
     var _opts = null;
     var _eng = null;
@@ -20,14 +20,14 @@ An Extrovert.js generator for a 3D image gallery.
       init: function( merged_options, eng ) {
         _opts = merged_options;
         _eng = eng;
-        EXTROVERT.create_placement_plane( [0,0,200] );
+        EXTRO.create_placement_plane( [0,0,200] );
         var mat = new THREE.MeshLambertMaterial({ color: _opts.generator.material.color });
         _side_mat = _opts.physics.enabled ?
           Physijs.createMaterial( mat, _opts.generator.material.friction, _opts.generator.material.restitution ) : mat;
       },
 
       transform: function( obj ) {
-        return EXTROVERT.get_position( obj, _opts, _eng );
+        return EXTRO.get_position( obj, _opts, _eng );
       },
 
       rasterize: function( obj ) {
@@ -40,7 +40,7 @@ An Extrovert.js generator for a 3D image gallery.
       generate: function( obj ) {
         var pos_info = this.transform( obj );
         var mat_info = this.rasterize( obj );
-        var mesh = EXTROVERT.create_object({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
+        var mesh = EXTRO.create_object({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
         if( _opts.generator.lookat )
           mesh.lookAt( new THREE.Vector3( _opts.generator.lookat[0], _opts.generator.lookat[1], _opts.generator.lookat[2]) );
         return mesh;
@@ -64,4 +64,4 @@ An Extrovert.js generator for a 3D image gallery.
     };
   };
 
-}(window, THREE, EXTROVERT));
+}(window, THREE, EXTRO));

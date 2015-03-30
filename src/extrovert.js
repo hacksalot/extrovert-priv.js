@@ -6,7 +6,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 @version 1.0
 */
 
-var EXTROVERT = (function (window, THREE) {
+var EXTRO = (function (window, THREE) {
 
 
 
@@ -100,7 +100,7 @@ var EXTROVERT = (function (window, THREE) {
   */
   my.init = function( options ) {
 
-    _utils = EXTROVERT.Utils;
+    _utils = EXTRO.Utils;
 
     if( !_utils.detect_webgl() ) return false;
 
@@ -139,11 +139,11 @@ var EXTROVERT = (function (window, THREE) {
     eng.log = _utils.log;
 
     if( !user_opts.generator )
-      eng.generator = new EXTROVERT.float();
+      eng.generator = new EXTRO.float();
     else if (typeof user_opts.generator == 'string')
-      eng.generator = new EXTROVERT[ user_opts.generator ]();
+      eng.generator = new EXTRO[ user_opts.generator ]();
     else
-      eng.generator = new EXTROVERT[ user_opts.generator.name ]();
+      eng.generator = new EXTRO[ user_opts.generator.name ]();
 
     opts = _utils.extend(true, { }, defaults, eng.generator.options );
     opts = _utils.extend(true, opts, user_opts );
@@ -158,9 +158,9 @@ var EXTROVERT = (function (window, THREE) {
     }
 
     if( typeof opts.rasterizer == 'string' )
-      eng.rasterizer = new EXTROVERT[ 'paint_' + opts.rasterizer ]();
+      eng.rasterizer = new EXTRO[ 'paint_' + opts.rasterizer ]();
     else
-      eng.rasterizer = opts.rasterizer || new EXTROVERT.paint_img();
+      eng.rasterizer = opts.rasterizer || new EXTRO.paint_img();
     return opts;
   }
 
@@ -176,13 +176,13 @@ var EXTROVERT = (function (window, THREE) {
     THREE.Loader.prototype.crossOrigin = '*';  
 
     // Create scene, camera, lighting
-    EXTROVERT.create_scene( options );
-    EXTROVERT.create_camera( _utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
-    EXTROVERT.fiat_lux( options.lights );
+    EXTRO.create_scene( options );
+    EXTRO.create_camera( _utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
+    EXTRO.fiat_lux( options.lights );
 
     // Create an invisible plane for drag and drop
     if( options.controls.allow_drag ) {
-      eng.drag_plane = EXTROVERT.create_object( {
+      eng.drag_plane = EXTRO.create_object( {
         type: 'plane',
         dims: [2000,2000,8],
         visible: false,
@@ -759,8 +759,8 @@ var EXTROVERT = (function (window, THREE) {
 
     // From that, compute the position of the top-left and bottom-right corner
     // of the element as they would exist in 3D-land.
-    var topLeft = EXTROVERT.calc_position( pos.left, pos.top, eng.placement_plane );
-    var botRight = EXTROVERT.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
+    var topLeft = EXTRO.calc_position( pos.left, pos.top, eng.placement_plane );
+    var botRight = EXTRO.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
     var block_width = Math.abs( botRight.x - topLeft.x );
     var block_height = Math.abs( topLeft.y - botRight.y );
 

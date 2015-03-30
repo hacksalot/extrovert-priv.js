@@ -7,9 +7,9 @@ An Extrovert.js generator for a 3D city scene.
 @version 1.0
 */
 
-(function (window, THREE, EXTROVERT) {
+(function (window, THREE, EXTRO) {
 
-  EXTROVERT.city = function() {
+  EXTRO.city = function() {
 
     var _opts = null, _eng = null;
 
@@ -21,10 +21,10 @@ An Extrovert.js generator for a 3D city scene.
         // THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
         // plane_tex.wrapS = plane_tex.wrapT = THREE.RepeatWrapping;
         // plane_tex.repeat.set( 100, 100 );
-        var frustum_planes = EXTROVERT.Utils.calc_frustum( _eng.camera );
+        var frustum_planes = EXTRO.Utils.calc_frustum( _eng.camera );
         merged_options.scene.items[0].dims[0] = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
         merged_options.scene.items[0].dims[2] = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
-        EXTROVERT.create_placement_plane( [0,200,0], [200000,1,200000] );
+        EXTRO.create_placement_plane( [0,200,0], [200000,1,200000] );
       },
       transform: function( obj ) {
         return get_position( obj, _opts, _eng );
@@ -38,7 +38,7 @@ An Extrovert.js generator for a 3D city scene.
       generate: function( obj ) {
         var pos_info = this.transform( obj );
         var mat_info = this.rasterize( obj );
-        var mesh = EXTROVERT.create_object({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
+        var mesh = EXTRO.create_object({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
         if( _opts.generator.lookat )
           mesh.lookAt( new THREE.Vector3( _opts.generator.lookat[0], _opts.generator.lookat[1], _opts.generator.lookat[2]) );
         return mesh;
@@ -73,14 +73,14 @@ An Extrovert.js generator for a 3D city scene.
   function get_position( val, opts, eng ) {
 
      // Get the position of the HTML element [1]
-     var parent_pos = EXTROVERT.Utils.offset( EXTROVERT.Utils.$( opts.src.container ) );
-     var child_pos = EXTROVERT.Utils.offset( val );
+     var parent_pos = EXTRO.Utils.offset( EXTRO.Utils.$( opts.src.container ) );
+     var child_pos = EXTRO.Utils.offset( val );
      var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
      // From that, compute the position of the top-left and bottom-right corner
      // of the element as they would exist in 3D-land.
-     var topLeft = EXTROVERT.calc_position( pos.left, pos.top, eng.placement_plane );
-     var botRight = EXTROVERT.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
+     var topLeft = EXTRO.calc_position( pos.left, pos.top, eng.placement_plane );
+     var botRight = EXTRO.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
      // These return the topLeft and bottomRight coordinates of the MAIN FACE of the thing in WORLD coords
 
      var block_width = Math.abs( botRight.x - topLeft.x );
@@ -99,4 +99,4 @@ An Extrovert.js generator for a 3D city scene.
      };
   }
 
-}(window, THREE, EXTROVERT));
+}(window, THREE, EXTRO));

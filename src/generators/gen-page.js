@@ -7,9 +7,9 @@ An Extrovert.js generator for HTML rendering.
 @version 1.0
 */
 
-(function (window, THREE, EXTROVERT) {
+(function (window, THREE, EXTRO) {
 
-  EXTROVERT.page = function() {
+  EXTRO.page = function() {
 
     var _opts = null;
     var _eng = null;
@@ -98,4 +98,4 @@ An Extrovert.js generator for HTML rendering.
     };
   };
 
-}(window, THREE, EXTROVERT));
+}(window, THREE, EXTRO));

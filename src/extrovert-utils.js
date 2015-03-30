@@ -7,7 +7,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 @version 1.0
 */
 
-EXTROVERT.Utils = (function (window, THREE) {
+EXTRO.Utils = (function (window, THREE) {
 
 
 
