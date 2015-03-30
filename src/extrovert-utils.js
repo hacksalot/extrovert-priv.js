@@ -1,5 +1,5 @@
 /**
-Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
+Utilities for Extrovert.js.
 @module extrovert-utils.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
@@ -47,7 +47,7 @@ EXTRO.Utils = (function (window, THREE) {
 
 
   /**
-  Wrap text drawing helper for canvas. See:
+  Improved wrap text drawing helper for canvas. See:
   - http://stackoverflow.com/a/11361958
   - http: //www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
   @method wrap_text
@@ -91,7 +91,6 @@ EXTRO.Utils = (function (window, THREE) {
     }
     return numLines;
   };
-
 
 
 
@@ -165,17 +164,9 @@ EXTRO.Utils = (function (window, THREE) {
 
 
   /**
-  Simple plain JavaScript version of jQuery .extend.
-  @method extend
-  function extend(){
-    for(var i=1; i<arguments.length; i++)
-      for(var key in arguments[i])
-        if(arguments[i].hasOwnProperty(key))
-          arguments[0][key] = arguments[i][key];
-    return arguments[0];
-  }*/
-
-
+  Determine if the supplied object is a "plain object", ie, an object created
+  via { } or new. Loosely based on jQuery.isPlainObject.
+  */
   my.is_plain_object = function( obj ) {
     // Not plain objects:
     // - Any object or value whose internal [[Class]] property is not "[object Object]"
@@ -193,6 +184,20 @@ EXTRO.Utils = (function (window, THREE) {
     // |obj| is a plain object, created by {} or constructed with new Object
     return true;
   };
+
+
+
+  /**
+  Simple plain JavaScript version of jQuery .extend.
+  @method extend
+  function extend(){
+    for(var i=1; i<arguments.length; i++)
+      for(var key in arguments[i])
+        if(arguments[i].hasOwnProperty(key))
+          arguments[0][key] = arguments[i][key];
+    return arguments[0];
+  }*/
+
 
 
   /**
@@ -252,6 +257,7 @@ EXTRO.Utils = (function (window, THREE) {
   };
 
 
+
   my.offset = function( elem ) {
     var docElem, win;//, elem = this[0];
     var box = {
@@ -282,6 +288,7 @@ EXTRO.Utils = (function (window, THREE) {
   };
 
 
+
   /**
   Message logger from http://stackoverflow.com/a/25867340.
   @class log
@@ -304,6 +311,7 @@ EXTRO.Utils = (function (window, THREE) {
   })();
 
 
+
   my.get_computed_style = function( el, styleProp ) {
     var value, defaultView = el.ownerDocument.defaultView;
     // W3C standard way:
@@ -318,7 +326,7 @@ EXTRO.Utils = (function (window, THREE) {
       });
       value = el.currentStyle[styleProp];
       // convert other units to pixels on IE
-      if (/^\d+(em|pt|%|ex)?$/i.test(value)) { 
+      if (/^\d+(em|pt|%|ex)?$/i.test(value)) {
         return (function(value) {
           var oldLeft = el.style.left, oldRsLeft = el.runtimeStyle.left;
           el.runtimeStyle.left = el.currentStyle.left;
@@ -332,7 +340,8 @@ EXTRO.Utils = (function (window, THREE) {
       return value;
     }
   };
-  
+
+
 
   /**
   Simple jQuery-like selector. We don't want to pull in jQuery itself, and at 8k
