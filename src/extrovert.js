@@ -104,7 +104,7 @@ var EXTRO = (function (window, THREE) {
 
     _utils = EXTRO.Utils;
 
-    if( !_utils.detect_webgl() ) return false;
+    if( !_utils.detectWebGL() ) return false;
 
     // Special handling for IE
     var ua = window.navigator.userAgent;

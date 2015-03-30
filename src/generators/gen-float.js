@@ -17,7 +17,7 @@ An Extrovert.js generator for a floating scene.
       init: function( merged_options, eng ) {
         _opts = merged_options;
         _eng = eng;
-        var frustum_planes = EXTRO.Utils.calc_frustum( _eng.camera );
+        var frustum_planes = EXTRO.Utils.calcFrustum( _eng.camera );
         merged_options.scene.items[0].dims[0] = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
         merged_options.scene.items[0].dims[2] = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
         EXTRO.create_placement_plane( [0,200,0], [200000,1,200000] );

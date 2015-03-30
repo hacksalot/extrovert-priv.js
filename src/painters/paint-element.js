@@ -12,7 +12,7 @@ A simple Extrovert HTML rasterizer.
   EXTRO.paint_element = function () {
     return {
       paint: function( val, opts ) {
-        var _utils = EXTROVERT.Utils;
+        var _utils = EXTRO.Utils;
 
         // Get the element content
         //var title_elem = val.querySelector( opts.src.title );
@@ -28,7 +28,7 @@ A simple Extrovert HTML rasterizer.
 
         // Fill the canvas with the background color
         //var bkColor = $val.css('background-color');
-        var bkColor = _utils.get_computed_style(val, 'background-color');
+        var bkColor = _utils.getComputedStyle(val, 'background-color');
         if(bkColor === 'rgba(0, 0, 0, 0)')
           bkColor = 'rgb(0,0,0)';
         context.fillStyle = bkColor;

@@ -28,10 +28,10 @@ EXTRO.Utils = (function (window, THREE) {
   /**
   Perform a color blend (darken, lighten, or gradient) on a color (string) and
   return another string representing the color. See: http://stackoverflow.com/a/13542669
-  @method shade_blend
+  @method shadeBlend
   */
   /* jshint ignore:start */
-  my.shade_blend = function( p, c0, c1 ) {
+  my.shadeBlend = function( p, c0, c1 ) {
     var n=p<0?p*-1:p,u=Math.round,w=parseInt;
     if(c0.length>7) {
       var f=c0.split(","),t=(c1?c1:p<0?"rgb(0,0,0)":"rgb(255,255,255)").split(","),R=w(f[0].slice(4)),G=w(f[1]),B=w(f[2]);
@@ -52,7 +52,7 @@ EXTRO.Utils = (function (window, THREE) {
   - http: //www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
   @method wrap_text
   */
-  my.wrap_text = function( context, text, x, y, maxWidth, lineHeight, measureOnly ) {
+  my.wrapText = function( context, text, x, y, maxWidth, lineHeight, measureOnly ) {
 
     var numLines = 1;
     var start_of_line = true;
@@ -96,9 +96,9 @@ EXTRO.Utils = (function (window, THREE) {
 
   /**
   Figure out if the browser/machine supports WebGL.
-  @method detect_webgl
+  @method detectWebGL
   */
-  my.detect_webgl = function( return_context ) {
+  my.detectWebGL = function( return_context ) {
     if( !!window.WebGLRenderingContext ) {
       var canvas = document.createElement("canvas");
       var names = ["webgl", "experimental-webgl", "moz-webgl", "webkit-3d"];
@@ -132,9 +132,9 @@ EXTRO.Utils = (function (window, THREE) {
   /**
   Calculate the vertices of the near and far planes. Don't use THREE.Frustum
   here. http://stackoverflow.com/a/12022005 http://stackoverflow.com/a/23002688
-  @method calc_frustum
+  @method calcFrustum
   */
-  my.calc_frustum = function( camera ) {
+  my.calcFrustum = function( camera ) {
     // Near Plane dimensions
     var hNear = 2 * Math.tan(camera.fov * Math.PI / 180 / 2) * camera.near; // height
     var wNear = hNear * camera.aspect; // width
@@ -167,7 +167,7 @@ EXTRO.Utils = (function (window, THREE) {
   Determine if the supplied object is a "plain object", ie, an object created
   via { } or new. Loosely based on jQuery.isPlainObject.
   */
-  my.is_plain_object = function( obj ) {
+  my.isPlainObject = function( obj ) {
     // Not plain objects:
     // - Any object or value whose internal [[Class]] property is not "[object Object]"
     // - DOM nodes
@@ -235,12 +235,12 @@ EXTRO.Utils = (function (window, THREE) {
           if (target === copy) continue;
 
           // Recurse if we're merging plain objects or arrays
-          if (deep && copy && (my.is_plain_object(copy) || (copyIsArray = (copy.constructor === Array)))) {
+          if (deep && copy && (my.isPlainObject(copy) || (copyIsArray = (copy.constructor === Array)))) {
             if (copyIsArray) {
               copyIsArray = false;
               clone = src && (src.constructor === Array) ? src : [];
             } else {
-              clone = src && my.is_plain_object(src) ? src : {};
+              clone = src && my.isPlainObject(src) ? src : {};
             }
             // Never move original objects, clone them
             target[name] = my.extend(deep, clone, copy);
@@ -312,7 +312,7 @@ EXTRO.Utils = (function (window, THREE) {
 
 
 
-  my.get_computed_style = function( el, styleProp ) {
+  my.getComputedStyle = function( el, styleProp ) {
     var value, defaultView = el.ownerDocument.defaultView;
     // W3C standard way:
     if (defaultView && defaultView.getComputedStyle) {

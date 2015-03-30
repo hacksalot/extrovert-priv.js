@@ -21,7 +21,7 @@ An Extrovert.js generator for a 3D city scene.
         // THREE.ImageUtils.loadTexture( opts.generator.background ) : null;
         // plane_tex.wrapS = plane_tex.wrapT = THREE.RepeatWrapping;
         // plane_tex.repeat.set( 100, 100 );
-        var frustum_planes = EXTRO.Utils.calc_frustum( _eng.camera );
+        var frustum_planes = EXTRO.Utils.calcFrustum( _eng.camera );
         merged_options.scene.items[0].dims[0] = frustum_planes.farPlane.topRight.x - frustum_planes.farPlane.topLeft.x;
         merged_options.scene.items[0].dims[2] = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
         EXTRO.create_placement_plane( [0,200,0], [200000,1,200000] );
