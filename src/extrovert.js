@@ -55,7 +55,9 @@ var EXTRO = (function (window, THREE) {
     move_with_physics: true,
     click_force: 30000,
     onload: null,
-    onerror: null
+    onerror: null,
+    created: null,
+    clicked: null
   };
 
 
@@ -171,9 +173,9 @@ var EXTRO = (function (window, THREE) {
   @method init_world
   */
   function init_world( options, eng ) {
-  
+
     THREE.ImageUtils.crossOrigin = '*';
-    THREE.Loader.prototype.crossOrigin = '*';  
+    THREE.Loader.prototype.crossOrigin = '*';
 
     // Create scene, camera, lighting
     EXTRO.create_scene( options );
@@ -248,7 +250,7 @@ var EXTRO = (function (window, THREE) {
   @method init_renderer
   */
   function init_renderer( opts ) {
-    
+
     if( opts.src && opts.src.container ) {
       var cont = _utils.$( opts.src.container );
       if( cont.length !== undefined )
@@ -671,6 +673,7 @@ var EXTRO = (function (window, THREE) {
          // action should be triggered with the UP click, not the down.
          apply_force( intersects[0] );
       }
+      opts.clicked && opts.clicked( e, eng.selected );
     }
 
     if( /*e.which !== 1 &&*/ eng.controls && eng.controls.enabled ) {
