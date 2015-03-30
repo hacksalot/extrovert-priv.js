@@ -166,6 +166,7 @@ module.exports = function(grunt) {
   var cfgs = {
     debug: ['clean', 'jshint', 'concat', 'copy:physijs', 'uglify', 'compress:main', 'copy:rename', 'clean:temp'],
     release: ['clean', 'jshint', 'concat', 'copy:physijs', 'uglify', 'compress:main', 'copy:rename', 'clean:temp'],
+    quick: ['clean','jshint','concat','copy:physijs','uglify','clean:temp'],
     test: ['default', 'connect:auto', 'qunit'],
     testmanual: ['default', 'connect:manual']
   };
@@ -187,7 +188,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build', 'Build the Extrovert library.', function( config, quick ) {
     config = config || 'release';
-    //quick === 'quick' && cfgs[config].splice(4, 3);
     grunt.task.run( cfgs[config] );
   });
 
