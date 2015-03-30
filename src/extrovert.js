@@ -401,7 +401,7 @@ var EXTRO = (function (window, THREE) {
     var mesh = null, geo = null, mat = null;
     var rgb = desc.color || 0xFFFFFF;
     var opac = desc.opacity || 1.0;
-    var trans = desc.transparent || true;
+    var trans = desc.transparent || false;
     if( desc.type === 'box' ) {
       geo = new THREE.BoxGeometry( desc.dims[0], desc.dims[1], desc.dims[2] );
       mat = desc.mat || new THREE.MeshLambertMaterial( { color: rgb, opacity: opac, transparent: trans } );
