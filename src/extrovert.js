@@ -197,39 +197,53 @@ var EXTRO = (function (window, THREE) {
     create_scene_objects( eng.scene, options );
     eng.scene.updateMatrix();
 
-    // Transform source data into 3D geometry
-    // (options.src.selector can be a string or a function or undefined)
-    if( options.src && options.src.selector ) {
-      var cont = _utils.$( options.src.container );
-      if( cont.length !== undefined ) cont = cont[0];
+    // Get the source container element if any
+    var cont = null;
+    if( options.src && options.src.container ) {
+      cont = ( typeof options.src.container === 'string' ) ?
+        _utils.$( options.src.container ) : options.src.container;
+      if( cont.length !== undefined) cont = cont[0];
+    }
 
-      var elems = ( typeof options.src.selector === 'string' ) ?
-        cont.querySelectorAll( options.src.selector ) :
-        options.src.selector();
-
-      var idx, length = elems.length;
-      for(idx = 0; idx < length; ++idx) {
-        var elem = elems[ idx ];
-        var mesh = eng.generator.generate( elem );
-        mesh.updateMatrix();
-        mesh.updateMatrixWorld();
-        options.creating && options.creating( elem, mesh );
-        eng.scene.add( mesh );
-        eng.objects.push( mesh );
-        mesh.elem = elem;
-        options.created && options.created( elem, mesh );
+    // Get the source elements for transformation
+    var elems;
+    if( options.src ) {
+      if( options.src.selector ) {
+          // options.src.selector can be a string or a function
+          elems = ( typeof options.src.selector === 'string' ) ?
+            cont.querySelectorAll( options.src.selector ) :
+            options.src.selector();
+      }
+      else {
+        // No options.src.selector: options.src specifies the data
+        // it can be a single element or an array
+        elems = options.src;
       }
     }
-    // No options.src.selector? Dealing with arbitrary off-page data
     else {
+      // No options.src? Dealing with arbitrary off-page data
       eng.generator.generate();
+    }
+
+    // Transform the elements: TODO: refactor.
+    var idx, length = elems.length;
+    for(idx = 0; idx < length; ++idx) {
+      var elem = elems[ idx ];
+      var mesh = eng.generator.generate( elem );
+      mesh.updateMatrix();
+      mesh.updateMatrixWorld();
+      options.creating && options.creating( elem, mesh );
+      eng.scene.add( mesh );
+      eng.objects.push( mesh );
+      mesh.elem = elem;
+      options.created && options.created( elem, mesh );
     }
 
     // Now that objects have been placed, update the final cam position
     var oc = options.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
     oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
-    
+
     // Create lights AFTER final cam positioning
     EXTRO.fiat_lux( options.lights );
   }
@@ -254,7 +268,8 @@ var EXTRO = (function (window, THREE) {
   function init_renderer( opts ) {
 
     if( opts.src && opts.src.container ) {
-      var cont = _utils.$( opts.src.container );
+      var cont = (typeof opts.src.container === 'string') ? 
+        _utils.$( opts.src.container ): opts.src.container;
       if( cont.length !== undefined )
         cont = cont[0];
       var rect = cont.getBoundingClientRect();
@@ -288,7 +303,8 @@ var EXTRO = (function (window, THREE) {
   function init_canvas( opts ) {
     if( opts.target && opts.target.container ) {
       var action = opts.target.action || 'append';
-      var target_container = _utils.$( opts.target.container );
+      var target_container = (typeof opts.target.container === 'string') ?
+        _utils.$( opts.target.container ) : opts.target.container;
       if( target_container.length !== undefined ) target_container = target_container[0];
       if( action === 'append' )
         target_container.appendChild( eng.renderer.domElement );
@@ -756,7 +772,8 @@ var EXTRO = (function (window, THREE) {
   my.get_position = function( val, opts, eng ) {
 
     // Get the position of the HTML element [1]
-    var src_cont = _utils.$( opts.src.container );
+    var src_cont = (typeof opts.src.container === 'string') ?
+      _utils.$( opts.src.container ) : opts.src.container;
     if(src_cont.length !== undefined) src_cont = src_cont[0];
     var parent_pos = _utils.offset( src_cont );
     var child_pos = _utils.offset( val );
