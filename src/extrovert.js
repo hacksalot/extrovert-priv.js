@@ -22,11 +22,7 @@ var EXTRO = (function (window, THREE) {
   Default engine options. Will be smushed together with generator and user options.
   */
   var defaults = {
-    // src: {
-      // selector: 'div',
-      // title: 'h2',
-      // container: '#container'
-    // },
+    renderer: 'WebGL',
     generator: 'gallery',
     rasterizer: 'img',
     gravity: [0,0,0],
@@ -281,7 +277,10 @@ var EXTRO = (function (window, THREE) {
       eng.height = window.innerHeight;
     }
 
-    eng.renderer = new THREE.WebGLRenderer({ antialias: true });
+    // Create an XxxxRenderer based on options
+    var rendOpts = opts.renderer === 'Canvas' ? undefined : { antialias: true };
+    opts.renderer = opts.renderer || 'WebGL';
+    eng.renderer = new THREE[opts.renderer + 'Renderer']( rendOpts );
     eng.renderer.setPixelRatio( window.devicePixelRatio );
     eng.renderer.setSize( eng.width, eng.height );
     opts.bkcolor && eng.renderer.setClearColor( opts.bkcolor );
@@ -290,8 +289,8 @@ var EXTRO = (function (window, THREE) {
     // http://stackoverflow.com/a/3274697
     eng.renderer.domElement.setAttribute('tabindex', '0');
     eng.renderer.domElement.style += ' position: relative;';
-    eng.renderer.autoClearStencil = false;
-    eng.renderer.getContext().clearStencil = function() { };
+    //eng.renderer.autoClearStencil = false;
+    //eng.renderer.getContext().clearStencil = function() { };
   }
 
 
