@@ -130,6 +130,18 @@ EXTRO.Utils = (function (window, THREE) {
 
 
   /**
+  Figure out if the browser supports Canvas.
+  http://stackoverflow.com/q/2745432
+  @method detectVCanvas
+  */
+  my.detectCanvas = function() {
+    var elem = document.createElement('canvas');
+    return !!(elem.getContext && elem.getContext('2d'));
+  };
+
+
+
+  /**
   Calculate the vertices of the near and far planes. Don't use THREE.Frustum
   here. http://stackoverflow.com/a/12022005 http://stackoverflow.com/a/23002688
   @method calcFrustum

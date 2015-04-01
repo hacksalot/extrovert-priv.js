@@ -88,6 +88,11 @@ var EXTRO = (function (window, THREE) {
   */
   var opts = null;
 
+
+
+  /**
+  An alias to EXTROVERT.Utils.
+  */
   var _utils = null;
 
 
@@ -100,14 +105,18 @@ var EXTRO = (function (window, THREE) {
 
     _utils = EXTRO.Utils;
 
-    if( !_utils.detectWebGL() ) return false;
+    // Quick exit if we don't support the requested renderer
+    var supportsWebGL = _utils.detectWebGL();
+    var supportsCanvas = _utils.detectCanvas();
+    if(( !supportsWebGL && !supportCanvas ) ||
+       ( options.renderer === 'WebGL' && !supportsWebGL ) ||
+       ( options.renderer === 'Canvas' && !supportsCanvas ))
+      return false;
 
-    // Special handling for IE
+    // Special handling for IE- TODO: needs work.
     var ua = window.navigator.userAgent;
     if( ~ua.indexOf('MSIE ') || ~ua.indexOf('Trident/') ) {
-      // Remove some troublesome stuff from the shader. Assumes three.js R70.
-      // https://github.com/mrdoob/three.js/issues/4843#issuecomment-43957698
-      Object.keys(THREE.ShaderLib).forEach(function (key) {
+      Object.keys(THREE.ShaderLib).forEach(function (key) { // [3]
         THREE.ShaderLib[key].fragmentShader =
         THREE.ShaderLib[key].fragmentShader.replace('#extension GL_EXT_frag_depth : enable', '');
       });
@@ -122,7 +131,6 @@ var EXTRO = (function (window, THREE) {
     init_events();
     init_timer();
     start();
-
     return true;
   };
 
@@ -170,10 +178,10 @@ var EXTRO = (function (window, THREE) {
   */
   function init_world( options, eng ) {
 
+    // TODO: CORS stuff.
     THREE.ImageUtils.crossOrigin = '*';
     THREE.Loader.prototype.crossOrigin = '*';
 
-    // Create scene, camera
     EXTRO.create_scene( options );
     EXTRO.create_camera( _utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
 
@@ -251,8 +259,8 @@ var EXTRO = (function (window, THREE) {
   @method init_controls
   */
   function init_controls( opts, eng ) {
-     eng.controls = my.create_controls( opts.controls, eng.camera, eng.renderer.domElement );
-     return eng.controls;
+    eng.controls = my.create_controls( opts.controls, eng.camera, eng.renderer.domElement );
+    return eng.controls;
   }
 
 
@@ -264,7 +272,7 @@ var EXTRO = (function (window, THREE) {
   function init_renderer( opts ) {
 
     if( opts.src && opts.src.container ) {
-      var cont = (typeof opts.src.container === 'string') ? 
+      var cont = (typeof opts.src.container === 'string') ?
         _utils.$( opts.src.container ): opts.src.container;
       if( cont.length !== undefined )
         cont = cont[0];
@@ -277,20 +285,15 @@ var EXTRO = (function (window, THREE) {
       eng.height = window.innerHeight;
     }
 
-    // Create an XxxxRenderer based on options
+    // Create a [WebGL|Canvas]Renderer based on options
     var rendOpts = opts.renderer === 'Canvas' ? undefined : { antialias: true };
     opts.renderer = opts.renderer || 'WebGL';
     eng.renderer = new THREE[opts.renderer + 'Renderer']( rendOpts );
     eng.renderer.setPixelRatio( window.devicePixelRatio );
     eng.renderer.setSize( eng.width, eng.height );
     opts.bkcolor && eng.renderer.setClearColor( opts.bkcolor );
-    // Give the canvas a tabindex so it receives keyboard input and set the
-    // position to relative so coordinates are canvas-local.
-    // http://stackoverflow.com/a/3274697
-    eng.renderer.domElement.setAttribute('tabindex', '0');
+    eng.renderer.domElement.setAttribute('tabindex', '0'); // [2]
     eng.renderer.domElement.style += ' position: relative;';
-    //eng.renderer.autoClearStencil = false;
-    //eng.renderer.getContext().clearStencil = function() { };
   }
 
 
@@ -357,8 +360,7 @@ var EXTRO = (function (window, THREE) {
     copts.position && cam.position.set( copts.position[0], copts.position[1], copts.position[2] );
     if( copts.up ) cam.up.set( copts.up[0], copts.up[1], copts.up[2] );
     if( copts.lookat ) cam.lookAt( new THREE.Vector3( copts.lookat[0], copts.lookat[1], copts.lookat[2] ) );
-    // TODO: Are any of these calls still necessary?
-    cam.updateMatrix();
+    cam.updateMatrix(); // TODO: Are any of these calls still necessary?
     cam.updateMatrixWorld();
     cam.updateProjectionMatrix();
     return cam;
@@ -372,10 +374,8 @@ var EXTRO = (function (window, THREE) {
   @method init_scene
   */
   my.create_scene = function( scene_opts ) {
-    var scene = scene_opts.physics.enabled ? new Physijs.Scene() : new THREE.Scene();
-    eng.scene = scene;
-    //create_scene_objects( scene, scene_opts );
-    return scene;
+    eng.scene = scene_opts.physics.enabled ? new Physijs.Scene() : new THREE.Scene();
+    return eng.scene;
   };
 
 
@@ -394,6 +394,11 @@ var EXTRO = (function (window, THREE) {
   }
 
 
+
+  /**
+  Utility function for drawing a rounded rect (2D).
+  @method roundedRect
+  */
   function roundedRect( ctx, x, y, width, height, radius ){
     ctx.moveTo( x, y + radius );
     ctx.lineTo( x, y + height - radius );
@@ -405,6 +410,7 @@ var EXTRO = (function (window, THREE) {
     ctx.lineTo( x + radius, y );
     ctx.quadraticCurveTo( x, y, x, y + radius );
   }
+
 
 
   /**
@@ -582,7 +588,6 @@ var EXTRO = (function (window, THREE) {
     for( var idx = 0; idx < light_opts.length; idx++ ) {
 
       var val = light_opts[ idx ];
-
       if( val.type === 'ambient' ) {
         new_light = new THREE.AmbientLight( val.color );
       }
@@ -602,7 +607,6 @@ var EXTRO = (function (window, THREE) {
         else
           new_light.position.copy( eng.camera.position );
       }
-
       eng.scene.add( new_light );
       lights.push( new_light );
     }
@@ -686,8 +690,6 @@ var EXTRO = (function (window, THREE) {
         }
       }
       else {
-         // TODO: if we're following standard mouse-click behavior, the "click"
-         // action should be triggered with the UP click, not the down.
          apply_force( intersects[0] );
       }
       opts.clicked && opts.clicked( e, eng.selected );
@@ -858,6 +860,16 @@ var EXTRO = (function (window, THREE) {
 
 
 }(window, THREE));
+
+//
 // [1]: FireFox doesn't support .offsetX:
 //      https://bugzilla.mozilla.org/show_bug.cgi?id=69787
 //      http://stackoverflow.com/q/11334452
+//
+// [2]: Give the canvas a tabindex so it receives keyboard input and set the
+//      position to relative so coordinates are canvas-local.
+//      http://stackoverflow.com/a/3274697
+//
+// [3]: Remove some troublesome stuff from the shader for IE. Assumes three.js R70/71.
+//      https://github.com/mrdoob/three.js/issues/4843#issuecomment-43957698
+//
