@@ -22,7 +22,7 @@ var EXTRO = (function (window, THREE) {
   Default engine options. Will be smushed together with generator and user options.
   */
   var defaults = {
-    renderer: 'WebGL',
+    renderer: 'Any',
     generator: 'gallery',
     rasterizer: 'img',
     gravity: [0,0,0],
@@ -78,7 +78,9 @@ var EXTRO = (function (window, THREE) {
     placement_plane: null,
     offset: new THREE.Vector3(),
     generator: null,
-    clock: new THREE.Clock()
+    clock: new THREE.Clock(),
+    supportsWebGL: false,
+    supportsCanvas: false
   };
 
 
@@ -106,11 +108,11 @@ var EXTRO = (function (window, THREE) {
     _utils = EXTRO.Utils;
 
     // Quick exit if we don't support the requested renderer
-    var supportsWebGL = _utils.detectWebGL();
-    var supportsCanvas = _utils.detectCanvas();
-    if(( !supportsWebGL && !supportCanvas ) ||
-       ( options.renderer === 'WebGL' && !supportsWebGL ) ||
-       ( options.renderer === 'Canvas' && !supportsCanvas ))
+    eng.supportsWebGL = _utils.detectWebGL();
+    eng.supportsCanvas = _utils.detectCanvas();
+    if(( !eng.supportsWebGL && !eng.supportsCanvas ) ||
+       ( options.renderer === 'WebGL' && !eng.supportsWebGL ) ||
+       ( options.renderer === 'Canvas' && !eng.supportsCanvas ))
       return false;
 
     // Special handling for IE- TODO: needs work.
@@ -285,10 +287,14 @@ var EXTRO = (function (window, THREE) {
       eng.height = window.innerHeight;
     }
 
-    // Create a [WebGL|Canvas]Renderer based on options
-    var rendOpts = opts.renderer === 'Canvas' ? undefined : { antialias: true };
-    opts.renderer = opts.renderer || 'WebGL';
-    eng.renderer = new THREE[opts.renderer + 'Renderer']( rendOpts );
+    // Choose a [WebGL|Canvas]Renderer based on options
+    var rendName = opts.renderer;
+    if( !rendName || rendName === 'Any' ) {
+      rendName = eng.supportsWebGL ? 'WebGL' : (eng.supportsCanvas ? 'Canvas' : null);
+    }
+    var rendOpts = rendName === 'Canvas' ? undefined : { antialias: true };
+
+    eng.renderer = new THREE[rendName + 'Renderer']( rendOpts );
     eng.renderer.setPixelRatio( window.devicePixelRatio );
     eng.renderer.setSize( eng.width, eng.height );
     opts.bkcolor && eng.renderer.setClearColor( opts.bkcolor );
@@ -508,6 +514,16 @@ var EXTRO = (function (window, THREE) {
   @method start
   */
   function start() {
+    // requestAnim shim layer by Paul Irish
+    // Better version here: https://github.com/chrisdickinson/raf
+    window.requestAnimFrame = 
+      window.requestAnimationFrame       || 
+      window.webkitRequestAnimationFrame || 
+      window.mozRequestAnimationFrame    || 
+      function(/* function */ callback, /* DOMElement */ element){
+        window.setTimeout(callback, 1000 / 60);
+      };
+
     opts.onload && opts.onload(); // Fire the 'onload' event
     animate();
   }
@@ -519,7 +535,8 @@ var EXTRO = (function (window, THREE) {
   @method animate
   */
   function animate() {
-    requestAnimationFrame( animate );
+    //requestAnimationFrame( animate );
+    requestAnimFrame( animate );
     render();
   }
 
