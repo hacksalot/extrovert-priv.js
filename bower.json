@@ -1,27 +1,38 @@
 {
-   "name": "extrovert",
-
-   "version": "0.1.0",
-
-   "authors": [ "James Devlin <james@indevious.com>" ],
-
-   "description": "3Dify your websites, blogs, RSS feeds, and image galleries.",
-
-   "main": "dist/extrovert.js",
-
-   "dependencies": { "threejs": "*", "physijs": "*" },
-
-   "resolutions": { "threejs": "74e7d09c26" },
-
-   "ignore": [ "lib", "dep", "examples", "extrovert-manifest.xml", "README.md",
-      ".bowerrc", ".git", ".gitignore", ".gitattributes", ".jshintignore",
-      ".jshintrc",   "gruntfile.js" ],
-
-   "keywords": [ "extrovert", "webgl", "3D", "three.js", "physijs" ],
-
-   "license": "MIT",
-
-   "homepage": "http://indevious.com/extrovert",
-
-   "private": true
+  "name": "extrovert",
+  "authors": [
+    "James Devlin <james@indevious.com>"
+  ],
+  "description": "3Dify your websites, blogs, RSS feeds, and image galleries.",
+  "main": ["dist/extrovert.js","dist/extrovert.deps.js","dist/extrovert.all.js"],
+  "dependencies": {
+    "threejs": "*",
+    "physijs": "*"
+  },
+  "ignore": [
+    "bower_components/",
+    "node_modules/",
+    "src/",
+    "MANIFEST.xml",
+    "README.md",
+    ".git/",
+    ".gitignore",
+    ".gitattributes",
+    ".jshintignore",
+    ".jshintrc",
+    "Gruntfile.js"
+  ],
+  "keywords": [
+    "extrovert",
+    "webgl",
+    "3D",
+    "three.js",
+    "physijs"
+  ],
+  "license": "MIT",
+  "homepage": "http://indevious.com/extrovert",
+  "private": true,
+  "resolutions": {
+    "threejs": "f73593b00e"
+  }
 }
