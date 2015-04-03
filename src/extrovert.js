@@ -29,7 +29,7 @@ var EXTRO = (function (window, THREE) {
     camera: {
       fov: 35,
       near: 1,
-      far: 2000
+      far: 10000
     },
     controls: {
       allow_drag: false,
