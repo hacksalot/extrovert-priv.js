@@ -650,8 +650,7 @@ var EXTRO = (function (window, THREE) {
 
   /**
   Calculate the position, in world coordinates, of the specified (x,y) screen
-  location, at a depth specified by the plane parameter. TODO: this can be done
-  without raycasting; just extend a vector out to the desired Z.
+  location, at whatever point it intersects with the placement_plane.
   @method calc_position
   */
   my.calc_position = function( posX, posY, placement_plane ) {
@@ -796,23 +795,24 @@ var EXTRO = (function (window, THREE) {
     var parent_pos = _utils.offset( src_cont );
     var child_pos = _utils.offset( val );
     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
-
-    // From that, compute the position of the top-left and bottom-right corner
-    // of the element as they would exist in 3D-land.
+    // Get the position in world coords relative to camera
     var topLeft = EXTRO.calc_position( pos.left, pos.top, eng.placement_plane );
     var botRight = EXTRO.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
+    
+    
     var block_width = Math.abs( botRight.x - topLeft.x );
     var block_height = Math.abs( topLeft.y - botRight.y );
+    var block_depth = Math.abs( topLeft.z - botRight.z );
 
     // Offset by the half-height/width so the corners line up
     return {
-      pos: //new THREE.Vector3(
+      pos:
         [topLeft.x + (block_width / 2),
         topLeft.y - (block_height / 2),
-        topLeft.z - (opts.block.depth / 2)],
+        topLeft.z - (block_depth / 2)],
       width: block_width,
       height: block_height,
-      depth: opts.block.depth
+      depth: block_depth
     };
   };
 
