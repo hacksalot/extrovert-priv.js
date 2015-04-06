@@ -27,7 +27,9 @@ An Extrovert.js generator that creates a 3D wall or tower.
       },
 
       transform: function( obj ) {
-        return EXTRO.get_position( obj, _opts, _eng );
+        var posInfo = EXTRO.get_position( obj, _opts, _eng );
+        posInfo.depth = _opts.block.depth;
+        return posInfo;
       },
 
       rasterize: function( obj ) {
@@ -59,7 +61,8 @@ An Extrovert.js generator that creates a 3D wall or tower.
           rotation: [-0.25,0,0]
         },
         controls: { target: [0,-1500, 0] },
-        block: { depth: 100 }
+        block: { depth: 100 },
+        click_force: 900000
       },
 
       init_cam_opts: { position: [0,0,800] }

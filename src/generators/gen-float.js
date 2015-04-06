@@ -22,8 +22,42 @@ An Extrovert.js generator for a floating scene.
         merged_options.scene.items[0].dims[2] = frustum_planes.farPlane.topRight.y - frustum_planes.farPlane.botRight.y;
         EXTRO.create_placement_plane( [0,200,0], [200000,1,200000] );
       },
-      transform: function( obj ) {
-        return get_position( obj, _opts, _eng );
+      transform: function( val ) {
+
+        var posInfo = EXTRO.get_position( val, _opts, _eng );
+        posInfo.pos[1] += (posInfo.height / 2);
+        posInfo.height = _opts.block.depth;
+        posInfo.pos[1] -= posInfo.height / 2;
+        posInfo.pos[2] += posInfo.depth;
+        return posInfo;
+
+        // Get the position of the HTML element [1]
+        // var src_cont = (typeof _opts.src.container === 'string') ?
+          // EXTRO.Utils.$( _opts.src.container ) : _opts.src.container;
+        // if(src_cont.length !== undefined) src_cont = src_cont[0];
+        // var parent_pos = EXTRO.Utils.offset( src_cont );
+        // var child_pos = EXTRO.Utils.offset( val );
+        // var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
+        // // Get the position in world coords relative to camera
+        // var topLeft = EXTRO.calc_position( pos.left, pos.top, _eng.placement_plane );
+        // var botRight = EXTRO.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, _eng.placement_plane );
+
+        // // These return the topLeft and bottomRight coordinates of the MAIN FACE of the thing in WORLD coords
+
+        // var block_width = Math.abs( botRight.x - topLeft.x );
+        // var block_height = _opts.block.depth;
+        // var block_depth = Math.abs( topLeft.z - botRight.z );
+
+        // // Offset by the half-height/width so the corners line up
+        // return {
+          // pos: [
+             // topLeft.x + (block_width / 2),
+             // topLeft.y - (block_height / 2),
+             // topLeft.z + (block_depth / 2) ],
+          // width: block_width,
+          // height: block_height,
+          // depth: block_depth
+        // };
       },
       rasterize: function( obj ) {
         var texture = _eng.rasterizer.paint( obj, _opts );
@@ -62,38 +96,5 @@ An Extrovert.js generator for a floating scene.
       }
     };
   };
-
-  /**
-  Retrieve the position, in 3D space, of a recruited HTML element.
-  @method init_card
-  */
-  function get_position( val, opts, eng ) {
-
-     // Get the position of the HTML element [1]
-     var parent_pos = EXTRO.Utils.offset( EXTRO.Utils.$( opts.src.container ) );
-     var child_pos = EXTRO.Utils.offset( val );
-     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
-
-     // From that, compute the position of the top-left and bottom-right corner
-     // of the element as they would exist in 3D-land.
-     var topLeft = EXTRO.calc_position( pos.left, pos.top, eng.placement_plane );
-     var botRight = EXTRO.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
-     // These return the topLeft and bottomRight coordinates of the MAIN FACE of the thing in WORLD coords
-
-     var block_width = Math.abs( botRight.x - topLeft.x );
-     var block_height = opts.block.depth;//Math.abs( topLeft.y - botRight.y );
-     var block_depth = Math.abs( topLeft.z - botRight.z );
-
-     // Offset by the half-height/width so the corners line up
-     return {
-        pos: [
-           topLeft.x + (block_width / 2),
-           topLeft.y - (block_height / 2),
-           topLeft.z + (block_depth / 2) ],
-        width: block_width,
-        depth: block_depth,
-        height: block_height
-     };
-  }
 
 }(window, THREE, EXTRO));

@@ -41,8 +41,9 @@ An Extrovert.js generator for a 3D image gallery.
         var pos_info = this.transform( obj );
         var mat_info = this.rasterize( obj );
         var mesh = EXTRO.create_object({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
-        if( _opts.generator.lookat )
+        if( _opts.generator.lookat ) {
           mesh.lookAt( new THREE.Vector3( _opts.generator.lookat[0], _opts.generator.lookat[1], _opts.generator.lookat[2]) );
+        }
         return mesh;
       },
 
@@ -53,9 +54,9 @@ An Extrovert.js generator for a 3D image gallery.
         },
         camera: { position: [0,0,3200], far: 10000 },
         lights: [
-          { type: 'point', color: 0xffffff, intensity: 1, distance: 10000, pos: [0,0,3200] },
+          //{ type: 'point', color: 0xffffff, intensity: 1, distance: 10000, pos: [0,0,3200] },
           //{ type: 'point', color: 0xffffff, intensity: 0.25, distance: 1000, pos: [0,0,300] },
-          { type: 'ambient', color: 0x343434 }
+          { type: 'ambient', color: 0xffffff }
         ],
         block: { depth: 20 }
       },

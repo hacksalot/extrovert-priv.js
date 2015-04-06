@@ -32,8 +32,9 @@ var EXTRO = (function (window, THREE) {
       far: 10000
     },
     controls: {
-      allow_drag: false,
-      type: 'trackball'
+      type: 'trackball',
+      enabled: true,
+      allow_drag: false
     },
     physics: {
       enabled: true,
@@ -80,7 +81,8 @@ var EXTRO = (function (window, THREE) {
     generator: null,
     clock: new THREE.Clock(),
     supportsWebGL: false,
-    supportsCanvas: false
+    supportsCanvas: false,
+    pass_mouse_input: true
   };
 
 
@@ -188,6 +190,8 @@ var EXTRO = (function (window, THREE) {
     EXTRO.create_camera( _utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
 
     // Create an invisible plane for drag and drop
+    // TODO: Only create this if drag-drop controls are enabled
+    // This should be up to the XxxxxControls object.
     if( options.controls.allow_drag ) {
       eng.drag_plane = EXTRO.create_object( {
         type: 'plane',
@@ -203,8 +207,8 @@ var EXTRO = (function (window, THREE) {
     create_scene_objects( eng.scene, options );
     eng.scene.updateMatrix();
 
-    // Get the source container element if any
-    var cont = null;
+    // Get the source container element if specified or default to body
+    var cont = document.body;
     if( options.src && options.src.container ) {
       cont = ( typeof options.src.container === 'string' ) ?
         _utils.$( options.src.container ) : options.src.container;
@@ -331,8 +335,9 @@ var EXTRO = (function (window, THREE) {
   */
   my.create_controls = function( control_opts, camera, domElement ) {
     var controls = null;
+    var track_opts = null;
     if( !control_opts || !control_opts.type || control_opts.type === 'trackball' ) {
-      var track_opts = { ignore_events: 'mousedown mousemove mouseup' };
+      track_opts = { ignore_events: 'mousedown mousemove mouseup' };
       if( control_opts && control_opts.target )
         track_opts.target = control_opts.target;
       controls = new THREE.TrackballControls( camera, domElement, track_opts );
@@ -344,10 +349,9 @@ var EXTRO = (function (window, THREE) {
       controls.staticMoving = true;
       controls.dynamicDampingFactor = 0.3;
       controls.keys = [ 65, 83, 68 ];
-      //controls.addEventListener( 'change', render );
     }
     else if( control_opts.type === 'fly' ) {
-      // TODO
+      controls = new THREE.FlyControls( camera, domElement );
     }
     return controls;
   };
@@ -516,10 +520,10 @@ var EXTRO = (function (window, THREE) {
   function start() {
     // requestAnim shim layer by Paul Irish
     // Better version here: https://github.com/chrisdickinson/raf
-    window.requestAnimFrame = 
-      window.requestAnimationFrame       || 
-      window.webkitRequestAnimationFrame || 
-      window.mozRequestAnimationFrame    || 
+    window.requestAnimFrame =
+      window.requestAnimationFrame       ||
+      window.webkitRequestAnimationFrame ||
+      window.mozRequestAnimationFrame    ||
       function(/* function */ callback, /* DOMElement */ element){
         window.setTimeout(callback, 1000 / 60);
       };
@@ -580,7 +584,7 @@ var EXTRO = (function (window, THREE) {
       }
     }
 
-    eng.controls && eng.controls.enabled && eng.controls.update( /*eng.clock.getDelta()*/ );
+    eng.controls && eng.controls.enabled && eng.controls.update( eng.clock.getDelta() );
     eng.renderer.clear();
 
     eng.css_renderer && eng.css_renderer.render( eng.css_scene, eng.camera );
@@ -681,7 +685,6 @@ var EXTRO = (function (window, THREE) {
   @method mouse_down
   */
   function mouse_down( e ) {
-
     e.preventDefault();
     var xpos = e.offsetX === undefined ? e.layerX : e.offsetX; //[1]
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
@@ -711,10 +714,8 @@ var EXTRO = (function (window, THREE) {
       opts.clicked && opts.clicked( e, eng.selected );
     }
 
-    if( /*e.which !== 1 &&*/ eng.controls && eng.controls.enabled ) {
+    if( eng.controls && eng.controls.enabled ) {
       eng.controls.mousedown( e );
-      eng.pass_mouse_input = true;
-      //return;
     }
   }
 
@@ -725,7 +726,7 @@ var EXTRO = (function (window, THREE) {
   @method mouse_move
   */
   function mouse_move( e ) {
-    if( eng.pass_mouse_input && eng.controls && eng.controls.enabled ) {
+    if( eng.controls && eng.controls.enabled ) {
       eng.controls.mousemove( e );
       return;
     }
@@ -756,9 +757,8 @@ var EXTRO = (function (window, THREE) {
   @method mouse_up
   */
   function mouse_up( e ) {
-    if( /*e.which !== 1 &&*/eng.pass_mouse_input && eng.controls && eng.controls.enabled ) {
+    if( eng.controls && eng.controls.enabled ) {
       eng.controls.mouseup( e );
-      eng.pass_mouse_input = false;
       return;
     }
     e.preventDefault();
@@ -798,8 +798,8 @@ var EXTRO = (function (window, THREE) {
     // Get the position in world coords relative to camera
     var topLeft = EXTRO.calc_position( pos.left, pos.top, eng.placement_plane );
     var botRight = EXTRO.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
-    
-    
+
+
     var block_width = Math.abs( botRight.x - topLeft.x );
     var block_height = Math.abs( topLeft.y - botRight.y );
     var block_depth = Math.abs( topLeft.z - botRight.z );
