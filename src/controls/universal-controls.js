@@ -1,114 +1,106 @@
-
+/**
+A hybrid control module for Extrovert.js scenes.
+@module universal-controls.js
+@author James Devlin (james@indevious.com)
+*/
 
 EXTRO.UniversalControls = function ( object, domElement ) {
 
   this.object = object;
   this.domElement = domElement || document;
   this.enabled = true;
-  this.mousePos = new THREE.Vector2();
-  this.mousePosNDC = new THREE.Vector3();
-  this.mousePosNewNDC = new THREE.Vector3();
-  this.mouseDeltaNDC = new THREE.Vector3();
-  this.isTracking = false;
-  this.posChanged = false;
-  this.movementSpeed = 1.0;
+  this.movementSpeed = 1500.0;
+  this.turboMultiplier = 1.0;
+  var _moveState = {};
+  var _isTracking = false;
+  var _mousePos = new THREE.Vector2();
+  var _mousePosNDC = new THREE.Vector3();
+  var _mousePosNewNDC = new THREE.Vector3();
+  var _mouseDeltaNDC = new THREE.Vector3();
+  var _posChanged = false;
+
+  this.update = function( delta ) {
+    if( _isTracking && _posChanged ) {
+      var temp = _mouseDeltaNDC.x;
+      _mouseDeltaNDC.x = -_mouseDeltaNDC.y;
+      _mouseDeltaNDC.y = temp;
+      var vRot = this.object.rotation.toVector3().add( _mouseDeltaNDC.multiplyScalar(0.65) );
+      this.object.rotation.setFromVector3( vRot, 'YXZ' );
+      _posChanged = false;
+    }
+    if( _moveState.zdir )
+      this.object.translateZ( (this.movementSpeed * delta) * _moveState.zdir * this.turboMultiplier );
+    if( _moveState.xdir )
+      this.object.translateX( (this.movementSpeed * delta) * _moveState.xdir * this.turboMultiplier );
+    if( _moveState.ydir )
+      this.object.translateY( (this.movementSpeed * delta) * _moveState.ydir * this.turboMultiplier );
+  };
 
   this.mousedown = function( e ) {
     var posX = e.offsetX === undefined ? e.layerX : e.offsetX;
     var posY = e.offsetY === undefined ? e.layerY : e.offsetY;
-    this.mousePos.set(posX, posY);
-    this.mousePosNDC = EXTRO.to_ndc( posX, posY, 0.5, this.mousePosNDC );
-    this.isTracking = true;
-    this.posChanged = false;
+    _mousePos.set(posX, posY);
+    _mousePosNDC = EXTRO.to_ndc( posX, posY, 0.5, _mousePosNDC );
+    _isTracking = true;
+    _posChanged = false;
   };
 
   this.mouseup = function( e ) {
-    this.isTracking = false;
-    this.posChanged = false;
+    _isTracking = false;
+    _posChanged = false;
   };
 
   this.mousemove = function( e ) {
-    if( this.isTracking ) {
+    if( _isTracking ) {
       e.preventDefault();
       var posX = e.offsetX === undefined ? e.layerX : e.offsetX;
       var posY = e.offsetY === undefined ? e.layerY : e.offsetY;
-      if( posX === this.mousePos.x && posY === this.mousePos.y )
+      if( posX === _mousePos.x && posY === _mousePos.y )
         return;
-      this.mousePosNewNDC = EXTRO.to_ndc( posX, posY, 0.5, this.mousePosNewNDC );
-      this.mouseDeltaNDC.subVectors( this.mousePosNDC, this.mousePosNewNDC );
-      this.posChanged = true;
-      this.mousePos.set( posX, posY );      
-      this.mousePosNDC = EXTRO.to_ndc( posX, posY, 0.5, this.mousePosNDC );      
+      _mousePosNewNDC = EXTRO.to_ndc( posX, posY, 0.5, _mousePosNewNDC );
+      _mouseDeltaNDC.subVectors( _mousePosNDC, _mousePosNewNDC );
+      _posChanged = true;
+      _mousePos.set( posX, posY );
+      _mousePosNDC = EXTRO.to_ndc( posX, posY, 0.5, _mousePosNDC );
     }
   };
-  
-  var _wheelDelta;
-  
+
   this.mousewheel = function( event ) {
-		_wheelDelta = 0;
+		var wDelta = 0;
 		if ( event.wheelDelta ) { // WebKit / Opera / Explorer 9
-			_wheelDelta = event.wheelDelta / 40;
+			wDelta = event.wheelDelta / 40;
 		} else if ( event.detail ) { // Firefox
-			_wheelDelta = - event.detail / 3;
+			wDelta = -event.detail / 3;
 		}
-    this.object.translateZ( -_wheelDelta * 30 );
+    this.object.translateZ( -wDelta * 30 );
     event.preventDefault();
-		event.stopPropagation();    
-		// _this.dispatchEvent( startEvent );
-		// _this.dispatchEvent( endEvent );
+		event.stopPropagation();
   };
 
-  this.update = function( delta ) {
-    if( this.isTracking && this.posChanged ) {
-      this.mouseDeltaNDC.z = this.mouseDeltaNDC.x;
-      this.mouseDeltaNDC.x = -this.mouseDeltaNDC.y;
-      this.mouseDeltaNDC.y = this.mouseDeltaNDC.z;
-      this.mouseDeltaNDC.z = 0;
-      var vRot = this.object.rotation.toVector3().add( this.mouseDeltaNDC.multiplyScalar(0.65) );
-      this.object.rotation.setFromVector3( vRot, 'YXZ' );
-      this.posChanged = false;
-    }
-
-  };
-
-
-	this.keydown = function( event ) {
-		if ( !event.altKey ) {
-			return;
-		}
-		event.preventDefault();
-		switch ( event.keyCode ) {
-			case 16: /* shift */ this.movementSpeedMultiplier = 0.1; break;
-			case 87: /*W*/ this.moveState.forward = 1; break;
-			case 83: /*S*/ this.moveState.back = 1; break;
-			case 65: /*A*/ this.moveState.left = 1; break;
-			case 68: /*D*/ this.moveState.right = 1; break;
-			case 82: /*R*/ this.moveState.up = 1; break;
-			case 70: /*F*/ this.moveState.down = 1; break;
-			case 38: /*up*/ this.moveState.pitchUp = 1; break;
-			case 40: /*down*/ this.moveState.pitchDown = 1; break;
-			case 37: /*left*/ this.moveState.yawLeft = 1; break;
-			case 39: /*right*/ this.moveState.yawRight = 1; break;
-			case 81: /*Q*/ this.moveState.rollLeft = 1; break;
-			case 69: /*E*/ this.moveState.rollRight = 1; break;
+	this.keydown = function( e ) {
+		e.preventDefault();
+		switch ( e.keyCode ) {
+			case 87: _moveState.zdir = -1; break; // W (forward)
+			case 83: _moveState.zdir =  1; break; // S (back)
+			case 65: _moveState.xdir = -1; break; // A (strafe L)
+			case 68: _moveState.xdir =  1; break; // D (strafe R)
+      case 82: _moveState.ydir =  1; break; // R (up)
+      case 70: _moveState.ydir = -1; break; // F (down)
+      case 32: break; // Space
+			case 16: this.turboMultiplier = 5; break; // Shift
 		}
 	};
 
-	this.keyup = function( event ) {
-		switch ( event.keyCode ) {
-			case 16: /* shift */ this.movementSpeedMultiplier = 1; break;
-			case 87: /*W*/ this.moveState.forward = 0; break;
-			case 83: /*S*/ this.moveState.back = 0; break;
-			case 65: /*A*/ this.moveState.left = 0; break;
-			case 68: /*D*/ this.moveState.right = 0; break;
-			case 82: /*R*/ this.moveState.up = 0; break;
-			case 70: /*F*/ this.moveState.down = 0; break;
-			case 38: /*up*/ this.moveState.pitchUp = 0; break;
-			case 40: /*down*/ this.moveState.pitchDown = 0; break;
-			case 37: /*left*/ this.moveState.yawLeft = 0; break;
-			case 39: /*right*/ this.moveState.yawRight = 0; break;
-			case 81: /*Q*/ this.moveState.rollLeft = 0; break;
-			case 69: /*E*/ this.moveState.rollRight = 0; break;
+	this.keyup = function( e ) {
+		switch ( e.keyCode ) {
+			case 87: _moveState.zdir = 0; break; // W
+			case 83: _moveState.zdir = 0; break; // S
+			case 65: _moveState.xdir = 0; break; // A
+			case 68: _moveState.xdir = 0; break; // D
+      case 82: _moveState.ydir = 0; break; // R
+      case 70: _moveState.ydir = 0; break; // F
+      case 32: break; // Space
+			case 16: this.turboMultiplier = 1; break; // Shift
 		}
 	};
 
@@ -117,9 +109,9 @@ EXTRO.UniversalControls = function ( object, domElement ) {
 			fn.apply( scope, arguments );
 		};
 	}
-  
+
   window.addEventListener( 'mousewheel', bind( this, this.mousewheel ), false );
-	//window.addEventListener( 'keydown', bind( this, this.keydown ), false );
-	//window.addEventListener( 'keyup',   bind( this, this.keyup ), false );  
+	window.addEventListener( 'keydown', bind( this, this.keydown ), false );
+	window.addEventListener( 'keyup',   bind( this, this.keyup ), false );
 
 };
