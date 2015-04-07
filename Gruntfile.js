@@ -41,7 +41,7 @@ module.exports = function(grunt) {
       },
       dist: {
         sources: {
-          extro: ['src/extrovert.js', 'src/**/*.js', '!src/controls/first*.js', '!src/generators/gen-sample.js'],
+          extro: ['src/extrovert.js', 'src/**/*.js', '!src/generators/gen-sample.js'],
           deps: ['bower_components/threejs/build/three.js', 'bower_components/physijs/physi.js'],
           merged: null /* filled at runtime */
         },
@@ -164,7 +164,7 @@ module.exports = function(grunt) {
   opts.concat.dist.sources.merged = opts.concat.dist.sources.deps.concat( opts.concat.dist.sources.extro );
   
   var cfgs = {
-    debug: ['clean', 'jshint', 'concat', 'copy:physijs', 'uglify', 'compress:main', 'copy:rename', 'clean:temp'],
+    debug: ['clean', 'jshint', 'concat', 'copy:physijs', 'clean:temp'],
     release: ['clean', 'jshint', 'concat', 'copy:physijs', 'uglify', 'compress:main', 'copy:rename', 'clean:temp'],
     quick: ['clean','jshint','concat','copy:physijs','uglify','clean:temp'],
     test: ['default', 'connect:auto', 'qunit'],

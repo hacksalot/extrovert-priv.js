@@ -32,7 +32,7 @@ var EXTRO = (function (window, THREE) {
       far: 10000
     },
     controls: {
-      type: 'trackball',
+      type: 'universal',
       enabled: true,
       allow_drag: false
     },
@@ -353,6 +353,15 @@ var EXTRO = (function (window, THREE) {
     else if( control_opts.type === 'fly' ) {
       controls = new THREE.FlyControls( camera, domElement );
     }
+    else if( control_opts.type === 'firstperson' ) {
+      controls = new THREE.FirstPersonControls( camera, domElement );
+    }
+    else if( control_opts.type === 'pointerlock' ) {
+      controls = new THREE.PointerLockControls( camera );
+    }
+    else if( control_opts.type === 'universal' ) {
+      controls = new EXTRO.UniversalControls( camera );
+    }
     return controls;
   };
 
@@ -658,9 +667,24 @@ var EXTRO = (function (window, THREE) {
   @method calc_position
   */
   my.calc_position = function( posX, posY, placement_plane ) {
-    eng.raycaster.setFromCamera( to_ndc( posX, posY, 0.5, new THREE.Vector3() ), eng.camera );
-    var intersects = eng.raycaster.intersectObject( eng.placement_plane );
+    eng.raycaster.setFromCamera( EXTRO.to_ndc( posX, posY, 0.5, new THREE.Vector3() ), eng.camera );
+    var intersects = eng.raycaster.intersectObject( placement_plane || eng.placement_plane );
     return (intersects.length > 0) ? intersects[0].point : null;
+  };
+
+
+
+  my.calc_position2 = function( posX, posY, unused ) {
+    var vector = new THREE.Vector3();
+    //vector.set(
+        // ( event.clientX / window.innerWidth ) * 2 - 1,
+        // - ( event.clientY / window.innerHeight ) * 2 + 1,
+        // 0.5 );
+    vector = EXTRO.to_ndc( posX, posY, 0.5, vector );
+    vector.unproject( eng.camera );
+    var dir = vector.sub( eng.camera.position ).normalize();
+    var distance = -eng.camera.position.z / dir.z;
+    var pos = eng.camera.position.clone().add( dir.multiplyScalar( distance ) );
   };
 
 
@@ -688,7 +712,7 @@ var EXTRO = (function (window, THREE) {
     e.preventDefault();
     var xpos = e.offsetX === undefined ? e.layerX : e.offsetX; //[1]
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
-    eng.mouse = to_ndc( xpos, ypos, 0.5, eng.mouse );
+    eng.mouse = EXTRO.to_ndc( xpos, ypos, 0.5, eng.mouse );
     eng.raycaster.setFromCamera( eng.mouse, eng.camera );
     var intersects = eng.raycaster.intersectObjects( eng.objects );
     if( intersects.length !== 0 ) {
@@ -734,7 +758,7 @@ var EXTRO = (function (window, THREE) {
     e.preventDefault();
     var xpos = e.offsetX === undefined ? e.layerX : e.offsetX; //[1]
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
-    eng.mouse = to_ndc( xpos, ypos, 0.5, eng.mouse );
+    eng.mouse = EXTRO.to_ndc( xpos, ypos, 0.5, eng.mouse );
     if ( eng.selected ) {
       eng.raycaster.setFromCamera( eng.mouse, eng.camera );
       var intersects = eng.raycaster.intersectObject( eng.drag_plane );
@@ -860,12 +884,12 @@ var EXTRO = (function (window, THREE) {
   (NDC) ranging from -1.0 to 1.0 along each axis.
   @method to_ndc
   */
-  function to_ndc( posX, posY, posZ, coords ) {
+  my.to_ndc = function( posX, posY, posZ, coords ) {
     coords.x = ( posX / eng.width ) * 2 - 1;
     coords.y = - ( posY / eng.height ) * 2 + 1;
     coords.z = posZ;
     return coords;
-  }
+  };
 
 
 
