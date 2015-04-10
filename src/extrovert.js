@@ -6,12 +6,15 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 @version 1.0
 */
 
+/**
+Set up the EXTRO symbol in an IIFE for old-style includes.
+*/
 var EXTRO = (function (window, THREE) {
 
 
 
   /**
-  Module object.
+  The one-and-only module object. Treat this explicitly.
   */
   var my = {};
 
@@ -19,7 +22,9 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Default engine options. Will be smushed together with generator and user options.
+  Default engine options. Unless overridden, these apply to all stages and all
+  generators. These options will be overridden first by any generator options,
+  and then by any options specified by the user.
   */
   var defaults = {
     renderer: 'Any',
@@ -60,7 +65,9 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Internal engine settings.
+  Internal engine settings, not to be confused with options. Represents the run-
+  time state of the Extrovert engine. We group them into an 'eng' object for no
+  reason other than to avoid having a lot of variables scattered about.
   */
   var eng = {
     camera: null,
@@ -88,25 +95,32 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  The one and only ultrafied combined options object.
+  The one and only ultrafied combined options object. Once init_options has been
+  called, this will contain the final, authoritative, combined set of engine +
+  generator + user options.
   */
   var opts = null;
 
 
 
   /**
-  An alias to EXTROVERT.Utils.
+  An alias to EXTROVERT.Utils. Prevents us from having to say EXTROVERT.Utils.xxx
+  all over the place.
   */
   var _utils = null;
 
 
 
   /**
-  Initialize the Extrovert library and get some 3D up in that grill.
+  Initialize the Extrovert library and get some 3D up in that grill. This is the
+  main entry point for the Extrovert library and is responsible for creating and
+  starting the initial scene.
   @method init
+  @param options Options specified by the user.
   */
   my.init = function( options ) {
 
+    // Set up our alias to the utility library.
     _utils = EXTRO.Utils;
 
     // Quick exit if we don't support the requested renderer
@@ -148,45 +162,99 @@ var EXTRO = (function (window, THREE) {
   function init_options( user_opts ) {
     eng.log = _utils.log;
 
+    // -------------------------------------------------------------------------
+    // Create a valid generator based on user options
+    // -------------------------------------------------------------------------
+    
+    // Create a default generator if none was specified.
     if( !user_opts.generator )
       eng.generator = new EXTRO.float();
+    
+    // Create the generator by name if only the name was specified.
+    //   var options = {
+    //     generator: 'wall'
+    //   }
     else if (typeof user_opts.generator == 'string')
       eng.generator = new EXTRO[ user_opts.generator ]();
+    
+    
+    // Create the generator from a full generator options object.
+    //   var options = {
+    //     generator: {
+    //       name: 'wall',
+    //       option1: 'foo',
+    //       option2: 'bar',
+    //     }
+    //   }
     else
       eng.generator = new EXTRO[ user_opts.generator.name ]();
-
+    
+    // -------------------------------------------------------------------------
+    // Safely merge engine, generator, and user options into a combined options
+    // object.
+    // -------------------------------------------------------------------------
+    
+    // Merge default ENGINE and GENERATOR options into a new options object such
+    // that GENERATOR options override default ENGINE options.
     opts = _utils.extend(true, { }, defaults, eng.generator.options );
+    
+    // Merge USER options onto the combined ENGINE/GENERATOR options such that
+    // the USER options take precedence.
     opts = _utils.extend(true, opts, user_opts );
 
+    // If the user specified a generator using simple syntax (generator: 'wall')
+    // then opts.generator is currently a string. Replace that string with the
+    // full options object from the specified generator.
     if( typeof opts.generator === 'string' ) {
       opts.generator = _utils.extend(true, opts.generator, eng.generator.options.generator);
     }
+    
+    // -------------------------------------------------------------------------
+    // Set up physics.
+    // -------------------------------------------------------------------------    
 
+    // If physics are enabled, pass through the locations of necessary scripts.
+    // These are required by the physics library; nothing to do with Extrovert.
     if( opts.physics.enabled ) {
       Physijs.scripts.worker = opts.physics.physijs.worker;
       Physijs.scripts.ammo = opts.physics.physijs.ammo;
     }
+    
+    // -------------------------------------------------------------------------
+    // Set up rasterizer.
+    // -------------------------------------------------------------------------    
 
+    // Set up the rasterizer. If a string was specified, instantiate a rasterizer
+    // called `paint_` plus whatever the string was. Otherwise if the user passed
+    // in a rasterizer OBJECT, use that directly. Lastly, if no rasterizer was
+    // specified, use the <img> rasterizer.
     if( typeof opts.rasterizer == 'string' )
       eng.rasterizer = new EXTRO[ 'paint_' + opts.rasterizer ]();
     else
       eng.rasterizer = opts.rasterizer || new EXTRO.paint_img();
+    
+    // Return the combined, ultrafied options object.
     return opts;
   }
 
 
 
   /**
-  Generate the "world".
+  Generate the "world". This is a prototype version and will be refactored/
+  rearchitected.
   @method init_world
   */
   function init_world( options, eng ) {
 
     // TODO: CORS stuff.
-    THREE.ImageUtils.crossOrigin = '*';
-    THREE.Loader.prototype.crossOrigin = '*';
+    //THREE.ImageUtils.crossOrigin = '*';
+    //THREE.Loader.prototype.crossOrigin = '*';
 
+    // Start off by creating the scene object. Is this part of creating the
+    // 'world'? No.
     EXTRO.create_scene( options );
+    
+    // Set up the camera -- also not part of the 'world'.
     EXTRO.create_camera( _utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
 
     // Create an invisible plane for drag and drop
@@ -202,20 +270,44 @@ var EXTRO = (function (window, THREE) {
         transparent: true } );
     }
 
-    // Initialize the generator and create predefined scene objects
+    // Initialize the generator. Every generator exposes an .init method.
+    // Call it.
     eng.generator.init && eng.generator.init( options, eng );
+    
+    // Create any predefined scene objects. These are objects added to the
+    // scene via JSON options etc.
     create_scene_objects( eng.scene, options );
-    eng.scene.updateMatrix();
 
-    // Get the source container element if specified or default to body
+    // We have to do an explicit update here because auto updates won't happen
+    // until the scene starts rendering, which it ain't, yet.
+    eng.scene.updateMatrix();
+    
+    // -------------------------------------------------------------------------
+    // Examine the SOURCE data
+    // -------------------------------------------------------------------------  
+
+    // Default the container element to the entire body.
     var cont = document.body;
+    
+    // Handle the options.src.container option, if any. This can either be a CSS
+    // selector, a valid DOM element, or unspecified.
+    //    options.src.container = '#source' // valid
+    //    options.src.container = getElementById('#source') // also valid
+    //    options.src.container = undefined // also valid
+    
     if( options.src && options.src.container ) {
       cont = ( typeof options.src.container === 'string' ) ?
         _utils.$( options.src.container ) : options.src.container;
       if( cont.length !== undefined) cont = cont[0];
     }
 
-    // Get the source elements for transformation
+    // Handle the options.src.selector option, if any. This can be either a
+    // valid CSS selector, a single element, or an array of elements.
+    //    options.src.selector = 'img' // valid
+    //    options.src.selector = getElementById('#some-image') // valid
+    //    options.src.selector = querySelector('img') // valid
+    //    options.src.selector = undefined // valid
+
     var elems;
     if( options.src ) {
       if( options.src.selector ) {
@@ -230,10 +322,17 @@ var EXTRO = (function (window, THREE) {
         elems = options.src;
       }
     }
+    
+    // If no options.src is specified at all, then we're dealing with arbitrary
+    // data. The generator will know what to do.
     else {
       // No options.src? Dealing with arbitrary off-page data
       eng.generator.generate();
     }
+    
+    // -------------------------------------------------------------------------
+    // Transform the data
+    // -------------------------------------------------------------------------      
 
     // Transform the elements: TODO: refactor.
     var idx, length = elems.length;
@@ -249,19 +348,29 @@ var EXTRO = (function (window, THREE) {
       options.created && options.created( elem, mesh );
     }
 
-    // Now that objects have been placed, update the final cam position
+    // -------------------------------------------------------------------------
+    // Set final camera position and orientation. Some generators depend on a
+    // particular cam position for layouting, so we don't mess with it until
+    // after everything's been created.
+    // -------------------------------------------------------------------------      
+    
     var oc = options.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
     oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
 
-    // Create lights AFTER final cam positioning
+    // -------------------------------------------------------------------------
+    // Set up LIGHTING.
+    // We do this after final cam positioning because the default light position,
+    // if the user doesn't specify one, is wherever the camera is located.
+    // -------------------------------------------------------------------------
     EXTRO.fiat_lux( options.lights );
   }
 
 
 
   /**
-  Initialize keyboard and mouse controls for the scene.
+  Initialize keyboard and mouse controls for the scene. Right now this is a bit
+  of a formality.
   @method init_controls
   */
   function init_controls( opts, eng ) {
@@ -272,7 +381,8 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Initialize the renderer. TODO: Support CanvasRenderer
+  Initialize the renderer, which can either be a WebGL renderer (the default)
+  or a Canvas renderer (good for fallbacks).
   @method init_renderer
   */
   function init_renderer( opts ) {
@@ -311,6 +421,7 @@ var EXTRO = (function (window, THREE) {
   /**
   Introduce the canvas to the live DOM. Note: .getBoundingClientRect will
   return an empty (zero-size) result until this happens.
+  @method init_canvas
   */
   function init_canvas( opts ) {
     if( opts.target && opts.target.container ) {
@@ -330,7 +441,10 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Create a mouse/keyboard control type from a generic description.
+  Create a mouse/keyboard control type from a generic description. Extrovert 
+  supports several control schemes, some of which are loosely based on control
+  examples from THREE.js. In the future everything will move to our own Universal
+  Controls as those are way more configurable.
   @method create_controls
   */
   my.create_controls = function( control_opts, camera, domElement ) {
@@ -388,8 +502,8 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Initialize the Three.js or Physijs scene object along with any predefined
-  geometry specified by the client.
+  Initialize the top-level Scene object. Currently this will either be a THREE.Scene
+  object or, if physics is enabled, a Physijs.Scene object.
   @method init_scene
   */
   my.create_scene = function( scene_opts ) {
@@ -400,7 +514,8 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Create predefined scene objects.
+  Create predefined scene objects, meaning custom objects that are placed in the
+  scene via options, by either the user or the generator.
   @method create_scene_objects
   */
   function create_scene_objects( scene, scene_opts ) {
@@ -415,58 +530,35 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Utility function for drawing a rounded rect (2D).
-  @method roundedRect
-  */
-  function roundedRect( ctx, x, y, width, height, radius ){
-    ctx.moveTo( x, y + radius );
-    ctx.lineTo( x, y + height - radius );
-    ctx.quadraticCurveTo( x, y + height, x + radius, y + height );
-    ctx.lineTo( x + width - radius, y + height) ;
-    ctx.quadraticCurveTo( x + width, y + height, x + width, y + height - radius );
-    ctx.lineTo( x + width, y + radius );
-    ctx.quadraticCurveTo( x + width, y, x + width - radius, y );
-    ctx.lineTo( x + radius, y );
-    ctx.quadraticCurveTo( x, y, x, y + radius );
-  }
-
-
-
-  /**
   Create a mesh object from a generic description. Currently only supports box
   and plane meshes; add others as necessary.
   @method create_object
   */
   my.create_object = function( desc ) {
+    // Set up vars with reasonable defaults for color, opacity, transparency.
     var mesh = null, geo = null, mat = null;
     var rgb = desc.color || 0xFFFFFF;
     var opac = desc.opacity || 1.0;
     var trans = desc.transparent || false;
+    // Create Box-type meshes
     if( desc.type === 'box' ) {
       geo = new THREE.BoxGeometry( desc.dims[0], desc.dims[1], desc.dims[2] );
       mat = desc.mat || new THREE.MeshLambertMaterial( { color: rgb, opacity: opac, transparent: trans } );
       mesh = create_mesh(geo, 'Box', mat, false, desc.mass);
     }
+    // Create Plane-type meshes
     else if( desc.type === 'plane' ) {
       geo = new THREE.PlaneBufferGeometry( desc.dims[0], desc.dims[1] );
       mat = desc.mat || new THREE.MeshBasicMaterial( { color: rgb, opacity: opac, transparent: trans } );
       mesh = create_mesh( geo, null, mat, true, desc.mass );
     }
-    else if( desc.type == 'roundedrect' ) {
-      // Rounded rectangle
-      var roundedRectShape = new THREE.Shape();
-      roundedRect( roundedRectShape, 0, 0, desc.dims[0], desc.dims[1], desc.radius || 20 );
-      var roundedRect3d = roundedRectShape.extrude( { amount: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1, material:0, extrudeMaterial : 1 } );
-      //var roundedRectPoints = roundedRectShape.createPointsGeometry();
-      //var roundedRectSpacedPoints = roundedRectShape.createSpacedPointsGeometry();
-      var real_mat = desc.mat ? desc.mat : new THREE.MeshLambertMaterial( { color: rgb, opacity: opac, transparent: trans } );
-      mat = new THREE.MeshFaceMaterial([real_mat, real_mat]);
-      mesh = create_mesh( /*roundedRectSpacedPoints*/ roundedRect3d, 'Convex', mat, true, desc.mass );
-    }
+    // Set object position (only if explicitly specified)
     if( desc.pos )
       mesh.position.set( desc.pos[0], desc.pos[1], desc.pos[2] );
+    // Set visibility flag
     if( desc.visible === false )
       mesh.visible = false;
+    // Turn off shadows for now.
     mesh.castShadow = mesh.receiveShadow = false;
     return mesh;
   };
@@ -476,6 +568,11 @@ var EXTRO = (function (window, THREE) {
   /**
   Helper function to create a specific mesh type.
   @method create_mesh
+  @param geo A THREE.XxxxGeometry object.
+  @param mesh_type Either 'Box' or 'Plane'.
+  @param mat A THREE.XxxxMaterial object.
+  @param force_simple A flag to force using a THREE.Mesh instead of a Physijs.Mesh.
+  @param mass The mass of the object, if physics is enabled.
   */
   function create_mesh( geo, mesh_type, mat, force_simple, mass ) {
     return opts.physics.enabled && !force_simple ?
@@ -616,8 +713,10 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Create one or more lights.
+  Create one or more lights from a generic description. Supports ambient, point,
+  spotlight, and hemisphere lighting. Add additional types as necessary.
   @method fiat_lux
+  @param light_opts A valid object representing a light.
   */
   my.fiat_lux = function( light_opts ) {
 
@@ -682,6 +781,11 @@ var EXTRO = (function (window, THREE) {
 
 
 
+  /**
+  Calculate the position, in world coordinates, of the specified (x,y) screen
+  location, at the specified Z. Currently broken.
+  @method calc_position2
+  */  
   my.calc_position2 = function( posX, posY, unused ) {
     var vector = new THREE.Vector3();
     //vector.set(
@@ -698,7 +802,8 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Apply a force to an object at a specific point.
+  Apply a force to an object at a specific point. If physics is disabled, has no
+  effect.
   @method apply_force
   */
   function apply_force( thing ) {
@@ -820,23 +925,25 @@ var EXTRO = (function (window, THREE) {
   */
   my.get_position = function( val, opts, eng ) {
 
-    // Get the position of the HTML element [1]
+    // Safely get the position of the HTML element [1] relative to its parent
     var src_cont = (typeof opts.src.container === 'string') ?
       _utils.$( opts.src.container ) : opts.src.container;
     if(src_cont.length !== undefined) src_cont = src_cont[0];
     var parent_pos = _utils.offset( src_cont );
     var child_pos = _utils.offset( val );
     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
-    // Get the position in world coords relative to camera
+    
+    // Get the position of the element's left-top and right-bottom corners in
+    // WORLD coords, based on where the camera is.
     var topLeft = EXTRO.calc_position( pos.left, pos.top, eng.placement_plane );
     var botRight = EXTRO.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
 
-
+    // Calculate WORLD dimensions of the lement.
     var block_width = Math.abs( botRight.x - topLeft.x );
     var block_height = Math.abs( topLeft.y - botRight.y );
     var block_depth = Math.abs( topLeft.z - botRight.z );
 
-    // Offset by the half-height/width so the corners line up
+    // Offset by the half-height/width so the corners line up and get out.
     return {
       pos:
         [topLeft.x + (block_width / 2),
@@ -873,7 +980,7 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Handle the 'resize' event.
+  Handle the window 'resize' event.
   @method window_resize
   */
   function window_resize() {
