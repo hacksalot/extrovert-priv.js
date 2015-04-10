@@ -627,6 +627,9 @@ var EXTRO = (function (window, THREE) {
       else if (val.type === 'spotlight') {
         new_light = create_spotlight( val );
       }
+      else if (val.type === 'hemisphere') {
+        new_light = new THREE.HemisphereLight( val.color, val.groundColor, val.intensity );
+      }
       else {
         return;
       }
