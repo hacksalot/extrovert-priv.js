@@ -133,7 +133,7 @@ var EXTRO = (function (window, THREE) {
     init_physics( opts );
     init_controls( opts, eng );
     init_events();
-    init_timer();
+    //init_timer();
     start();
     return true;
   };
@@ -527,15 +527,29 @@ var EXTRO = (function (window, THREE) {
   @method start
   */
   function start() {
-    // requestAnim shim layer by Paul Irish
-    // Better version here: https://github.com/chrisdickinson/raf
-    window.requestAnimFrame =
+    window.requestAnimFrame =            //[5]
       window.requestAnimationFrame       ||
       window.webkitRequestAnimationFrame ||
       window.mozRequestAnimationFrame    ||
       function(/* function */ callback, /* DOMElement */ element){
         window.setTimeout(callback, 1000 / 60);
       };
+
+    if(0) {
+      var avatar = my.create_object({
+          type: 'box',
+          dims: [100,100,100],
+          pos: [0,-1500,2000],
+          visible: true,
+          color: 0x000000,
+          opacity: 0.25,
+          transparent: true });
+      eng.camera.position.set(0,0,0);
+      avatar.add( eng.camera );
+      eng.scene.add( avatar );
+      eng.objects.push( avatar );
+      avatar.setLinearVelocity( new THREE.Vector3(0,20,20) );
+    }
 
     opts.onload && opts.onload(); // Fire the 'onload' event
     animate();
@@ -548,7 +562,6 @@ var EXTRO = (function (window, THREE) {
   @method animate
   */
   function animate() {
-    //requestAnimationFrame( animate );
     requestAnimFrame( animate );
     render();
   }
@@ -575,9 +588,9 @@ var EXTRO = (function (window, THREE) {
     opts.physics.enabled && eng.scene.simulate();
 
     // Get time in SECONDS
-    var time = Date.now() / 1000.0;
-    var elapsed = time - eng.last_time;
-    eng.last_time = time;
+    // var time = Date.now() / 1000.0;
+    // var elapsed = time - eng.last_time;
+    // eng.last_time = time;
 
     if( !opts.move_with_physics ) {
        // Maintain the __dirtyPosition flag while dragging
@@ -585,8 +598,7 @@ var EXTRO = (function (window, THREE) {
         eng.selected.__dirtyPosition = true;
       }
        // Maintain the __dirtyPosition flag on touched objects
-      for ( var i = 0, l = eng.objects.length; i < l; i ++ )
-      {
+      for ( var i = 0, l = eng.objects.length; i < l; i ++ ) {
         if( eng.objects[ i ].has_been_touched ) {
           eng.objects[ i ].__dirtyPosition = true;
         }
@@ -594,8 +606,8 @@ var EXTRO = (function (window, THREE) {
     }
 
     eng.controls && eng.controls.enabled && eng.controls.update( eng.clock.getDelta() );
-    eng.renderer.clear();
 
+    eng.renderer.clear();
     eng.css_renderer && eng.css_renderer.render( eng.css_scene, eng.camera );
     eng.renderer.render( eng.scene, eng.camera );
   }
@@ -609,30 +621,24 @@ var EXTRO = (function (window, THREE) {
   */
   my.fiat_lux = function( light_opts ) {
 
-    var lights = [];
-    var new_light = null;
-
     if( !light_opts || light_opts.length === 0 )
       return;
 
-    for( var idx = 0; idx < light_opts.length; idx++ ) {
+    var lights = [];
+    var new_light = null;
 
+    for( var idx = 0; idx < light_opts.length; idx++ ) {
       var val = light_opts[ idx ];
-      if( val.type === 'ambient' ) {
+      if( val.type === 'ambient' )
         new_light = new THREE.AmbientLight( val.color );
-      }
-      else if (val.type === 'point') {
+      else if (val.type === 'point')
         new_light = new THREE.PointLight( val.color, val.intensity, val.distance );
-      }
-      else if (val.type === 'spotlight') {
+      else if (val.type === 'spotlight')
         new_light = create_spotlight( val );
-      }
-      else if (val.type === 'hemisphere') {
+      else if (val.type === 'hemisphere')
         new_light = new THREE.HemisphereLight( val.color, val.groundColor, val.intensity );
-      }
-      else {
+      else
         return;
-      }
 
       if( val.type !== 'ambient' && val.type !== 'hemisphere' ) {
         if( val.pos )
@@ -643,7 +649,6 @@ var EXTRO = (function (window, THREE) {
       eng.scene.add( new_light );
       lights.push( new_light );
     }
-
     return lights;
   };
 
@@ -736,7 +741,7 @@ var EXTRO = (function (window, THREE) {
         }
       }
       else {
-         apply_force( intersects[0] );
+         apply_force( intersects[0] ); // [4]
       }
       opts.clicked && opts.clicked( e, eng.selected );
     }
@@ -916,4 +921,9 @@ var EXTRO = (function (window, THREE) {
 //
 // [3]: Remove some troublesome stuff from the shader for IE. Assumes three.js R70/71.
 //      https://github.com/mrdoob/three.js/issues/4843#issuecomment-43957698
+//
+// [4]: Process physical interaction events on mousedown instead of mouseup.
+//
+// [5]: Shim window.requestAnimation to window.requestAnim. Kitchen-sink version
+//      here: https://github.com/chrisdickinson/raf
 //

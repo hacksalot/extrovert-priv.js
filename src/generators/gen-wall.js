@@ -51,12 +51,12 @@ An Extrovert.js generator that creates a 3D wall or tower.
       options: {
         generator: {
           name: 'wall',
-          material: { color: 0x440000, friction: 0.2, restitution: 1.0 }
+          material: { color: 0xFF8844, friction: 0.2, restitution: 1.0 }
         },
         gravity: [0,-200,0],
-        scene: { items: [ { type: 'box', pos: [0,-2000,0], dims: [4000,10,4000], mass: 0 } ] },
+        scene: { items: [ { type: 'box', pos: [0,-2000,0], dims: [40000,10,40000], mass: 0, color: 0x11cc00 } ] },
         camera: {
-          far: 20000,
+          far: 200000,
           position: [0,-1500,2000],
           rotation: [-0.25,0,0]
         },
