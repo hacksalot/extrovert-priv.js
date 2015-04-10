@@ -634,7 +634,7 @@ var EXTRO = (function (window, THREE) {
         return;
       }
 
-      if( val.type !== 'ambient' ) {
+      if( val.type !== 'ambient' && val.type !== 'hemisphere' ) {
         if( val.pos )
           new_light.position.set( val.pos[0], val.pos[1], val.pos[2] );
         else
