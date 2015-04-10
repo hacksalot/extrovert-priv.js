@@ -44,7 +44,6 @@ var EXTRO = (function (window, THREE) {
     },
     physics: {
       enabled: true,
-      materials: false,
       physijs: {
         worker: '/js/pjsworker.js',
         ammo: 'ammo.js'
@@ -530,8 +529,8 @@ var EXTRO = (function (window, THREE) {
   @method createMaterial
   */
   my.createMaterial = function( desc ) {
-    var mat = new THREE.MeshLambertMaterial({ color: desc.color });
-    return eng.physics.enabled ?
+    var mat = new THREE.MeshLambertMaterial({ color: desc.color, map: desc.tex });
+    return opts.physics.enabled && !desc.noPhysics ?
       Physijs.createMaterial( mat, desc.friction, desc.restitution )
       : mat;
   };

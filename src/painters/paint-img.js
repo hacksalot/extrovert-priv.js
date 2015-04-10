@@ -12,11 +12,7 @@ A simple Extrovert image rasterizer.
   EXTRO.paint_img = function () {
     return {
       paint: function( img, opts ) {
-        var t = THREE.ImageUtils.loadTexture( img.src ); 
-        return {
-          tex: t,
-          mat: new THREE.MeshLambertMaterial( { map: t } )
-        };
+        return THREE.ImageUtils.loadTexture( img.src );
       }
     };
   };
