@@ -178,6 +178,7 @@ EXTRO.Utils = (function (window, THREE) {
   /**
   Determine if the supplied object is a "plain object", ie, an object created
   via { } or new. Loosely based on jQuery.isPlainObject.
+  @method isPlainObject
   */
   my.isPlainObject = function( obj ) {
     // Not plain objects:
@@ -201,7 +202,6 @@ EXTRO.Utils = (function (window, THREE) {
 
   /**
   Simple plain JavaScript version of jQuery .extend.
-  @method extend
   function extend(){
     for(var i=1; i<arguments.length; i++)
       for(var key in arguments[i])
@@ -270,6 +270,11 @@ EXTRO.Utils = (function (window, THREE) {
 
 
 
+  /**
+  Retrieve the location of the given element. This implementation loosely based
+  on jQuery's method.
+  @method offset
+  */
   my.offset = function( elem ) {
     var docElem, win;//, elem = this[0];
     var box = {
@@ -324,6 +329,10 @@ EXTRO.Utils = (function (window, THREE) {
 
 
 
+  /**
+  Retrieve the computed CSS style for a given property. Taken from somewhere.
+  @method getComputedStyle
+  */
   my.getComputedStyle = function( el, styleProp ) {
     var value, defaultView = el.ownerDocument.defaultView;
     // W3C standard way:
@@ -360,6 +369,7 @@ EXTRO.Utils = (function (window, THREE) {
   minified, a standalone selector library like Sizzle is overkill, so we roll a
   simple one in the style of
   http://blog.garstasio.com/you-dont-need-jquery/selectors/#see-a-pattern?
+  @method $
   */
   my.$ = function(selector) {
     var selectorType = 'querySelectorAll';
@@ -370,11 +380,14 @@ EXTRO.Utils = (function (window, THREE) {
     return document[selectorType](selector);
   };
 
-  
-  
-  /*********************************************************
-  gets the value of a cookie
-  **********************************************************/
+
+
+  /**
+  Retrieve the value of the specified cookie.
+  This is for internal use but we expose it as part of the EXTRO interface for
+  the benefit of samples and demos and such.
+  @method getCookie
+  */
   my.getCookie = function(sName)
   {
       sName = sName.toLowerCase();
@@ -389,10 +402,15 @@ EXTRO.Utils = (function (window, THREE) {
       }
       return '';
   };
-  
-  /*********************************************************
-  sets the value of a cookie
-  **********************************************************/
+
+
+
+  /**
+  Sets a cookie.
+  This is for internal use but we expose it as part of the EXTRO interface for
+  the benefit of samples and demos and such.
+  @method setCookie
+  */
   my.setCookie = function(sName,sValue)
   {
       var oDate = new Date();
@@ -400,14 +418,38 @@ EXTRO.Utils = (function (window, THREE) {
       var sCookie = encodeURIComponent(sName) + '=' + encodeURIComponent(sValue) + ';expires=' + oDate.toGMTString() + ';path=/';
       document.cookie = sCookie;
   };
-  
-  /*********************************************************
-  removes the value of a cookie
-  **********************************************************/
+
+
+
+  /**
+  Clear a cookie.
+  This is for internal use but we expose it as part of the EXTRO interface for
+  the benefit of samples and demos and such.
+  @method clearCookie
+  */
   my.clearCookie = function(sName)
   {
       my.setCookie(sName,'');
   };
+
+
+
+  /**
+  Utility function for drawing a rounded rect (2D). Currently unused.
+  @method roundedRect
+  */
+  function roundedRect( ctx, x, y, width, height, radius ){
+    ctx.moveTo( x, y + radius );
+    ctx.lineTo( x, y + height - radius );
+    ctx.quadraticCurveTo( x, y + height, x + radius, y + height );
+    ctx.lineTo( x + width - radius, y + height) ;
+    ctx.quadraticCurveTo( x + width, y + height, x + width, y + height - radius );
+    ctx.lineTo( x + width, y + radius );
+    ctx.quadraticCurveTo( x + width, y, x + width - radius, y );
+    ctx.lineTo( x + radius, y );
+    ctx.quadraticCurveTo( x, y, x, y + radius );
+  }
+
 
 
   /**
@@ -418,6 +460,3 @@ EXTRO.Utils = (function (window, THREE) {
 
 
 }(window, THREE));
-// [1]: FireFox doesn't support .offsetX:
-//      https://bugzilla.mozilla.org/show_bug.cgi?id=69787
-//      http://stackoverflow.com/q/11334452

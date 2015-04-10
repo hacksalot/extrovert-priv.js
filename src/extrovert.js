@@ -165,19 +165,19 @@ var EXTRO = (function (window, THREE) {
     // -------------------------------------------------------------------------
     // Create a valid generator based on user options
     // -------------------------------------------------------------------------
-    
+
     // Create a default generator if none was specified.
     if( !user_opts.generator )
       eng.generator = new EXTRO.float();
-    
+
     // Create the generator by name if only the name was specified.
     //   var options = {
     //     generator: 'wall'
     //   }
     else if (typeof user_opts.generator == 'string')
       eng.generator = new EXTRO[ user_opts.generator ]();
-    
-    
+
+
     // Create the generator from a full generator options object.
     //   var options = {
     //     generator: {
@@ -188,16 +188,16 @@ var EXTRO = (function (window, THREE) {
     //   }
     else
       eng.generator = new EXTRO[ user_opts.generator.name ]();
-    
+
     // -------------------------------------------------------------------------
     // Safely merge engine, generator, and user options into a combined options
     // object.
     // -------------------------------------------------------------------------
-    
+
     // Merge default ENGINE and GENERATOR options into a new options object such
     // that GENERATOR options override default ENGINE options.
     opts = _utils.extend(true, { }, defaults, eng.generator.options );
-    
+
     // Merge USER options onto the combined ENGINE/GENERATOR options such that
     // the USER options take precedence.
     opts = _utils.extend(true, opts, user_opts );
@@ -208,10 +208,10 @@ var EXTRO = (function (window, THREE) {
     if( typeof opts.generator === 'string' ) {
       opts.generator = _utils.extend(true, opts.generator, eng.generator.options.generator);
     }
-    
+
     // -------------------------------------------------------------------------
     // Set up physics.
-    // -------------------------------------------------------------------------    
+    // -------------------------------------------------------------------------
 
     // If physics are enabled, pass through the locations of necessary scripts.
     // These are required by the physics library; nothing to do with Extrovert.
@@ -219,10 +219,10 @@ var EXTRO = (function (window, THREE) {
       Physijs.scripts.worker = opts.physics.physijs.worker;
       Physijs.scripts.ammo = opts.physics.physijs.ammo;
     }
-    
+
     // -------------------------------------------------------------------------
     // Set up rasterizer.
-    // -------------------------------------------------------------------------    
+    // -------------------------------------------------------------------------
 
     // Set up the rasterizer. If a string was specified, instantiate a rasterizer
     // called `paint_` plus whatever the string was. Otherwise if the user passed
@@ -232,7 +232,7 @@ var EXTRO = (function (window, THREE) {
       eng.rasterizer = new EXTRO[ 'paint_' + opts.rasterizer ]();
     else
       eng.rasterizer = opts.rasterizer || new EXTRO.paint_img();
-    
+
     // Return the combined, ultrafied options object.
     return opts;
   }
@@ -253,7 +253,7 @@ var EXTRO = (function (window, THREE) {
     // Start off by creating the scene object. Is this part of creating the
     // 'world'? No.
     EXTRO.create_scene( options );
-    
+
     // Set up the camera -- also not part of the 'world'.
     EXTRO.create_camera( _utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
 
@@ -273,7 +273,7 @@ var EXTRO = (function (window, THREE) {
     // Initialize the generator. Every generator exposes an .init method.
     // Call it.
     eng.generator.init && eng.generator.init( options, eng );
-    
+
     // Create any predefined scene objects. These are objects added to the
     // scene via JSON options etc.
     create_scene_objects( eng.scene, options );
@@ -281,20 +281,20 @@ var EXTRO = (function (window, THREE) {
     // We have to do an explicit update here because auto updates won't happen
     // until the scene starts rendering, which it ain't, yet.
     eng.scene.updateMatrix();
-    
+
     // -------------------------------------------------------------------------
     // Examine the SOURCE data
-    // -------------------------------------------------------------------------  
+    // -------------------------------------------------------------------------
 
     // Default the container element to the entire body.
     var cont = document.body;
-    
+
     // Handle the options.src.container option, if any. This can either be a CSS
     // selector, a valid DOM element, or unspecified.
     //    options.src.container = '#source' // valid
     //    options.src.container = getElementById('#source') // also valid
     //    options.src.container = undefined // also valid
-    
+
     if( options.src && options.src.container ) {
       cont = ( typeof options.src.container === 'string' ) ?
         _utils.$( options.src.container ) : options.src.container;
@@ -322,17 +322,17 @@ var EXTRO = (function (window, THREE) {
         elems = options.src;
       }
     }
-    
+
     // If no options.src is specified at all, then we're dealing with arbitrary
     // data. The generator will know what to do.
     else {
       // No options.src? Dealing with arbitrary off-page data
       eng.generator.generate();
     }
-    
+
     // -------------------------------------------------------------------------
     // Transform the data
-    // -------------------------------------------------------------------------      
+    // -------------------------------------------------------------------------
 
     // Transform the elements: TODO: refactor.
     var idx, length = elems.length;
@@ -352,8 +352,8 @@ var EXTRO = (function (window, THREE) {
     // Set final camera position and orientation. Some generators depend on a
     // particular cam position for layouting, so we don't mess with it until
     // after everything's been created.
-    // -------------------------------------------------------------------------      
-    
+    // -------------------------------------------------------------------------
+
     var oc = options.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
     oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
@@ -441,7 +441,7 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Create a mouse/keyboard control type from a generic description. Extrovert 
+  Create a mouse/keyboard control type from a generic description. Extrovert
   supports several control schemes, some of which are loosely based on control
   examples from THREE.js. In the future everything will move to our own Universal
   Controls as those are way more configurable.
@@ -785,7 +785,7 @@ var EXTRO = (function (window, THREE) {
   Calculate the position, in world coordinates, of the specified (x,y) screen
   location, at the specified Z. Currently broken.
   @method calc_position2
-  */  
+  */
   my.calc_position2 = function( posX, posY, unused ) {
     var vector = new THREE.Vector3();
     //vector.set(
@@ -932,7 +932,7 @@ var EXTRO = (function (window, THREE) {
     var parent_pos = _utils.offset( src_cont );
     var child_pos = _utils.offset( val );
     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
-    
+
     // Get the position of the element's left-top and right-bottom corners in
     // WORLD coords, based on where the camera is.
     var topLeft = EXTRO.calc_position( pos.left, pos.top, eng.placement_plane );
