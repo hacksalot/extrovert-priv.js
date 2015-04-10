@@ -151,6 +151,7 @@ var EXTRO = (function (window, THREE) {
     init_controls( opts, eng );
     init_events();
     //init_timer();
+    init_avatar( opts.avatar );
     start();
 
     // Since we use a false return as a quick signal for "can't render"
@@ -438,8 +439,7 @@ var EXTRO = (function (window, THREE) {
   /**
   Create a mouse/keyboard control type from a generic description. Extrovert
   supports several control schemes, some of which are loosely based on control
-  examples from THREE.js. In the future everything will move to our own Universal
-  Controls as those are way more configurable.
+  examples from THREE.js.
   @method create_controls
   */
   my.create_controls = function( control_opts, camera, domElement ) {
@@ -560,9 +560,11 @@ var EXTRO = (function (window, THREE) {
       mat = desc.mat || new THREE.MeshBasicMaterial( { color: rgb, opacity: opac, transparent: trans } );
       mesh = create_mesh( geo, null, mat, true, desc.mass );
     }
-    // Set object position (only if explicitly specified)
+    // Set object position and rotation (only if explicitly specified)
     if( desc.pos )
       mesh.position.set( desc.pos[0], desc.pos[1], desc.pos[2] );
+    if( desc.rot )
+      mesh.rotation.set( desc.rot[0], desc.rot[1], desc.rot[2] );
     // Set visibility flag
     if( desc.visible === false )
       mesh.visible = false;
@@ -628,6 +630,21 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
+  Create a physical representation of the user's identity.
+  */
+  function init_avatar( avOpts ) {
+    if( avOpts && avOpts.enabled ) {
+      var avatar = my.create_object( avOpts );
+      eng.camera.position.set(0,0,0);
+      avatar.add( eng.camera );
+      eng.scene.add( avatar );
+      eng.objects.push( avatar );
+    }
+  }
+
+
+
+  /**
   Start the simulation.
   @method start
   */
@@ -639,22 +656,6 @@ var EXTRO = (function (window, THREE) {
       function(/* function */ callback, /* DOMElement */ element){
         window.setTimeout(callback, 1000 / 60);
       };
-
-    if(0) {
-      var avatar = my.create_object({
-          type: 'box',
-          dims: [100,100,100],
-          pos: [0,-1500,2000],
-          visible: true,
-          color: 0x000000,
-          opacity: 0.25,
-          transparent: true });
-      eng.camera.position.set(0,0,0);
-      avatar.add( eng.camera );
-      eng.scene.add( avatar );
-      eng.objects.push( avatar );
-      avatar.setLinearVelocity( new THREE.Vector3(0,20,20) );
-    }
 
     opts.onload && opts.onload(); // Fire the 'onload' event
     animate();
