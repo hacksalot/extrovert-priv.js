@@ -6,6 +6,8 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 @version 1.0
 */
 
+
+
 /**
 Set up the EXTRO symbol in an IIFE for old-style includes.
 */
@@ -17,7 +19,6 @@ var EXTRO = (function (window, THREE) {
   The one-and-only module object. Treat this explicitly.
   */
   var my = {};
-
 
 
 
@@ -123,7 +124,8 @@ var EXTRO = (function (window, THREE) {
     // Set up our alias to the utility library.
     _utils = EXTRO.Utils;
 
-    // Quick exit if we don't support the requested renderer
+    // Quick exit if the user requests a specific renderer and the browser
+    // doesn't support it or if neither renderer type is supported.
     eng.supportsWebGL = _utils.detectWebGL();
     eng.supportsCanvas = _utils.detectCanvas();
     if(( !eng.supportsWebGL && !eng.supportsCanvas ) ||
@@ -131,7 +133,8 @@ var EXTRO = (function (window, THREE) {
        ( options.renderer === 'Canvas' && !eng.supportsCanvas ))
       return false;
 
-    // Special handling for IE- TODO: needs work.
+    // Remove some troublesome stuff from the shader on IE. Needs work.
+    // https://github.com/mrdoob/three.js/issues/4843#issuecomment-43957698
     var ua = window.navigator.userAgent;
     if( ~ua.indexOf('MSIE ') || ~ua.indexOf('Trident/') ) {
       Object.keys(THREE.ShaderLib).forEach(function (key) { // [3]
@@ -140,6 +143,7 @@ var EXTRO = (function (window, THREE) {
       });
     }
 
+    // Initialize all the things
     init_options( options );
     init_renderer( opts );
     init_world( opts, eng );
@@ -149,6 +153,9 @@ var EXTRO = (function (window, THREE) {
     init_events();
     //init_timer();
     start();
+
+    // Since we use a false return as a quick signal for "can't render"
+    // above, we've gotta return true here even though it's meaningless.
     return true;
   };
 
@@ -166,32 +173,20 @@ var EXTRO = (function (window, THREE) {
     // Create a valid generator based on user options
     // -------------------------------------------------------------------------
 
-    // Create a default generator if none was specified.
+    // Handle the 'generator' option. This can be the name of any valid generator,
+    // or an options object with a .name field specifying any valid generator, or
+    // undefined.
+
     if( !user_opts.generator )
       eng.generator = new EXTRO.float();
-
-    // Create the generator by name if only the name was specified.
-    //   var options = {
-    //     generator: 'wall'
-    //   }
     else if (typeof user_opts.generator == 'string')
       eng.generator = new EXTRO[ user_opts.generator ]();
-
-
-    // Create the generator from a full generator options object.
-    //   var options = {
-    //     generator: {
-    //       name: 'wall',
-    //       option1: 'foo',
-    //       option2: 'bar',
-    //     }
-    //   }
     else
       eng.generator = new EXTRO[ user_opts.generator.name ]();
 
     // -------------------------------------------------------------------------
     // Safely merge engine, generator, and user options into a combined options
-    // object.
+    // object without modifying any of the original/source options.
     // -------------------------------------------------------------------------
 
     // Merge default ENGINE and GENERATOR options into a new options object such
@@ -240,8 +235,7 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Generate the "world". This is a prototype version and will be refactored/
-  rearchitected.
+  Generate the "world". Prototype version. Refactor/rearchitect.
   @method init_world
   */
   function init_world( options, eng ) {
@@ -286,14 +280,16 @@ var EXTRO = (function (window, THREE) {
     // Examine the SOURCE data
     // -------------------------------------------------------------------------
 
-    // Default the container element to the entire body.
+    // Default the container element to the entire body. Usually this will be
+    // overridden by options.src.container but if not, the default behavior is
+    // that the entire page is the container.
     var cont = document.body;
 
     // Handle the options.src.container option, if any. This can either be a CSS
-    // selector, a valid DOM element, or unspecified.
-    //    options.src.container = '#source' // valid
-    //    options.src.container = getElementById('#source') // also valid
-    //    options.src.container = undefined // also valid
+    // selector, a valid DOM element, or undefined.
+    //    options.src.container = '#source'; // valid
+    //    options.src.container = getElementById('#source'); // also valid
+    //    options.src.container = undefined; // also valid
 
     if( options.src && options.src.container ) {
       cont = ( typeof options.src.container === 'string' ) ?
@@ -302,11 +298,11 @@ var EXTRO = (function (window, THREE) {
     }
 
     // Handle the options.src.selector option, if any. This can be either a
-    // valid CSS selector, a single element, or an array of elements.
-    //    options.src.selector = 'img' // valid
-    //    options.src.selector = getElementById('#some-image') // valid
-    //    options.src.selector = querySelector('img') // valid
-    //    options.src.selector = undefined // valid
+    // valid CSS selector, a single element, an array of elements, or undefined.
+    //    options.src.selector = 'img'; // string selector
+    //    options.src.selector = getElementById('#some-image'); // DOM element
+    //    options.src.selector = querySelector('img'); // array of DOM elements
+    //    options.src.selector = undefined; // not specified
 
     var elems;
     if( options.src ) {
@@ -526,6 +522,19 @@ var EXTRO = (function (window, THREE) {
       }
     }
   }
+
+
+
+  /**
+  Create a material from a generic description.
+  @method createMaterial
+  */
+  my.createMaterial = function( desc ) {
+    var mat = new THREE.MeshLambertMaterial({ color: desc.color });
+    return eng.physics.enabled ?
+      Physijs.createMaterial( mat, desc.friction, desc.restitution )
+      : mat;
+  };
 
 
 
@@ -1025,9 +1034,6 @@ var EXTRO = (function (window, THREE) {
 // [2]: Give the canvas a tabindex so it receives keyboard input and set the
 //      position to relative so coordinates are canvas-local.
 //      http://stackoverflow.com/a/3274697
-//
-// [3]: Remove some troublesome stuff from the shader for IE. Assumes three.js R70/71.
-//      https://github.com/mrdoob/three.js/issues/4843#issuecomment-43957698
 //
 // [4]: Process physical interaction events on mousedown instead of mouseup.
 //
