@@ -823,6 +823,7 @@ var EXTRO = (function (window, THREE) {
 
 
 
+
   /**
   Apply a force to an object at a specific point. If physics is disabled, has no
   effect.
@@ -844,11 +845,30 @@ var EXTRO = (function (window, THREE) {
   @method mouse_down
   */
   function mouse_down( e ) {
+
     e.preventDefault();
+
+    // Get the (x,y) mouse coordinates relative to the container
     var xpos = e.offsetX === undefined ? e.layerX : e.offsetX; //[1]
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
+
+    // Convert to normalized device coordinates
     eng.mouse = EXTRO.to_ndc( xpos, ypos, 0.5, eng.mouse );
-    eng.raycaster.setFromCamera( eng.mouse, eng.camera );
+
+    // Set up our ray depending on whether the camera is the child of a
+    // transformed object or not.
+    if ( !opts.avatar ) {
+      eng.raycaster.setFromCamera( eng.mouse, eng.camera );
+    }
+    else {
+      //http://stackoverflow.com/a/28873205
+      var cameraPosition = new THREE.Vector3();
+      cameraPosition.setFromMatrixPosition( eng.camera.matrixWorld ); // world position
+      eng.raycaster.ray.origin.copy( cameraPosition );
+      eng.raycaster.ray.direction.set( eng.mouse.x, eng.mouse.y, 0.5 ).unproject( eng.camera ).sub( cameraPosition ).normalize();
+    }
+
+    // Cast a ray to see what objects were clicked.
     var intersects = eng.raycaster.intersectObjects( eng.objects );
     if( intersects.length !== 0 ) {
       if( e.ctrlKey ) {
