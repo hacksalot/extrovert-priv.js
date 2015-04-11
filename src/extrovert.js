@@ -613,6 +613,9 @@ var EXTRO = (function (window, THREE) {
     eng.renderer.domElement.addEventListener( 'mousedown', mouse_down, false );
     eng.renderer.domElement.addEventListener( 'mouseup', mouse_up, false );
     eng.renderer.domElement.addEventListener( 'mousemove', mouse_move, false );
+    /*eng.renderer.domElement.*/document.addEventListener( 'keydown', onKeyDown, false );
+    /*eng.renderer.domElement.*/document.addEventListener( 'keyup', onKeyUp, false );
+    window.addEventListener( 'mousewheel', onMouseWheel, false );
     window.addEventListener( 'resize', window_resize, false );
   }
 
@@ -924,6 +927,36 @@ var EXTRO = (function (window, THREE) {
       eng.selected.updateMatrix();
     }
     eng.selected = null;
+  }
+
+
+
+  /**
+  Handle the 'keydown' event.
+  @method onKeyDown
+  */
+  function onKeyDown( e ) {
+    eng.controls && eng.controls.enabled && eng.controls.keydown( e );
+  }
+
+
+
+  /**
+  Handle the 'keyup' event.
+  @method onKeyUp
+  */
+  function onKeyUp( e ) {
+    eng.controls && eng.controls.enabled && eng.controls.keyup( e );
+  }
+
+
+
+  /**
+  Handle the 'mousewheel' event.
+  @method onMouseWheel
+  */
+  function onMouseWheel( e ) {
+    eng.controls && eng.controls.enabled && eng.controls.mousewheel( e );
   }
 
 

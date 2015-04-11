@@ -20,7 +20,10 @@ EXTRO.UniversalControls = function ( object, domElement ) {
   var _posChanged = false;
 
   this.update = function( delta ) {
-    if( _isTracking && _posChanged ) {
+    if( _moveState.lookAt ) {
+      (this.object.parent || this.object).lookAt( new THREE.Vector3(0,500,0) );
+    }
+    else if( _isTracking && _posChanged ) {
       var temp = _mouseDeltaNDC.x;
       _mouseDeltaNDC.x = -_mouseDeltaNDC.y;
       _mouseDeltaNDC.y = temp;
@@ -86,7 +89,7 @@ EXTRO.UniversalControls = function ( object, domElement ) {
 			case 68: _moveState.xdir =  1; break; // D (strafe R)
       case 82: _moveState.ydir =  1; break; // R (up)
       case 70: _moveState.ydir = -1; break; // F (down)
-      case 32: break; // Space
+      case 32: _moveState.lookAt = 1; break; // Space
 			case 16: this.turboMultiplier = 5; break; // Shift
 		}
 	};
@@ -99,19 +102,9 @@ EXTRO.UniversalControls = function ( object, domElement ) {
 			case 68: _moveState.xdir = 0; break; // D
       case 82: _moveState.ydir = 0; break; // R
       case 70: _moveState.ydir = 0; break; // F
-      case 32: break; // Space
+      case 32: _moveState.lookAt = 0; break; // Space
 			case 16: this.turboMultiplier = 1; break; // Shift
 		}
 	};
-
-	function bind( scope, fn ) {
-		return function () {
-			fn.apply( scope, arguments );
-		};
-	}
-
-  window.addEventListener( 'mousewheel', bind( this, this.mousewheel ), false );
-	window.addEventListener( 'keydown', bind( this, this.keydown ), false );
-	window.addEventListener( 'keyup',   bind( this, this.keyup ), false );
 
 };
