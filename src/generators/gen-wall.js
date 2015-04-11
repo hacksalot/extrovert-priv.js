@@ -65,7 +65,8 @@ An Extrovert.js generator that creates a 3D wall or tower.
           visible: true,
           color: 0x000000,
           opacity: 0.25,
-          transparent: true
+          transparent: true,
+          mass: 1000
         }
       },
 
