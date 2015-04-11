@@ -538,6 +538,16 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
+  Create a six-sided material from an array of materials.
+  @method createCubeMaterial
+  */
+  my.createCubeMaterial = function( faceMaterials ) {
+    return new THREE.MeshFaceMaterial( faceMaterials );
+  };
+
+
+
+  /**
   Create a mesh object from a generic description. Currently only supports box
   and plane meshes; add others as necessary.
   @method create_object

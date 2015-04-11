@@ -33,16 +33,13 @@ An Extrovert.js generator that creates a 3D wall or tower.
       rasterize: function( obj ) {
         var texture = _eng.rasterizer.paint( obj, _opts );
         var material = EXTRO.createMaterial({ tex: texture, friction: 0.2, resitution: 1.0 });
-        return new THREE.MeshFaceMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
+        return EXTRO.createCubeMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
       },
 
       generate: function( obj ) {
         var pos_info = this.transform( obj );
         var mat_info = this.rasterize( obj );
-        var mesh = EXTRO.create_object({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
-        if( _opts.generator.lookat )
-          mesh.lookAt( new THREE.Vector3( _opts.generator.lookat[0], _opts.generator.lookat[1], _opts.generator.lookat[2]) );
-        return mesh;
+        return EXTRO.create_object({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
       },
 
       options: {
