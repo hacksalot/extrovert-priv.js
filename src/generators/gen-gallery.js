@@ -21,9 +21,7 @@ An Extrovert.js generator for a 3D image gallery.
         _opts = merged_options;
         _eng = eng;
         EXTRO.create_placement_plane( [0,0,200] );
-        var mat = new THREE.MeshLambertMaterial({ color: _opts.generator.material.color });
-        _side_mat = _opts.physics.enabled ?
-          Physijs.createMaterial( mat, _opts.generator.material.friction, _opts.generator.material.restitution ) : mat;
+        _side_mat = EXTRO.createMaterial( _opts.generator.material );
       },
 
       transform: function( obj ) {
@@ -32,8 +30,7 @@ An Extrovert.js generator for a 3D image gallery.
 
       rasterize: function( obj ) {
         var texture = _eng.rasterizer.paint( obj, _opts );
-        var material = (!_opts.physics.enabled || !_opts.physics.materials) ?
-          texture.mat : Physijs.createMaterial( texture.mat, 0.2, 1.0 );
+        var material = EXTRO.createMaterial({ tex: texture, friction: 0.2, resitution: 1.0 });
         return new THREE.MeshFaceMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
       },
 
