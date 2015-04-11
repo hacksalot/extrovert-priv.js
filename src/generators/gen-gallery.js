@@ -30,7 +30,7 @@ An Extrovert.js generator for a 3D image gallery.
 
       rasterize: function( obj ) {
         var texture = _eng.rasterizer.paint( obj, _opts );
-        var material = EXTRO.createMaterial({ tex: texture, friction: 0.2, resitution: 1.0 });
+        var material = EXTRO.createMaterial({ tex: texture, friction: 0.2, restitution: 1.0 });
         return new THREE.MeshFaceMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
       },
 

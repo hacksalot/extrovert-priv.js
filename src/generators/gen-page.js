@@ -82,7 +82,7 @@ An Extrovert.js generator for HTML rendering.
         // make sure original renderer appears on top of CSS renderer
         _eng.renderer.domElement.style.zIndex   = 1;
         rendererCSS.domElement.appendChild( _eng.renderer.domElement );
-        
+
         _eng.camera.position.set(0,150,400);
         _eng.camera.lookAt( _eng.scene.position );
       },
