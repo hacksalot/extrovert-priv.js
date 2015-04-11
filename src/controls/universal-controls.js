@@ -81,7 +81,7 @@ EXTRO.UniversalControls = function ( object, domElement ) {
   };
 
 	this.keydown = function( e ) {
-		e.preventDefault();
+		//e.preventDefault();
 		switch ( e.keyCode ) {
 			case 87: _moveState.zdir = -1; break; // W (forward)
 			case 83: _moveState.zdir =  1; break; // S (back)
