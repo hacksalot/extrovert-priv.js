@@ -26,14 +26,30 @@ An Extrovert.js generator that creates a 3D wall or tower.
 
       transform: function( obj ) {
         var posInfo = EXTRO.get_position( obj, _opts, _eng );
-        posInfo.depth = _opts.block.depth;
+        if(!_opts.block.depth)
+          posInfo.depth = posInfo.height;
+        else if( _opts.block.depth === 'height' )
+          posInfo.depth = posInfo.height;
+        else if (_opts.block.depth === 'width' )
+          posInfo.depth = posInfo.width;
+        else if (_opts.block.depth > 0)
+          posInfo.depth = _opts.block.depth;
         return posInfo;
       },
 
       rasterize: function( obj ) {
         var texture = _eng.rasterizer.paint( obj, _opts );
         var material = EXTRO.createMaterial({ tex: texture, friction: 0.2, restitution: 1.0 });
-        return EXTRO.createCubeMaterial([ _side_mat, _side_mat, _side_mat, _side_mat, material, material ]);
+        
+        var matArray;
+        if( !_opts.block.depth || _opts.block.depth === 'height' )
+          matArray = [ _side_mat, _side_mat, material, material, material, material ];
+        else if (_opts.block.depth === 'width' )
+          matArray = [ material, material, _side_mat, _side_mat, material, material ];
+        else
+          matArray = [ _side_mat, _side_mat, _side_mat, _side_mat, material, material ];
+        
+        return EXTRO.createCubeMaterial( matArray );
       },
 
       generate: function( obj ) {
@@ -55,7 +71,7 @@ An Extrovert.js generator that creates a 3D wall or tower.
           rotation: [0.25,0,0]
         },
         controls: { target: [0,-1500, 0] },
-        block: { depth: 100 },
+        block: { depth: 'height' },
         click_force: 900000,
         avatar: {
           enabled: true,
@@ -66,7 +82,7 @@ An Extrovert.js generator that creates a 3D wall or tower.
           color: 0x000000,
           opacity: 0.25,
           transparent: true,
-          mass: 1000
+          mass: 10
         }
       },
 
