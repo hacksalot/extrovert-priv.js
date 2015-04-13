@@ -70,7 +70,7 @@ An Extrovert.js generator that creates a 3D wall or tower.
           position: [0,55,2000],
           rotation: [0.25,0,0]
         },
-        controls: { target: [0,-1500, 0] },
+        controls: { target: [0,-1500, 0], yFloor: 55.0 },
         block: { depth: 'height' },
         click_force: 900000,
         avatar: {
@@ -78,7 +78,7 @@ An Extrovert.js generator that creates a 3D wall or tower.
           type: 'box',
           dims: [100,100,100],
           pos: [0,55,2000],
-          visible: true,
+          visible: false,
           color: 0x000000,
           opacity: 0.25,
           transparent: true,

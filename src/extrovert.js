@@ -469,7 +469,7 @@ var EXTRO = (function (window, THREE) {
       controls = new THREE.PointerLockControls( camera );
     }
     else if( control_opts.type === 'universal' ) {
-      controls = new EXTRO.UniversalControls( camera );
+      controls = new EXTRO.UniversalControls( camera, undefined, control_opts );
     }
     return controls;
   };
