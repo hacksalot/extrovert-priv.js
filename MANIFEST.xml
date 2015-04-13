@@ -4,26 +4,29 @@
             <Folder name="controls">
                 <File name="src\controls\first-person-controls.js" />
                 <File name="src\controls\fly-controls.js" />
+                <File name="src\controls\pointer-lock-controls.js" />
                 <File name="src\controls\trackball-controls.js" />
+                <File name="src\controls\universal-controls.js" />
             </Folder>
             <Folder name="generators">
                 <File name="src\generators\gen-city.js" />
                 <File name="src\generators\gen-extrude.js" />
                 <File name="src\generators\gen-float.js" />
                 <File name="src\generators\gen-gallery.js" />
+                <File name="src\generators\gen-page.js" />
                 <File name="src\generators\gen-sample.js" />
                 <File name="src\generators\gen-wall.js" />
-                <File name="src\generators\gen-page.js" />
             </Folder>
             <Folder name="painters">
+                <File name="src\painters\paint-element.js" />
                 <File name="src\painters\paint-html.js" />
-                <File name="src\painters\paint-img-canvas.js" />
                 <File name="src\painters\paint-img.js" />
                 <File name="src\painters\paint-plain-text.js" />
-                <File name="src\painters\paint-simple-html.js" />
             </Folder>
             <Folder name="renderers">
+                <File name="src\renderers\CanvasRenderer.js" />
                 <File name="src\renderers\css-renderer.js" />
+                <File name="src\renderers\Projector.js" />
             </Folder>
             <File name="src\extrovert-utils.js" />
             <File name="src\extrovert.js" />
@@ -46,5 +49,6 @@
         <File name="MANIFEST.xml" />
         <File name="package.json" />
         <File name="README.md" />
+        <File name="TODO.md" />
     </Project>
 </NotepadPlus>
