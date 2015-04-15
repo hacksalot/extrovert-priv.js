@@ -529,7 +529,7 @@ var EXTRO = (function (window, THREE) {
   @method createMaterial
   */
   my.createMaterial = function( desc ) {
-    var mat = new THREE.MeshLambertMaterial({ color: desc.color, map: desc.tex });
+    var mat = new THREE.MeshLambertMaterial({ color: desc.color || 0xFFFFFF, map: desc.tex || null });
     return opts.physics.enabled && !desc.noPhysics ?
       Physijs.createMaterial( mat, desc.friction, desc.restitution )
       : mat;
