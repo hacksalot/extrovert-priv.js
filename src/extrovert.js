@@ -95,7 +95,7 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  The one and only ultrafied combined options object. Once init_options has been
+  The one and only ultrafied combined options object. Once initOptions has been
   called, this will contain the final, authoritative, combined set of engine +
   generator + user options.
   */
@@ -143,15 +143,15 @@ var EXTRO = (function (window, THREE) {
     }
 
     // Initialize all the things
-    init_options( options );
-    init_renderer( opts );
-    init_world( opts, eng );
-    init_canvas( opts );
-    init_physics( opts );
-    init_controls( opts, eng );
-    init_events();
-    //init_timer();
-    init_avatar( opts.avatar );
+    initOptions( options );
+    initRenderer( opts );
+    initWorld( opts, eng );
+    initCanvas( opts );
+    initPhysics( opts );
+    initControls( opts, eng );
+    initEvents();
+    //initTimer();
+    initAvatar( opts.avatar );
     start();
 
     // Since we use a false return as a quick signal for "can't render"
@@ -164,9 +164,9 @@ var EXTRO = (function (window, THREE) {
   /**
   Initialize engine options. Merge user, generator, and engine options into a
   new combined options object and carry across other important settings.
-  @method init_options
+  @method initOptions
   */
-  function init_options( user_opts ) {
+  function initOptions( user_opts ) {
     eng.log = _utils.log;
 
     // -------------------------------------------------------------------------
@@ -236,9 +236,9 @@ var EXTRO = (function (window, THREE) {
 
   /**
   Generate the "world". Prototype version. Refactor/rearchitect.
-  @method init_world
+  @method initWorld
   */
-  function init_world( options, eng ) {
+  function initWorld( options, eng ) {
 
     // TODO: CORS stuff.
     //THREE.ImageUtils.crossOrigin = '*';
@@ -246,16 +246,16 @@ var EXTRO = (function (window, THREE) {
 
     // Start off by creating the scene object. Is this part of creating the
     // 'world'? No.
-    EXTRO.create_scene( options );
+    EXTRO.createScene( options );
 
     // Set up the camera -- also not part of the 'world'.
-    EXTRO.create_camera( _utils.extend(true, {}, options.camera, options.init_cam_opts || eng.generator.init_cam_opts) );
+    EXTRO.createCamera( _utils.extend(true, {}, options.camera, options.init_cam_opts || eng.generator.init_cam_opts) );
 
     // Create an invisible plane for drag and drop
     // TODO: Only create this if drag-drop controls are enabled
     // This should be up to the XxxxxControls object.
     if( options.controls.allow_drag ) {
-      eng.drag_plane = EXTRO.create_object( {
+      eng.drag_plane = EXTRO.createObject( {
         type: 'plane',
         dims: [2000,2000,8],
         visible: false,
@@ -264,13 +264,9 @@ var EXTRO = (function (window, THREE) {
         transparent: true } );
     }
 
-    // Initialize the generator. Every generator exposes an .init method.
-    // Call it.
-    eng.generator.init && eng.generator.init( options, eng );
-
     // Create any predefined scene objects. These are objects added to the
     // scene via JSON options etc.
-    create_scene_objects( eng.scene, options );
+    createScenePrimitives( eng.scene, options );
 
     // We have to do an explicit update here because auto updates won't happen
     // until the scene starts rendering, which it ain't, yet.
@@ -290,7 +286,6 @@ var EXTRO = (function (window, THREE) {
       options.objects = [{ type: 'wall', src: 'img' }];
     }
 
-
     for( var idx = 0; idx < options.objects.length; idx++ ) {
       var obj = options.objects[ idx ];
       if( !obj ) continue;
@@ -300,24 +295,10 @@ var EXTRO = (function (window, THREE) {
 
       var gen = new EXTRO[ obj.type ]();
       gen.init && gen.init( options, eng );
-
       gen.generate( obj, elems );
 
-
-
-      // var length = elems.length;
-      // for(var e = 0; e < length; ++e) {
-        // var elem = elems[ e ];
-        // var mesh = gen.generate( elem );
-        // mesh.updateMatrix();
-        // mesh.updateMatrixWorld();
-        // options.creating && options.creating( elem, mesh );
-        // eng.scene.add( mesh );
-        // eng.objects.push( mesh );
-        // mesh.elem = elem;
-        // options.created && options.created( elem, mesh );
-      // }
-
+      // options.creating && options.creating( elem, mesh );
+      // options.created && options.created( elem, mesh );
     }
 
     // -------------------------------------------------------------------------
@@ -335,7 +316,7 @@ var EXTRO = (function (window, THREE) {
     // We do this after final cam positioning because the default light position,
     // if the user doesn't specify one, is wherever the camera is located.
     // -------------------------------------------------------------------------
-    EXTRO.fiat_lux( options.lights );
+    EXTRO.fiatLux( options.lights );
   }
 
 
@@ -343,10 +324,10 @@ var EXTRO = (function (window, THREE) {
   /**
   Initialize keyboard and mouse controls for the scene. Right now this is a bit
   of a formality.
-  @method init_controls
+  @method initControls
   */
-  function init_controls( opts, eng ) {
-    eng.controls = my.create_controls( opts.controls, eng.camera, eng.renderer.domElement );
+  function initControls( opts, eng ) {
+    eng.controls = my.createControls( opts.controls, eng.camera, eng.renderer.domElement );
     return eng.controls;
   }
 
@@ -355,9 +336,9 @@ var EXTRO = (function (window, THREE) {
   /**
   Initialize the renderer, which can either be a WebGL renderer (the default)
   or a Canvas renderer (good for fallbacks).
-  @method init_renderer
+  @method initRenderer
   */
-  function init_renderer( opts ) {
+  function initRenderer( opts ) {
 
     if( opts.src && opts.src.container ) {
       var cont = (typeof opts.src.container === 'string') ?
@@ -393,9 +374,9 @@ var EXTRO = (function (window, THREE) {
   /**
   Introduce the canvas to the live DOM. Note: .getBoundingClientRect will
   return an empty (zero-size) result until this happens.
-  @method init_canvas
+  @method initCanvas
   */
-  function init_canvas( opts ) {
+  function initCanvas( opts ) {
     if( opts.target && opts.target.container ) {
       var action = opts.target.action || 'append';
       var target_container = (typeof opts.target.container === 'string') ?
@@ -416,9 +397,9 @@ var EXTRO = (function (window, THREE) {
   Create a mouse/keyboard control type from a generic description. Extrovert
   supports several control schemes, some of which are loosely based on control
   examples from THREE.js.
-  @method create_controls
+  @method createControls
   */
-  my.create_controls = function( control_opts, camera, domElement ) {
+  my.createControls = function( control_opts, camera, domElement ) {
     var controls = null;
     var track_opts = null;
     if( !control_opts || !control_opts.type || control_opts.type === 'trackball' ) {
@@ -454,9 +435,9 @@ var EXTRO = (function (window, THREE) {
 
   /**
   Create a camera from a generic options object.
-  @method create_camera
+  @method createCamera
   */
-  my.create_camera = function( copts ) {
+  my.createCamera = function( copts ) {
     var cam = copts.type != 'orthographic' ?
       new THREE.PerspectiveCamera( copts.fov, eng.width / eng.height, copts.near, copts.far ) :
       new THREE.OrthographicCamera( copts.left, copts.right, copts.top, copts.bottom, copts.near, copts.far );
@@ -475,9 +456,9 @@ var EXTRO = (function (window, THREE) {
   /**
   Initialize the top-level Scene object. Currently this will either be a THREE.Scene
   object or, if physics is enabled, a Physijs.Scene object.
-  @method init_scene
+  @method createScene
   */
-  my.create_scene = function( scene_opts ) {
+  my.createScene = function( scene_opts ) {
     eng.scene = scene_opts.physics.enabled ? new Physijs.Scene() : new THREE.Scene();
     return eng.scene;
   };
@@ -487,12 +468,12 @@ var EXTRO = (function (window, THREE) {
   /**
   Create predefined scene objects, meaning custom objects that are placed in the
   scene via options, by either the user or the generator.
-  @method create_scene_objects
+  @method createScenePrimitives
   */
-  function create_scene_objects( scene, scene_opts ) {
+  function createScenePrimitives( scene, scene_opts ) {
     if( scene_opts.scene && scene_opts.scene.items ) {
       for(var i = 0; i < scene_opts.scene.items.length; i++) {
-        var mesh = my.create_object( scene_opts.scene.items[ i ] );
+        var mesh = my.createObject( scene_opts.scene.items[ i ] );
         scene.add( mesh );
       }
     }
@@ -526,9 +507,9 @@ var EXTRO = (function (window, THREE) {
   /**
   Create a mesh object from a generic description. Currently only supports box
   and plane meshes; add others as necessary.
-  @method create_object
+  @method createObject
   */
-  my.create_object = function( desc ) {
+  my.createObject = function( desc ) {
     // Set up vars with reasonable defaults for color, opacity, transparency.
     var mesh = null, geo = null, mat = null;
     var rgb = desc.color || 0xFFFFFF;
@@ -538,13 +519,13 @@ var EXTRO = (function (window, THREE) {
     if( desc.type === 'box' ) {
       geo = new THREE.BoxGeometry( desc.dims[0], desc.dims[1], desc.dims[2] );
       mat = desc.mat || new THREE.MeshLambertMaterial( { color: rgb, opacity: opac, transparent: trans } );
-      mesh = create_mesh(geo, 'Box', mat, false, desc.mass);
+      mesh = createMesh(geo, 'Box', mat, false, desc.mass);
     }
     // Create Plane-type meshes
     else if( desc.type === 'plane' ) {
       geo = new THREE.PlaneBufferGeometry( desc.dims[0], desc.dims[1] );
       mat = desc.mat || new THREE.MeshBasicMaterial( { color: rgb, opacity: opac, transparent: trans } );
-      mesh = create_mesh( geo, null, mat, true, desc.mass );
+      mesh = createMesh( geo, null, mat, true, desc.mass );
     }
     // Set object position and rotation (only if explicitly specified)
     if( desc.pos )
@@ -569,14 +550,14 @@ var EXTRO = (function (window, THREE) {
 
   /**
   Helper function to create a specific mesh type.
-  @method create_mesh
+  @method createMesh
   @param geo A THREE.XxxxGeometry object.
   @param mesh_type Either 'Box' or 'Plane'.
   @param mat A THREE.XxxxMaterial object.
   @param force_simple A flag to force using a THREE.Mesh instead of a Physijs.Mesh.
   @param mass The mass of the object, if physics is enabled.
   */
-  function create_mesh( geo, mesh_type, mat, force_simple, mass ) {
+  function createMesh( geo, mesh_type, mat, force_simple, mass ) {
     return opts.physics.enabled && !force_simple ?
       new Physijs[ mesh_type + 'Mesh' ]( geo, mat, mass ) : new THREE.Mesh(geo, mat);
   }
@@ -585,9 +566,9 @@ var EXTRO = (function (window, THREE) {
 
   /**
   Initialize the physics system.
-  @method init_physics
+  @method initPhysics
   */
-  function init_physics( opts ) {
+  function initPhysics( opts ) {
     if( opts.physics.enabled ) {
       eng.gravity.set( opts.gravity[0], opts.gravity[1], opts.gravity[2] );
       eng.scene.setGravity( eng.gravity );
@@ -599,9 +580,9 @@ var EXTRO = (function (window, THREE) {
 
   /**
   Set up event handlers.
-  @method init_events
+  @method initEvents
   */
-  function init_events() {
+  function initEvents() {
     eng.renderer.domElement.addEventListener( 'mousedown', mouse_down, false );
     eng.renderer.domElement.addEventListener( 'mouseup', mouse_up, false );
     eng.renderer.domElement.addEventListener( 'mousemove', mouse_move, false );
@@ -616,9 +597,9 @@ var EXTRO = (function (window, THREE) {
   /**
   Initialize the scene timer. TODO: Improve simulation timing and structure.
   TODO: integrate with Three.Clock() and eng.clock.
-  @method init_timer
+  @method initTimer
   */
-  function init_timer() {
+  function initTimer() {
     eng.start_time = eng.last_time = Date.now() / 1000.0;
   }
 
@@ -627,9 +608,9 @@ var EXTRO = (function (window, THREE) {
   /**
   Create a physical representation of the user's identity.
   */
-  function init_avatar( avOpts ) {
+  function initAvatar( avOpts ) {
     if( avOpts && avOpts.enabled ) {
-      var avatar = my.create_object( avOpts );
+      var avatar = my.createObject( avOpts );
       eng.camera.position.set(0,0,0);
       avatar.add( eng.camera );
       eng.scene.add( avatar );
@@ -719,10 +700,10 @@ var EXTRO = (function (window, THREE) {
   /**
   Create one or more lights from a generic description. Supports ambient, point,
   spotlight, and hemisphere lighting. Add additional types as necessary.
-  @method fiat_lux
+  @method fiatLux
   @param light_opts A valid object representing a light.
   */
-  my.fiat_lux = function( light_opts ) {
+  my.fiatLux = function( light_opts ) {
 
     if( !light_opts || light_opts.length === 0 )
       return;
@@ -737,7 +718,7 @@ var EXTRO = (function (window, THREE) {
       else if (val.type === 'point')
         new_light = new THREE.PointLight( val.color, val.intensity, val.distance );
       else if (val.type === 'spotlight')
-        new_light = create_spotlight( val );
+        new_light = createSpotlight( val );
       else if (val.type === 'hemisphere')
         new_light = new THREE.HemisphereLight( val.color, val.groundColor, val.intensity );
       else
@@ -759,9 +740,9 @@ var EXTRO = (function (window, THREE) {
 
   /**
   Create a spotlight with the specified color. TODO: adjust shadowmap settings.
-  @method create_spotlight
+  @method createSpotlight
   */
-  function create_spotlight( light ) {
+  function createSpotlight( light ) {
     // var spotLight = new THREE.SpotLight(
     // light.color, light.intensity || 0.5, light.distance || 1000,
     // light.angle || 35 );
@@ -775,10 +756,10 @@ var EXTRO = (function (window, THREE) {
   /**
   Calculate the position, in world coordinates, of the specified (x,y) screen
   location, at whatever point it intersects with the placement_plane.
-  @method calc_position
+  @method calcPosition
   */
-  my.calc_position = function( posX, posY, placement_plane ) {
-    eng.raycaster.setFromCamera( EXTRO.to_ndc( posX, posY, 0.5, new THREE.Vector3() ), eng.camera );
+  my.calcPosition = function( posX, posY, placement_plane ) {
+    eng.raycaster.setFromCamera( EXTRO.toNDC( posX, posY, 0.5, new THREE.Vector3() ), eng.camera );
     var intersects = eng.raycaster.intersectObject( placement_plane || eng.placement_plane );
     return (intersects.length > 0) ? intersects[0].point : null;
   };
@@ -788,15 +769,15 @@ var EXTRO = (function (window, THREE) {
   /**
   Calculate the position, in world coordinates, of the specified (x,y) screen
   location, at the specified Z. Currently broken.
-  @method calc_position2
+  @method calcPosition2
   */
-  my.calc_position2 = function( posX, posY, unused ) {
+  my.calcPosition2 = function( posX, posY, unused ) {
     var vector = new THREE.Vector3();
     //vector.set(
         // ( event.clientX / window.innerWidth ) * 2 - 1,
         // - ( event.clientY / window.innerHeight ) * 2 + 1,
         // 0.5 );
-    vector = EXTRO.to_ndc( posX, posY, 0.5, vector );
+    vector = EXTRO.toNDC( posX, posY, 0.5, vector );
     vector.unproject( eng.camera );
     var dir = vector.sub( eng.camera.position ).normalize();
     var distance = -eng.camera.position.z / dir.z;
@@ -809,9 +790,9 @@ var EXTRO = (function (window, THREE) {
   /**
   Apply a force to an object at a specific point. If physics is disabled, has no
   effect.
-  @method apply_force
+  @method applyForce
   */
-  function apply_force( thing ) {
+  function applyForce( thing ) {
     if( opts.physics.enabled ) {
       var rotation_matrix = new THREE.Matrix4().extractRotation( thing.object.matrix );
       var effect = thing.face.normal.clone().negate().multiplyScalar( opts.click_force ).applyMatrix4( rotation_matrix );
@@ -835,7 +816,7 @@ var EXTRO = (function (window, THREE) {
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
 
     // Convert to normalized device coordinates
-    eng.mouse = EXTRO.to_ndc( xpos, ypos, 0.5, eng.mouse );
+    eng.mouse = EXTRO.toNDC( xpos, ypos, 0.5, eng.mouse );
 
     // Set up our ray depending on whether the camera is the child of a
     // transformed object or not.
@@ -870,7 +851,7 @@ var EXTRO = (function (window, THREE) {
         }
       }
       else {
-         apply_force( intersects[0] ); // [4]
+         applyForce( intersects[0] ); // [4]
       }
       opts.clicked && opts.clicked( e, eng.selected );
     }
@@ -895,7 +876,7 @@ var EXTRO = (function (window, THREE) {
     e.preventDefault();
     var xpos = e.offsetX === undefined ? e.layerX : e.offsetX; //[1]
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
-    eng.mouse = EXTRO.to_ndc( xpos, ypos, 0.5, eng.mouse );
+    eng.mouse = EXTRO.toNDC( xpos, ypos, 0.5, eng.mouse );
     if ( eng.selected ) {
       eng.raycaster.setFromCamera( eng.mouse, eng.camera );
       var intersects = eng.raycaster.intersectObject( eng.drag_plane );
@@ -975,9 +956,9 @@ var EXTRO = (function (window, THREE) {
 
   /**
   Retrieve the position, in 3D space, of a recruited HTML element.
-  @method get_position
+  @method getPosition
   */
-  my.get_position = function( val, container, eng ) {
+  my.getPosition = function( val, container, eng ) {
 
     // Safely get the position of the HTML element [1] relative to its parent
     var src_cont = (typeof container === 'string') ?
@@ -989,8 +970,8 @@ var EXTRO = (function (window, THREE) {
 
     // Get the position of the element's left-top and right-bottom corners in
     // WORLD coords, based on where the camera is.
-    var topLeft = EXTRO.calc_position( pos.left, pos.top, eng.placement_plane );
-    var botRight = EXTRO.calc_position( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
+    var topLeft = EXTRO.calcPosition( pos.left, pos.top, eng.placement_plane );
+    var botRight = EXTRO.calcPosition( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
 
     // Calculate WORLD dimensions of the lement.
     var block_width = Math.abs( botRight.x - topLeft.x );
@@ -1014,9 +995,9 @@ var EXTRO = (function (window, THREE) {
   /**
   Create an invisible placement plane. TODO: No need to create geometry to place objects;
   replace this technique with unproject at specified Z.
-  @method create_placement_plane
+  @method createPlacementPlane
   */
-  my.create_placement_plane = function( pos, dims ) {
+  my.createPlacementPlane = function( pos, dims ) {
     dims = dims || [200000,200000,1];
     var geo = new THREE.BoxGeometry(dims[0], dims[1], dims[2]);
     eng.placement_plane = opts.physics.enabled ?
@@ -1051,9 +1032,9 @@ var EXTRO = (function (window, THREE) {
   /**
   Convert the specified screen coordinates to normalized device coordinates
   (NDC) ranging from -1.0 to 1.0 along each axis.
-  @method to_ndc
+  @method toNDC
   */
-  my.to_ndc = function( posX, posY, posZ, coords ) {
+  my.toNDC = function( posX, posY, posZ, coords ) {
     coords.x = ( posX / eng.width ) * 2 - 1;
     coords.y = - ( posY / eng.height ) * 2 + 1;
     coords.z = posZ;

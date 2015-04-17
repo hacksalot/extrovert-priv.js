@@ -21,12 +21,12 @@ The built-in extrusion generator for Extrovert.js.
       init: function( merged_options, eng ) {
         _opts = merged_options;
         _eng = eng;
-        EXTRO.create_placement_plane( [0,0,200] );
+        EXTRO.createPlacementPlane( [0,0,200] );
         _side_mat = EXTRO.createMaterial(_opts.generator.material);
       },
 
       transform: function( obj ) {
-        var posInfo = EXTRO.get_position( obj, _noun.container, _eng );
+        var posInfo = EXTRO.getPosition( obj, _noun.container, _eng );
         if(!_opts.block.depth)
           posInfo.depth = posInfo.height;
         else if( _opts.block.depth === 'height' )
@@ -59,7 +59,7 @@ The built-in extrusion generator for Extrovert.js.
           var obj = elems[ i ];
           var pos_info = this.transform( obj );
           var mat_info = this.rasterize( obj );
-          EXTRO.create_object({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
+          EXTRO.createObject({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
         }
       },
 
