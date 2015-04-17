@@ -249,7 +249,7 @@ var EXTRO = (function (window, THREE) {
     EXTRO.create_scene( options );
 
     // Set up the camera -- also not part of the 'world'.
-    EXTRO.create_camera( _utils.extend(true, {}, options.camera, eng.generator.init_cam_opts) );
+    EXTRO.create_camera( _utils.extend(true, {}, options.camera, options.init_cam_opts || eng.generator.init_cam_opts) );
 
     // Create an invisible plane for drag and drop
     // TODO: Only create this if drag-drop controls are enabled
@@ -285,63 +285,39 @@ var EXTRO = (function (window, THREE) {
     // that the entire page is the container.
     var cont = document.body;
 
-    // Handle the options.src.container option, if any. This can either be a CSS
-    // selector, a valid DOM element, or undefined.
-    //    options.src.container = '#source'; // valid
-    //    options.src.container = getElementById('#source'); // also valid
-    //    options.src.container = undefined; // also valid
-
-    if( options.src && options.src.container ) {
-      cont = ( typeof options.src.container === 'string' ) ?
-        _utils.$( options.src.container ) : options.src.container;
-      if( cont.length !== undefined) cont = cont[0];
+    // No options.objects specified? Default.
+    if( !options.objects || options.objects.length === 0 ) {
+      options.objects = [{ type: 'wall', src: 'img' }];
     }
 
-    // Handle the options.src.selector option, if any. This can be either a
-    // valid CSS selector, a single element, an array of elements, or undefined.
-    //    options.src.selector = 'img'; // string selector
-    //    options.src.selector = getElementById('#some-image'); // DOM element
-    //    options.src.selector = querySelector('img'); // array of DOM elements
-    //    options.src.selector = undefined; // not specified
 
-    var elems;
-    if( options.src ) {
-      if( options.src.selector ) {
-          // options.src.selector can be a string or a function
-          elems = ( typeof options.src.selector === 'string' ) ?
-            cont.querySelectorAll( options.src.selector ) :
-            options.src.selector();
-      }
-      else {
-        // No options.src.selector: options.src specifies the data
-        // it can be a single element or an array
-        elems = options.src;
-      }
-    }
+    for( var idx = 0; idx < options.objects.length; idx++ ) {
+      var obj = options.objects[ idx ];
+      if( !obj ) continue;
+      var src = obj.src || '*';
+      var elems = ( typeof src === 'string' ) ?
+        cont.querySelectorAll( src ) : src();
 
-    // If no options.src is specified at all, then we're dealing with arbitrary
-    // data. The generator will know what to do.
-    else {
-      // No options.src? Dealing with arbitrary off-page data
-      eng.generator.generate();
-    }
+      var gen = new EXTRO[ obj.type ]();
+      gen.init && gen.init( options, eng );
 
-    // -------------------------------------------------------------------------
-    // Transform the data
-    // -------------------------------------------------------------------------
+      gen.generate( obj, elems );
 
-    // Transform the elements: TODO: refactor.
-    var idx, length = elems.length;
-    for(idx = 0; idx < length; ++idx) {
-      var elem = elems[ idx ];
-      var mesh = eng.generator.generate( elem );
-      mesh.updateMatrix();
-      mesh.updateMatrixWorld();
-      options.creating && options.creating( elem, mesh );
-      eng.scene.add( mesh );
-      eng.objects.push( mesh );
-      mesh.elem = elem;
-      options.created && options.created( elem, mesh );
+
+
+      // var length = elems.length;
+      // for(var e = 0; e < length; ++e) {
+        // var elem = elems[ e ];
+        // var mesh = gen.generate( elem );
+        // mesh.updateMatrix();
+        // mesh.updateMatrixWorld();
+        // options.creating && options.creating( elem, mesh );
+        // eng.scene.add( mesh );
+        // eng.objects.push( mesh );
+        // mesh.elem = elem;
+        // options.created && options.created( elem, mesh );
+      // }
+
     }
 
     // -------------------------------------------------------------------------
@@ -580,6 +556,12 @@ var EXTRO = (function (window, THREE) {
       mesh.visible = false;
     // Turn off shadows for now.
     mesh.castShadow = mesh.receiveShadow = false;
+    
+    eng.scene.add( mesh );
+    eng.objects.push( mesh );
+    mesh.updateMatrix();
+    mesh.updateMatrixWorld();    
+    
     return mesh;
   };
 
@@ -995,11 +977,11 @@ var EXTRO = (function (window, THREE) {
   Retrieve the position, in 3D space, of a recruited HTML element.
   @method get_position
   */
-  my.get_position = function( val, opts, eng ) {
+  my.get_position = function( val, container, eng ) {
 
     // Safely get the position of the HTML element [1] relative to its parent
-    var src_cont = (typeof opts.src.container === 'string') ?
-      _utils.$( opts.src.container ) : opts.src.container;
+    var src_cont = (typeof container === 'string') ?
+      _utils.$( container ) : container;
     if(src_cont.length !== undefined) src_cont = src_cont[0];
     var parent_pos = _utils.offset( src_cont );
     var child_pos = _utils.offset( val );

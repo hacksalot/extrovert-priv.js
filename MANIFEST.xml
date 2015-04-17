@@ -2,20 +2,11 @@
     <Project name="extrovert">
         <Folder name="src">
             <Folder name="controls">
-                <File name="src\controls\first-person-controls.js" />
-                <File name="src\controls\fly-controls.js" />
-                <File name="src\controls\pointer-lock-controls.js" />
-                <File name="src\controls\trackball-controls.js" />
                 <File name="src\controls\universal-controls.js" />
             </Folder>
             <Folder name="generators">
-                <File name="src\generators\gen-city.js" />
                 <File name="src\generators\gen-extrude.js" />
-                <File name="src\generators\gen-float.js" />
-                <File name="src\generators\gen-gallery.js" />
-                <File name="src\generators\gen-page.js" />
                 <File name="src\generators\gen-sample.js" />
-                <File name="src\generators\gen-wall.js" />
             </Folder>
             <Folder name="painters">
                 <File name="src\painters\paint-element.js" />
