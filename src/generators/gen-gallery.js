@@ -25,7 +25,9 @@ An Extrovert.js generator for a 3D image gallery.
       },
 
       transform: function( obj ) {
-        return EXTRO.get_position( obj, _opts, _eng );
+        var posInfo = EXTRO.get_position( obj, _opts, _eng );
+        posInfo.depth = _opts.block.depth;
+        return posInfo;
       },
 
       rasterize: function( obj ) {
