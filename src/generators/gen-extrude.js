@@ -18,11 +18,21 @@ The built-in extrusion generator for Extrovert.js.
 
     return {
 
+      options: {
+        name: 'extrude',
+        material: { color: 0xFF8844, friction: 0.2, restitution: 1.0 },
+        block: { depth: 'height' },
+        click_force: 900000,
+        lights: [
+          { type: 'ambient', color: 0xffffff }
+        ]
+      },
+
       init: function( merged_options, eng ) {
         _opts = merged_options;
         _eng = eng;
         EXTRO.createPlacementPlane( [0,0,200] );
-        _side_mat = EXTRO.createMaterial(_opts.generator.material);
+        _side_mat = EXTRO.createMaterial( merged_options.material );
       },
 
       transform: function( obj ) {
@@ -39,8 +49,18 @@ The built-in extrusion generator for Extrovert.js.
       },
 
       rasterize: function( obj ) {
-        var texture = _eng.rasterizer.paint( obj, _opts );
-        var material = EXTRO.createMaterial({ tex: texture, friction: 0.2, restitution: 1.0 });
+        var rast = null;
+        if( _noun.rasterizer ) {
+          if( typeof _noun.rasterizer === 'string' )
+            rast = new EXTRO['paint_' + _noun.rasterizer]();
+          else
+            rast = _noun.rasterizer;
+        }
+        else {
+          rast = EXTRO.getRasterizer( obj );
+        }
+        var tileTexture = rast.paint(( _noun.adapt && _noun.adapt(obj) ) || obj );
+        var material = EXTRO.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
         
         var matArray;
         if( !_opts.block.depth || _opts.block.depth === 'height' )
@@ -49,7 +69,7 @@ The built-in extrusion generator for Extrovert.js.
           matArray = [ material, material, _side_mat, _side_mat, material, material ];
         else
           matArray = [ _side_mat, _side_mat, _side_mat, _side_mat, material, material ];
-        
+
         return EXTRO.createCubeMaterial( matArray );
       },
 
@@ -61,19 +81,8 @@ The built-in extrusion generator for Extrovert.js.
           var mat_info = this.rasterize( obj );
           EXTRO.createObject({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
         }
-      },
-
-      options: {
-        generator: {
-          name: 'extrude',
-          material: { color: 0xFF8844, friction: 0.2, restitution: 1.0 }
-        },
-        block: { depth: 'height' },
-        click_force: 900000,
-        lights: [
-          { type: 'ambient', color: 0xffffff }
-        ]
       }
+
     };
   };
 

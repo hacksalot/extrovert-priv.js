@@ -7,6 +7,7 @@
             <Folder name="generators">
                 <File name="src\generators\gen-extrude.js" />
                 <File name="src\generators\gen-sample.js" />
+                <File name="src\generators\gen-tile.js" />
             </Folder>
             <Folder name="painters">
                 <File name="src\painters\paint-element.js" />

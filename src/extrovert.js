@@ -29,7 +29,7 @@ var EXTRO = (function (window, THREE) {
   */
   var defaults = {
     renderer: 'Any',
-    generator: 'gallery',
+    generator: 'extrude',
     rasterizer: 'img',
     gravity: [0,0,0],
     camera: {
@@ -59,7 +59,10 @@ var EXTRO = (function (window, THREE) {
     onload: null,
     onerror: null,
     created: null,
-    clicked: null
+    clicked: null,
+    lights: [
+      { type: 'ambient', color: 0xffffff }
+    ]
   };
 
 
@@ -169,44 +172,8 @@ var EXTRO = (function (window, THREE) {
   function initOptions( user_opts ) {
     eng.log = _utils.log;
 
-    // -------------------------------------------------------------------------
-    // Create a valid generator based on user options
-    // -------------------------------------------------------------------------
-
-    // Handle the 'generator' option. This can be the name of any valid generator,
-    // or an options object with a .name field specifying any valid generator, or
-    // undefined.
-
-    if( !user_opts.generator )
-      eng.generator = new EXTRO.float();
-    else if (typeof user_opts.generator == 'string')
-      eng.generator = new EXTRO[ user_opts.generator ]();
-    else
-      eng.generator = new EXTRO[ user_opts.generator.name ]();
-
-    // -------------------------------------------------------------------------
-    // Safely merge engine, generator, and user options into a combined options
-    // object without modifying any of the original/source options.
-    // -------------------------------------------------------------------------
-
-    // Merge default ENGINE and GENERATOR options into a new options object such
-    // that GENERATOR options override default ENGINE options.
-    opts = _utils.extend(true, { }, defaults, eng.generator.options );
-
-    // Merge USER options onto the combined ENGINE/GENERATOR options such that
-    // the USER options take precedence.
-    opts = _utils.extend(true, opts, user_opts );
-
-    // If the user specified a generator using simple syntax (generator: 'wall')
-    // then opts.generator is currently a string. Replace that string with the
-    // full options object from the specified generator.
-    if( typeof opts.generator === 'string' ) {
-      opts.generator = _utils.extend(true, opts.generator, eng.generator.options.generator);
-    }
-
-    // -------------------------------------------------------------------------
-    // Set up physics.
-    // -------------------------------------------------------------------------
+    // Merge default ENGINE options with USER options without modifying either.
+    opts = _utils.extend(true, { }, defaults, user_opts );
 
     // If physics are enabled, pass through the locations of necessary scripts.
     // These are required by the physics library; nothing to do with Extrovert.
@@ -215,27 +182,57 @@ var EXTRO = (function (window, THREE) {
       Physijs.scripts.ammo = opts.physics.physijs.ammo;
     }
 
-    // -------------------------------------------------------------------------
-    // Set up rasterizer.
-    // -------------------------------------------------------------------------
-
-    // Set up the rasterizer. If a string was specified, instantiate a rasterizer
-    // called `paint_` plus whatever the string was. Otherwise if the user passed
-    // in a rasterizer OBJECT, use that directly. Lastly, if no rasterizer was
-    // specified, use the <img> rasterizer.
-    if( typeof opts.rasterizer == 'string' )
-      eng.rasterizer = new EXTRO[ 'paint_' + opts.rasterizer ]();
-    else
-      eng.rasterizer = opts.rasterizer || new EXTRO.paint_img();
+    // Preload rasterizers
+    eng.rasterizers = {
+      img: new EXTRO.paint_img(),
+      element: new EXTRO.paint_element(),
+      plain_text: new EXTRO.paint_plain_text()
+    };
 
     // Return the combined, ultrafied options object.
     return opts;
   }
 
 
+  my.getRasterizer = function( obj ) {
+    var r = null;
+    if( obj instanceof HTMLImageElement )
+      r = eng.rasterizers.img;
+    else if (obj.nodeType !== undefined )
+      r = eng.rasterizers.elem;
+    else if (EXTRO.Utils.isPlainObject( obj ) )
+      r = eng.rasterizers.plain_text;
+    return r;
+  };
+
 
   /**
-  Generate the "world". Prototype version. Refactor/rearchitect.
+  Initialize a generator.
+  @method initGenerator
+  */
+  function initGenerator( genOptions ) {
+    // Create the generator object
+    // options.generator can be the name of any valid generator, or an options
+    // object with a .name field specifying any valid generator, or undefined.
+    var gen = null;
+    if( !genOptions.type )
+      gen = new EXTRO.extrude();
+    else if (typeof genOptions === 'string')
+      gen = new EXTRO[ genOptions ]();
+    else
+      gen = new EXTRO[ genOptions.type ]();
+
+    // Initialize the generator with merged options
+    var mergedGenOptions = _utils.extend(true, { }, gen.options, genOptions );
+    gen.init && gen.init( mergedGenOptions, eng );
+
+    return gen;
+  }
+
+
+
+  /**
+  Generate the "world".
   @method initWorld
   */
   function initWorld( options, eng ) {
@@ -249,7 +246,8 @@ var EXTRO = (function (window, THREE) {
     EXTRO.createScene( options );
 
     // Set up the camera -- also not part of the 'world'.
-    EXTRO.createCamera( _utils.extend(true, {}, options.camera, options.init_cam_opts || eng.generator.init_cam_opts) );
+    var ico = options.init_cam_opts ? _utils.extend(true, {}, options.camera, options.init_cam_opts ) : options.camera;
+    EXTRO.createCamera( ico );
 
     // Create an invisible plane for drag and drop
     // TODO: Only create this if drag-drop controls are enabled
@@ -282,19 +280,18 @@ var EXTRO = (function (window, THREE) {
     var cont = document.body;
 
     // No options.objects specified? Default.
-    if( !options.objects || options.objects.length === 0 ) {
-      options.objects = [{ type: 'wall', src: 'img' }];
-    }
+    // if( !options.objects || options.objects.length === 0 ) {
+      // options.objects = [{ type: 'wall', src: 'img' }];
+    // }
 
     for( var idx = 0; idx < options.objects.length; idx++ ) {
       var obj = options.objects[ idx ];
       if( !obj ) continue;
       var src = obj.src || '*';
       var elems = ( typeof src === 'string' ) ?
-        cont.querySelectorAll( src ) : src();
+        cont.querySelectorAll( src ) : src;
 
-      var gen = new EXTRO[ obj.type ]();
-      gen.init && gen.init( options, eng );
+      var gen = initGenerator( obj );
       gen.generate( obj, elems );
 
       // options.creating && options.creating( elem, mesh );
@@ -486,10 +483,12 @@ var EXTRO = (function (window, THREE) {
   @method createMaterial
   */
   my.createMaterial = function( desc ) {
+    
     var mat = new THREE.MeshLambertMaterial({ color: desc.color || 0xFFFFFF, map: desc.tex || null });
-    return opts.physics.enabled && !desc.noPhysics ?
+    return (opts.physics.enabled && !desc.noPhysics) ?
       Physijs.createMaterial( mat, desc.friction, desc.restitution )
       : mat;
+
   };
 
 
@@ -537,12 +536,12 @@ var EXTRO = (function (window, THREE) {
       mesh.visible = false;
     // Turn off shadows for now.
     mesh.castShadow = mesh.receiveShadow = false;
-    
+
     eng.scene.add( mesh );
     eng.objects.push( mesh );
     mesh.updateMatrix();
-    mesh.updateMatrixWorld();    
-    
+    mesh.updateMatrixWorld();
+
     return mesh;
   };
 

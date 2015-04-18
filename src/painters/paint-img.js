@@ -12,8 +12,8 @@ A simple Extrovert image rasterizer.
 
   EXTRO.paint_img = function () {
     return {
-      paint: function( img, opts ) {
-        return THREE.ImageUtils.loadTexture( img.src );
+      paint: function( obj ) {
+        return THREE.ImageUtils.loadTexture( typeof obj === 'string' ? obj : obj.src );
       }
     };
   };
