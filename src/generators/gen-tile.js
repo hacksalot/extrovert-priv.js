@@ -28,11 +28,11 @@ The built-in tile generator for Extrovert.js.
         dims: [250, 100, 2]
       },
 
-      init: function( merged_options, eng ) {
-        _opts = merged_options;
+      init: function( genOpts, eng ) {
+        _opts = genOpts;
         _eng = eng;
         EXTRO.createPlacementPlane( [0,0,200] );
-        _side_mat = EXTRO.createMaterial( merged_options.material );
+        _side_mat = EXTRO.createMaterial( genOpts.material );
       },
 
       generate: function( noun, elems ) {

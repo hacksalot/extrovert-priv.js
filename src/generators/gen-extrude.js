@@ -18,18 +18,30 @@ The built-in extrusion generator for Extrovert.js.
       options: {
         name: 'extrude',
         material: { color: 0xFF8844, friction: 0.2, restitution: 1.0 },
-        block: { depth: 'height' }
+        block: { depth: 'height' },
+        camDistance: 200
       },
 
-      init: function( merged_options, eng ) {
-        _opts = merged_options;
+      init: function( genOpts, eng ) {
+        _opts = genOpts;
         _eng = eng;
-        _side_mat = EXTRO.createMaterial( merged_options.material );
-        EXTRO.createPlacementPlane( [0,0,200] );
+        _side_mat = EXTRO.createMaterial( genOpts.material );
+        EXTRO.createPlacementPlane( [ 0,0,this.options.camDistance ] );
+      },
+
+      generate: function( noun, elems ) {
+        _noun = noun;
+        for( var i = 0; i < elems.length; i++ ) {
+          var obj = elems[ i ];
+          var pos_info = this.transform( obj );
+          var mat_info = this.rasterize( obj );
+          EXTRO.createObject({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
+        }
       },
 
       transform: function( obj ) {
-        var posInfo = EXTRO.getPosition( obj, _noun.container, _eng );
+        var cont = _noun.container || (eng.opts.src && eng.opts.src.container) || document.body;
+        var posInfo = EXTRO.getPosition( obj, cont, _eng );
         if(!_opts.block.depth)
           posInfo.depth = posInfo.height;
         else if( _opts.block.depth === 'height' )
@@ -62,15 +74,7 @@ The built-in extrusion generator for Extrovert.js.
         return EXTRO.createCubeMaterial( matArray );
       },
 
-      generate: function( noun, elems ) {
-        _noun = noun;
-        for( var i = 0; i < elems.length; i++ ) {
-          var obj = elems[ i ];
-          var pos_info = this.transform( obj );
-          var mat_info = this.rasterize( obj );
-          EXTRO.createObject({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
-        }
-      }
+
 
     };
   };

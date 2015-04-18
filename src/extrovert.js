@@ -23,14 +23,10 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  Default engine options. Unless overridden, these apply to all stages and all
-  generators. These options will be overridden first by any generator options,
-  and then by any options specified by the user.
+  Default engine options. These are overridden by user options.
   */
   var defaults = {
     renderer: 'Any',
-    generator: 'extrude',
-    rasterizer: 'img',
     gravity: [0,0,0],
     camera: {
       fov: 35,
@@ -172,8 +168,8 @@ var EXTRO = (function (window, THREE) {
   function initOptions( user_opts ) {
     eng.log = _utils.log;
 
-    // Merge default ENGINE options with USER options without modifying either.
-    opts = _utils.extend(true, { }, defaults, user_opts );
+    // Merge USER options onto DEFAULT options without modifying either.
+    opts = eng.opts = _utils.extend(true, { }, defaults, user_opts );
 
     // If physics are enabled, pass through the locations of necessary scripts.
     // These are required by the physics library; nothing to do with Extrovert.
@@ -194,6 +190,11 @@ var EXTRO = (function (window, THREE) {
   }
 
 
+
+  /**
+  Return an appropriate rasterizer for the given object.
+  @method getRasterizer
+  */
   my.getRasterizer = function( obj ) {
     var r = null;
     if( obj instanceof HTMLImageElement )
@@ -204,6 +205,7 @@ var EXTRO = (function (window, THREE) {
       r = eng.rasterizers.plain_text;
     return r;
   };
+
 
 
   /**
@@ -274,11 +276,6 @@ var EXTRO = (function (window, THREE) {
     // Examine the SOURCE data
     // -------------------------------------------------------------------------
 
-    // Default the container element to the entire body. Usually this will be
-    // overridden by options.src.container but if not, the default behavior is
-    // that the entire page is the container.
-    var cont = document.body;
-
     // No options.objects specified? Default.
     // if( !options.objects || options.objects.length === 0 ) {
       // options.objects = [{ type: 'wall', src: 'img' }];
@@ -288,6 +285,12 @@ var EXTRO = (function (window, THREE) {
       var obj = options.objects[ idx ];
       if( !obj ) continue;
       var src = obj.src || '*';
+      var cont = obj.container || (options.src && options.src.container) || document.body;
+      if( typeof cont === 'string' ) {
+        cont = _utils.$( cont );
+        if(cont.length !== undefined) cont = cont[0];
+      }
+
       var elems = ( typeof src === 'string' ) ?
         cont.querySelectorAll( src ) : src;
 
@@ -483,7 +486,7 @@ var EXTRO = (function (window, THREE) {
   @method createMaterial
   */
   my.createMaterial = function( desc ) {
-    
+
     var mat = new THREE.MeshLambertMaterial({ color: desc.color || 0xFFFFFF, map: desc.tex || null });
     return (opts.physics.enabled && !desc.noPhysics) ?
       Physijs.createMaterial( mat, desc.friction, desc.restitution )
