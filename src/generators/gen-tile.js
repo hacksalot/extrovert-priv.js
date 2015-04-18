@@ -23,9 +23,6 @@ The built-in tile generator for Extrovert.js.
         material: { color: 0xFF8844, friction: 0.2, restitution: 1.0 },
         block: { depth: 'height' },
         click_force: 900000,
-        lights: [
-          { type: 'ambient', color: 0xffffff }
-        ],
         rows: 10,
         cols: 10,
         dims: [250, 100, 2]

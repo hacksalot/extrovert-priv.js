@@ -11,28 +11,21 @@ The built-in extrusion generator for Extrovert.js.
 
   EXTRO.extrude = function() {
 
-    var _opts = null;
-    var _eng = null;
-    var _side_mat = null;
-    var _noun = null;
+    var _opts, _eng, _side_mat, _noun;
 
     return {
 
       options: {
         name: 'extrude',
         material: { color: 0xFF8844, friction: 0.2, restitution: 1.0 },
-        block: { depth: 'height' },
-        click_force: 900000,
-        lights: [
-          { type: 'ambient', color: 0xffffff }
-        ]
+        block: { depth: 'height' }
       },
 
       init: function( merged_options, eng ) {
         _opts = merged_options;
         _eng = eng;
-        EXTRO.createPlacementPlane( [0,0,200] );
         _side_mat = EXTRO.createMaterial( merged_options.material );
+        EXTRO.createPlacementPlane( [0,0,200] );
       },
 
       transform: function( obj ) {
@@ -51,17 +44,13 @@ The built-in extrusion generator for Extrovert.js.
       rasterize: function( obj ) {
         var rast = null;
         if( _noun.rasterizer ) {
-          if( typeof _noun.rasterizer === 'string' )
-            rast = new EXTRO['paint_' + _noun.rasterizer]();
-          else
-            rast = _noun.rasterizer;
+          rast = ( typeof _noun.rasterizer === 'string' ) ?
+            new EXTRO['paint_' + _noun.rasterizer]() : _noun.rasterizer;
         }
-        else {
-          rast = EXTRO.getRasterizer( obj );
-        }
+        rast = rast || EXTRO.getRasterizer( obj );
+
         var tileTexture = rast.paint(( _noun.adapt && _noun.adapt(obj) ) || obj );
         var material = EXTRO.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
-        
         var matArray;
         if( !_opts.block.depth || _opts.block.depth === 'height' )
           matArray = [ _side_mat, _side_mat, material, material, material, material ];

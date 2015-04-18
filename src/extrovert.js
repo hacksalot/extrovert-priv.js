@@ -55,7 +55,7 @@ var EXTRO = (function (window, THREE) {
       depth: 2
     },
     move_with_physics: true,
-    click_force: 30000,
+    click_force: 900000,
     onload: null,
     onerror: null,
     created: null,
