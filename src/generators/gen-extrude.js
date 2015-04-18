@@ -18,15 +18,14 @@ The built-in extrusion generator for Extrovert.js.
       options: {
         name: 'extrude',
         material: { color: 0xFF8844, friction: 0.2, restitution: 1.0 },
-        block: { depth: 'height' },
-        camDistance: 200
+        block: { depth: 'height' }
       },
 
       init: function( genOpts, eng ) {
         _opts = genOpts;
         _eng = eng;
         _side_mat = EXTRO.createMaterial( genOpts.material );
-        EXTRO.createPlacementPlane( [ 0,0,this.options.camDistance ] );
+        EXTRO.createPlacementPlane( [ 0,0,0 ] );
       },
 
       generate: function( noun, elems ) {
@@ -40,7 +39,7 @@ The built-in extrusion generator for Extrovert.js.
       },
 
       transform: function( obj ) {
-        var cont = _noun.container || (eng.opts.src && eng.opts.src.container) || document.body;
+        var cont = _noun.container || (_eng.opts.src && _eng.opts.src.container) || document.body;
         var posInfo = EXTRO.getPosition( obj, cont, _eng );
         if(!_opts.block.depth)
           posInfo.depth = posInfo.height;

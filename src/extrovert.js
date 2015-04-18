@@ -31,7 +31,8 @@ var EXTRO = (function (window, THREE) {
     camera: {
       fov: 35,
       near: 1,
-      far: 10000
+      far: 10000,
+      position: [0,0,200]
     },
     controls: {
       type: 'universal',
