@@ -7,9 +7,9 @@ A simple Extrovert HTML rasterizer.
 @version 1.0
 */
 
-(function (window, THREE, EXTRO) {
+(function (window, THREE, extro) {
 
-  EXTRO.paint_color = function () {
+  extro.paint_color = function () {
     return {
       paint: function( val, opts ) {
         // Create a texture from the canvas
@@ -18,4 +18,4 @@ A simple Extrovert HTML rasterizer.
     };
   };
 
-}(window, THREE, EXTRO));
+}(window, THREE, extro));

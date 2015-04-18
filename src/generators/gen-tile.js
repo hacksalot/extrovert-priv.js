@@ -7,9 +7,9 @@ The built-in tile generator for Extrovert.js.
 @version 1.0
 */
 
-(function (window, EXTRO) {
+(function (window, extro) {
 
-  EXTRO.tile = function() {
+  extro.tile = function() {
 
     var _opts = null;
     var _eng = null;
@@ -31,8 +31,8 @@ The built-in tile generator for Extrovert.js.
       init: function( genOpts, eng ) {
         _opts = genOpts;
         _eng = eng;
-        EXTRO.createPlacementPlane( [0,0,200] );
-        _side_mat = EXTRO.createMaterial( genOpts.material );
+        extro.createPlacementPlane( [0,0,200] );
+        _side_mat = extro.createMaterial( genOpts.material );
       },
 
       generate: function( noun, elems ) {
@@ -45,20 +45,20 @@ The built-in tile generator for Extrovert.js.
           var rast = null;
           if( noun.rasterizer ) {
             if( typeof noun.rasterizer === 'string' )
-              rast = new EXTRO['paint_' + noun.rasterizer]();
+              rast = new extro['paint_' + noun.rasterizer]();
             else
               rast = noun.rasterizer;
           }
           else {
-            rast = EXTRO.getRasterizer( obj );
+            rast = extro.getRasterizer( obj );
           }
           var tileTexture = rast.paint(( noun.adapt && noun.adapt(obj) ) || obj );
-          var tileMat = EXTRO.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
-          EXTRO.createObject({ type: 'box', pos: tilePos, dims: this.options.dims, mat: tileMat, mass: 1000 });
+          var tileMat = extro.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
+          extro.createObject({ type: 'box', pos: tilePos, dims: this.options.dims, mat: tileMat, mass: 1000 });
         }
       }
 
     };
   };
 
-}(window, EXTRO));
+}(window, extro));

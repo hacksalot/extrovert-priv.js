@@ -7,9 +7,9 @@ The built-in extrusion generator for Extrovert.js.
 @version 1.0
 */
 
-(function (window, EXTRO) {
+(function (window, extro) {
 
-  EXTRO.extrude = function() {
+  extro.extrude = function() {
 
     var _opts, _eng, _side_mat, _noun;
 
@@ -24,8 +24,8 @@ The built-in extrusion generator for Extrovert.js.
       init: function( genOpts, eng ) {
         _opts = genOpts;
         _eng = eng;
-        _side_mat = EXTRO.createMaterial( genOpts.material );
-        EXTRO.createPlacementPlane( [ 0,0,0 ] );
+        _side_mat = extro.createMaterial( genOpts.material );
+        extro.createPlacementPlane( [ 0,0,0 ] );
       },
 
       generate: function( noun, elems ) {
@@ -34,13 +34,13 @@ The built-in extrusion generator for Extrovert.js.
           var obj = elems[ i ];
           var pos_info = this.transform( obj );
           var mat_info = this.rasterize( obj );
-          EXTRO.createObject({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
+          extro.createObject({ type: 'box', pos: pos_info.pos, dims: [pos_info.width, pos_info.height, pos_info.depth], mat: mat_info, mass: 1000 });
         }
       },
 
       transform: function( obj ) {
         var cont = _noun.container || (_eng.opts.src && _eng.opts.src.container) || document.body;
-        var posInfo = EXTRO.getPosition( obj, cont, _eng );
+        var posInfo = extro.getPosition( obj, cont, _eng );
         if(!_opts.block.depth)
           posInfo.depth = posInfo.height;
         else if( _opts.block.depth === 'height' )
@@ -56,12 +56,12 @@ The built-in extrusion generator for Extrovert.js.
         var rast = null;
         if( _noun.rasterizer ) {
           rast = ( typeof _noun.rasterizer === 'string' ) ?
-            new EXTRO['paint_' + _noun.rasterizer]() : _noun.rasterizer;
+            new extro['paint_' + _noun.rasterizer]() : _noun.rasterizer;
         }
-        rast = rast || EXTRO.getRasterizer( obj );
+        rast = rast || extro.getRasterizer( obj );
 
         var tileTexture = rast.paint(( _noun.adapt && _noun.adapt(obj) ) || obj );
-        var material = EXTRO.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
+        var material = extro.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
         var matArray;
         if( !_opts.block.depth || _opts.block.depth === 'height' )
           matArray = [ _side_mat, _side_mat, material, material, material, material ];
@@ -70,7 +70,7 @@ The built-in extrusion generator for Extrovert.js.
         else
           matArray = [ _side_mat, _side_mat, _side_mat, _side_mat, material, material ];
 
-        return EXTRO.createCubeMaterial( matArray );
+        return extro.createCubeMaterial( matArray );
       },
 
 
@@ -78,4 +78,4 @@ The built-in extrusion generator for Extrovert.js.
     };
   };
 
-}(window, EXTRO));
+}(window, extro));

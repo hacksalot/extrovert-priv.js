@@ -7,13 +7,13 @@ A simple Extrovert HTML rasterizer.
 @version 1.0
 */
 
-(function (window, THREE, EXTRO) {
+(function (window, THREE, extro) {
 
-  EXTRO.paint_plain_text = function () {
+  extro.paint_plain_text = function () {
     return {
       paint: function( val, opts ) {
 
-        var _utils = EXTRO.Utils;
+        var _utils = extro.Utils;
         opts = opts || { };
 
         // Create a canvas element. TODO: Reuse a single canvas.
@@ -62,4 +62,4 @@ A simple Extrovert HTML rasterizer.
     };
   };
 
-}(window, THREE, EXTRO));
+}(window, THREE, extro));

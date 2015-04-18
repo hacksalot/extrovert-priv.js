@@ -9,9 +9,9 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 
 
 /**
-Set up the EXTRO symbol in an IIFE for old-style includes.
+Set up the extro symbol in an IIFE for old-style includes.
 */
-var EXTRO = (function (window, THREE) {
+var extro = (function (window, THREE) {
 
 
 
@@ -104,7 +104,7 @@ var EXTRO = (function (window, THREE) {
 
 
   /**
-  An alias to EXTROVERT.Utils. Prevents us from having to say EXTROVERT.Utils.xxx
+  An alias to extroVERT.Utils. Prevents us from having to say extroVERT.Utils.xxx
   all over the place.
   */
   var _utils = null;
@@ -121,7 +121,7 @@ var EXTRO = (function (window, THREE) {
   my.init = function( options ) {
 
     // Set up our alias to the utility library.
-    _utils = EXTRO.Utils;
+    _utils = extro.Utils;
 
     // Quick exit if the user requests a specific renderer and the browser
     // doesn't support it or if neither renderer type is supported.
@@ -181,9 +181,9 @@ var EXTRO = (function (window, THREE) {
 
     // Preload rasterizers
     eng.rasterizers = {
-      img: new EXTRO.paint_img(),
-      element: new EXTRO.paint_element(),
-      plain_text: new EXTRO.paint_plain_text()
+      img: new extro.paint_img(),
+      element: new extro.paint_element(),
+      plain_text: new extro.paint_plain_text()
     };
 
     // Return the combined, ultrafied options object.
@@ -202,7 +202,7 @@ var EXTRO = (function (window, THREE) {
       r = eng.rasterizers.img;
     else if (obj.nodeType !== undefined )
       r = eng.rasterizers.elem;
-    else if (EXTRO.Utils.isPlainObject( obj ) )
+    else if (extro.Utils.isPlainObject( obj ) )
       r = eng.rasterizers.plain_text;
     return r;
   };
@@ -219,11 +219,11 @@ var EXTRO = (function (window, THREE) {
     // object with a .name field specifying any valid generator, or undefined.
     var gen = null;
     if( !genOptions.type )
-      gen = new EXTRO.extrude();
+      gen = new extro.extrude();
     else if (typeof genOptions === 'string')
-      gen = new EXTRO[ genOptions ]();
+      gen = new extro[ genOptions ]();
     else
-      gen = new EXTRO[ genOptions.type ]();
+      gen = new extro[ genOptions.type ]();
 
     // Initialize the generator with merged options
     var mergedGenOptions = _utils.extend(true, { }, gen.options, genOptions );
@@ -246,17 +246,17 @@ var EXTRO = (function (window, THREE) {
 
     // Start off by creating the scene object. Is this part of creating the
     // 'world'? No.
-    EXTRO.createScene( options );
+    extro.createScene( options );
 
     // Set up the camera -- also not part of the 'world'.
     var ico = options.init_cam_opts ? _utils.extend(true, {}, options.camera, options.init_cam_opts ) : options.camera;
-    EXTRO.createCamera( ico );
+    extro.createCamera( ico );
 
     // Create an invisible plane for drag and drop
     // TODO: Only create this if drag-drop controls are enabled
     // This should be up to the XxxxxControls object.
     if( options.controls.allow_drag ) {
-      eng.drag_plane = EXTRO.createObject( {
+      eng.drag_plane = extro.createObject( {
         type: 'plane',
         dims: [2000,2000,8],
         visible: false,
@@ -317,7 +317,7 @@ var EXTRO = (function (window, THREE) {
     // We do this after final cam positioning because the default light position,
     // if the user doesn't specify one, is wherever the camera is located.
     // -------------------------------------------------------------------------
-    EXTRO.fiatLux( options.lights );
+    extro.fiatLux( options.lights );
   }
 
 
@@ -427,7 +427,7 @@ var EXTRO = (function (window, THREE) {
       controls = new THREE.PointerLockControls( camera );
     }
     else if( control_opts.type === 'universal' ) {
-      controls = new EXTRO.UniversalControls( camera, undefined, control_opts );
+      controls = new extro.UniversalControls( camera, undefined, control_opts );
     }
     return controls;
   };
@@ -762,7 +762,7 @@ var EXTRO = (function (window, THREE) {
   @method calcPosition
   */
   my.calcPosition = function( posX, posY, placement_plane ) {
-    eng.raycaster.setFromCamera( EXTRO.toNDC( posX, posY, 0.5, new THREE.Vector3() ), eng.camera );
+    eng.raycaster.setFromCamera( extro.toNDC( posX, posY, 0.5, new THREE.Vector3() ), eng.camera );
     var intersects = eng.raycaster.intersectObject( placement_plane || eng.placement_plane );
     return (intersects.length > 0) ? intersects[0].point : null;
   };
@@ -780,7 +780,7 @@ var EXTRO = (function (window, THREE) {
         // ( event.clientX / window.innerWidth ) * 2 - 1,
         // - ( event.clientY / window.innerHeight ) * 2 + 1,
         // 0.5 );
-    vector = EXTRO.toNDC( posX, posY, 0.5, vector );
+    vector = extro.toNDC( posX, posY, 0.5, vector );
     vector.unproject( eng.camera );
     var dir = vector.sub( eng.camera.position ).normalize();
     var distance = -eng.camera.position.z / dir.z;
@@ -819,7 +819,7 @@ var EXTRO = (function (window, THREE) {
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
 
     // Convert to normalized device coordinates
-    eng.mouse = EXTRO.toNDC( xpos, ypos, 0.5, eng.mouse );
+    eng.mouse = extro.toNDC( xpos, ypos, 0.5, eng.mouse );
 
     // Set up our ray depending on whether the camera is the child of a
     // transformed object or not.
@@ -879,7 +879,7 @@ var EXTRO = (function (window, THREE) {
     e.preventDefault();
     var xpos = e.offsetX === undefined ? e.layerX : e.offsetX; //[1]
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
-    eng.mouse = EXTRO.toNDC( xpos, ypos, 0.5, eng.mouse );
+    eng.mouse = extro.toNDC( xpos, ypos, 0.5, eng.mouse );
     if ( eng.selected ) {
       eng.raycaster.setFromCamera( eng.mouse, eng.camera );
       var intersects = eng.raycaster.intersectObject( eng.drag_plane );
@@ -973,8 +973,8 @@ var EXTRO = (function (window, THREE) {
 
     // Get the position of the element's left-top and right-bottom corners in
     // WORLD coords, based on where the camera is.
-    var topLeft = EXTRO.calcPosition( pos.left, pos.top, eng.placement_plane );
-    var botRight = EXTRO.calcPosition( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
+    var topLeft = extro.calcPosition( pos.left, pos.top, eng.placement_plane );
+    var botRight = extro.calcPosition( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
 
     // Calculate WORLD dimensions of the lement.
     var block_width = Math.abs( botRight.x - topLeft.x );

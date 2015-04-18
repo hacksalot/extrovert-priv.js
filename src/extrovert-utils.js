@@ -9,7 +9,7 @@ Utilities for Extrovert.js.
 
 
 
-EXTRO.Utils = (function (window, THREE) {
+extro.Utils = (function (window, THREE) {
 
 
 
@@ -386,7 +386,7 @@ EXTRO.Utils = (function (window, THREE) {
 
   /**
   Retrieve the value of the specified cookie.
-  This is for internal use but we expose it as part of the EXTRO interface for
+  This is for internal use but we expose it as part of the extro interface for
   the benefit of samples and demos and such.
   @method getCookie
   */
@@ -409,7 +409,7 @@ EXTRO.Utils = (function (window, THREE) {
 
   /**
   Sets a cookie.
-  This is for internal use but we expose it as part of the EXTRO interface for
+  This is for internal use but we expose it as part of the extro interface for
   the benefit of samples and demos and such.
   @method setCookie
   */
@@ -425,7 +425,7 @@ EXTRO.Utils = (function (window, THREE) {
 
   /**
   Clear a cookie.
-  This is for internal use but we expose it as part of the EXTRO interface for
+  This is for internal use but we expose it as part of the extro interface for
   the benefit of samples and demos and such.
   @method clearCookie
   */

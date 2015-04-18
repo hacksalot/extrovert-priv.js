@@ -7,12 +7,12 @@ A simple Extrovert HTML rasterizer.
 @version 1.0
 */
 
-(function (window, THREE, EXTRO) {
+(function (window, THREE, extro) {
 
-  EXTRO.paint_element = function () {
+  extro.paint_element = function () {
     return {
       paint: function( val, opts ) {
-        var _utils = EXTRO.Utils;
+        var _utils = extro.Utils;
 
         // Get the element content
         //var title_elem = val.querySelector( opts.src.title );
@@ -45,4 +45,4 @@ A simple Extrovert HTML rasterizer.
     };
   };
 
-}(window, THREE, EXTRO));
+}(window, THREE, extro));

@@ -4,7 +4,7 @@ A hybrid control module for Extrovert.js scenes.
 @author James Devlin (james@indevious.com)
 */
 
-EXTRO.UniversalControls = function ( object, domElement, options ) {
+extro.UniversalControls = function ( object, domElement, options ) {
 
   this.object = object;
   this.domElement = domElement || document;
@@ -48,7 +48,7 @@ EXTRO.UniversalControls = function ( object, domElement, options ) {
     var posX = e.offsetX === undefined ? e.layerX : e.offsetX;
     var posY = e.offsetY === undefined ? e.layerY : e.offsetY;
     _mousePos.set(posX, posY);
-    _mousePosNDC = EXTRO.toNDC( posX, posY, 0.5, _mousePosNDC );
+    _mousePosNDC = extro.toNDC( posX, posY, 0.5, _mousePosNDC );
     _isTracking = true;
     _posChanged = false;
   };
@@ -65,11 +65,11 @@ EXTRO.UniversalControls = function ( object, domElement, options ) {
       var posY = e.offsetY === undefined ? e.layerY : e.offsetY;
       if( posX === _mousePos.x && posY === _mousePos.y )
         return;
-      _mousePosNewNDC = EXTRO.toNDC( posX, posY, 0.5, _mousePosNewNDC );
+      _mousePosNewNDC = extro.toNDC( posX, posY, 0.5, _mousePosNewNDC );
       _mouseDeltaNDC.subVectors( _mousePosNDC, _mousePosNewNDC );
       _posChanged = true;
       _mousePos.set( posX, posY );
-      _mousePosNDC = EXTRO.toNDC( posX, posY, 0.5, _mousePosNDC );
+      _mousePosNDC = extro.toNDC( posX, posY, 0.5, _mousePosNDC );
     }
   };
 

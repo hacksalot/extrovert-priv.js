@@ -7,9 +7,9 @@ The built-in extrusion generator for Extrovert.js.
 @version 1.0
 */
 
-(function (window, EXTRO) {
+(function (window, extro) {
 
-  EXTRO.box = function() {
+  extro.box = function() {
 
     var _opts, _eng, _side_mat, _noun;
 
@@ -24,8 +24,8 @@ The built-in extrusion generator for Extrovert.js.
       init: function( genOpts, eng ) {
         _opts = genOpts;
         _eng = eng;
-        _side_mat = EXTRO.createMaterial( genOpts.material );
-        EXTRO.createPlacementPlane( [ 0,0,0 ] );
+        _side_mat = extro.createMaterial( genOpts.material );
+        extro.createPlacementPlane( [ 0,0,0 ] );
       },
 
       generate: function( noun, elems ) {
@@ -52,20 +52,20 @@ The built-in extrusion generator for Extrovert.js.
             sides.push( _side_mat );
         }
         
-        var mat_info = EXTRO.createCubeMaterial( sides );
-        EXTRO.createObject({ type: 'box', pos: [0,0,0], dims: [250,250,250], mat: mat_info, mass: 1000 });
+        var mat_info = extro.createCubeMaterial( sides );
+        extro.createObject({ type: 'box', pos: [0,0,0], dims: [250,250,250], mat: mat_info, mass: 1000 });
       },
 
       rasterize: function( obj ) {
         var rast = null;
         if( _noun.rasterizer ) {
           rast = ( typeof _noun.rasterizer === 'string' ) ?
-            new EXTRO['paint_' + _noun.rasterizer]() : _noun.rasterizer;
+            new extro['paint_' + _noun.rasterizer]() : _noun.rasterizer;
         }
-        rast = rast || EXTRO.getRasterizer( obj );
+        rast = rast || extro.getRasterizer( obj );
 
         var tileTexture = rast.paint(( _noun.adapt && _noun.adapt(obj) ) || obj );
-        var material = EXTRO.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
+        var material = extro.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
         return material;
       },
 
@@ -74,4 +74,4 @@ The built-in extrusion generator for Extrovert.js.
     };
   };
 
-}(window, EXTRO));
+}(window, extro));

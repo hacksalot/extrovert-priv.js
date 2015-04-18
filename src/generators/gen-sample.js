@@ -7,7 +7,7 @@ A sample Extrovert generator for demonstration purposes.
 @version 1.0
 */
 
-(function (window, THREE, EXTRO) {
+(function (window, THREE, extro) {
 
 
 
@@ -32,10 +32,10 @@ A sample Extrovert generator for demonstration purposes.
    /**
    @class The built-in 'sample' generator.
    */
-   EXTRO.sample = function() {
+   extro.sample = function() {
       return {
          sample: function( options, eng ) {
-            var new_opts = EXTRO.Utils.extend(true, { }, _def_opts, options);
+            var new_opts = extro.Utils.extend(true, { }, _def_opts, options);
             if( !new_opts.generator || typeof new_opts.generator == 'string' )
                new_opts.generator = _def_opts.generator;
             init_objects( new_opts, eng );
@@ -52,5 +52,5 @@ A sample Extrovert generator for demonstration purposes.
 
 
 
-}(window, THREE, EXTRO));
+}(window, THREE, extro));
 
