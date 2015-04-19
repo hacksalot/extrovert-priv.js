@@ -4,7 +4,7 @@
 
 **Extrovert.js transforms arbitrary source data into textured 3D geometry**. It supports physics, animations, cross-browser rendering, mouse and keyboard controls, and a five-minute install. It's intended for 3Dification of anything from on-page HTML to JSON responses fetched over AJAX to custom data formats specific to you or your project.
 
-Extrovert.js is open-source software and free for all non-commercial or indie use. A [commercial license](1) is available for commercial projects.
+Extrovert.js is open-source software and free for all non-commercial or indie use. A [commercial license][1] is available for commercial projects.
 
 ## Features ##
 
@@ -50,7 +50,7 @@ Extrovert.js is built around the concept of generators. A *generator* is a piece
 - **stack**. A generator that stacks 3D objects in space (like a deck of cards).
 - **box**. A generator that renders its data to the six sides of a cube.
 - **river**. A generators that positions 3D objects in a constrained channel and gives them velocity.
-- **[custom]**. You can create custom generators for Extrovert with just a few lines of code.
+- **custom**. You can create custom generators for Extrovert with just a few lines of code.
 
 You can mix and match multiple generators within a single Extrovert scene. For example, here we're using the `extrude` generator to extrude any on-page images, and a `box` generator to turn a background div into a flat plane.
 
@@ -75,10 +75,8 @@ As with generators, Extrovert ships with multiple built-in rasterizers, and you 
 - **elem**. A rasterizer for arbitrary HTML elements (`<div>`, `<span>`, `<p>`, whatever).
 - **plain text**. A rasterizer for plain unadorned text.
 - **html**. A full-fledged HTML rasterizer. Experimental.
-- **[custom]**. You can define new rasterizers with just a few lines of code.
+- **custom**. You can define new rasterizers with just a few lines of code.
 
 Short of writing a full-fledged rasterizer, you can also provide a rendering callback function that will allow you to perform the rasterization through simple canvas-style paint calls.
 
-[1]: http://extrovert3d.com/purchase
-
-
+[1]: http://google.com
