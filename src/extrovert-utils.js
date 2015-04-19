@@ -203,6 +203,16 @@ extro.Utils = (function (window, THREE) {
 
 
   /**
+  Determine if the specified object is an array.
+  @method isArray
+  */
+  my.isArray = function( obj ) {
+    return Object.prototype.toString.call( obj ) === '[object Array]';
+  };
+
+
+
+  /**
   Simple plain JavaScript version of jQuery .extend.
   function extend(){
     for(var i=1; i<arguments.length; i++)
