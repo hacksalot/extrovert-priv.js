@@ -46,13 +46,20 @@
         }
       };
 
-      var combined = EXTROVERT.Utils.extend(true, {}, def_opts, user_opts);
+      var combined = extro.Utils.extend(true, {}, def_opts, user_opts);
       assert.strictEqual( combined.generator.name, 'gallery' );
       assert.strictEqual( combined.propa, 'a' );
       assert.strictEqual( combined.propb, 'b' );
       assert.strictEqual( combined.sub.val, 'bar' );
       assert.strictEqual( combined.sub.sub_a.val, 'foo' );
     });
+    
+    QUnit.test( "Verify custom version of extend().", function( assert ) {
+    
+    
+
+
+    });    
 
 
   </script>

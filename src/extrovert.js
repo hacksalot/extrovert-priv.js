@@ -9,14 +9,14 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 
 
 /**
-Set up the extro symbol in an IIFE for old-style includes.
+Set up the one-and-only global extro symbol for old-style includes.
 */
 var extro = (function (window, THREE) {
 
 
 
   /**
-  The one-and-only module object. Treat this explicitly.
+  Explicit module object.
   */
   var my = {};
 
@@ -609,7 +609,9 @@ var extro = (function (window, THREE) {
 
 
   /**
-  Create a physical representation of the user's identity.
+  Create a physical representation of the user's identity. For now this is just
+  an invisible box or capsule that can be collided with.
+  @method initAvatar
   */
   function initAvatar( avOpts ) {
     if( avOpts && avOpts.enabled ) {
@@ -643,7 +645,8 @@ var extro = (function (window, THREE) {
 
 
   /**
-  Request animation of the scene.
+  Request animation of the scene. Called directly only once, at the start of the
+  simulation. Thereafter, called whenever requestAnimationFrame decides.
   @method animate
   */
   function animate() {
@@ -654,35 +657,31 @@ var extro = (function (window, THREE) {
 
 
   /**
-  Update the scene physics. Only called when physics are enabled. TODO: move
-  physics-related manipulation to this function.
+  Update the scene physics. Only called when physics are enabled.
   @method update
   */
   function update() {
-
+    eng.scene.simulate();
   }
 
 
 
   /**
-  Render the scene. TODO: Optimize animate/render timing and structure.
+  Render the scene.
   @method render
   */
   function render() {
 
-    opts.physics.enabled && eng.scene.simulate();
+    // Update physics and controls
+    opts.physics.enabled && update();
+    eng.controls && eng.controls.enabled && eng.controls.update( eng.clock.getDelta() );
 
-    // Get time in SECONDS
-    // var time = Date.now() / 1000.0;
-    // var elapsed = time - eng.last_time;
-    // eng.last_time = time;
-
+    // Housekeeping for Phyijs's __dirtyPosition flag. Refactor this.
     if( !opts.move_with_physics ) {
-       // Maintain the __dirtyPosition flag while dragging
+       // Maintain the __dirtyPosition flag while dragging and after touching
       if( eng.selected !== null ) {
         eng.selected.__dirtyPosition = true;
       }
-       // Maintain the __dirtyPosition flag on touched objects
       for ( var i = 0, l = eng.objects.length; i < l; i ++ ) {
         if( eng.objects[ i ].has_been_touched ) {
           eng.objects[ i ].__dirtyPosition = true;
@@ -690,8 +689,7 @@ var extro = (function (window, THREE) {
       }
     }
 
-    eng.controls && eng.controls.enabled && eng.controls.update( eng.clock.getDelta() );
-
+    // Render everything
     eng.renderer.clear();
     eng.css_renderer && eng.css_renderer.render( eng.css_scene, eng.camera );
     eng.renderer.render( eng.scene, eng.camera );
@@ -776,17 +774,12 @@ var extro = (function (window, THREE) {
   */
   my.calcPosition2 = function( posX, posY, unused ) {
     var vector = new THREE.Vector3();
-    //vector.set(
-        // ( event.clientX / window.innerWidth ) * 2 - 1,
-        // - ( event.clientY / window.innerHeight ) * 2 + 1,
-        // 0.5 );
     vector = extro.toNDC( posX, posY, 0.5, vector );
     vector.unproject( eng.camera );
     var dir = vector.sub( eng.camera.position ).normalize();
     var distance = -eng.camera.position.z / dir.z;
     var pos = eng.camera.position.clone().add( dir.multiplyScalar( distance ) );
   };
-
 
 
 

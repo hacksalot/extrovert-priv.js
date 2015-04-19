@@ -24,11 +24,8 @@
   <div id="qunit-fixture"></div>
   <script>
     var opts = {
-      generator: {
-        name: 'gallery'
-      },
-      src: { container: '#source', selector: 'img' },
       target: { container: '#target' },
+      objects: [{ type: 'extrude', src: 'img', container: '#source' }]
       bkcolor: 0xFFAA00
     };
 
