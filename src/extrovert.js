@@ -99,7 +99,7 @@ var extro = (function (window, THREE) {
   called, this will contain the final, authoritative, combined set of engine +
   generator + user options.
   */
-  var opts = null;
+  var _opts = null;
 
 
 
@@ -144,14 +144,14 @@ var extro = (function (window, THREE) {
 
     // Initialize all the things
     initOptions( options );
-    initRenderer( opts );
-    initWorld( opts, eng );
-    initCanvas( opts );
-    initPhysics( opts );
-    initControls( opts, eng );
+    initRenderer( _opts );
+    initWorld( _opts, eng );
+    initCanvas( _opts );
+    initPhysics( _opts );
+    initControls( _opts, eng );
     initEvents();
     //initTimer();
-    initAvatar( opts.avatar );
+    initAvatar( _opts.avatar );
     start();
 
     // Since we use a false return as a quick signal for "can't render"
@@ -170,13 +170,13 @@ var extro = (function (window, THREE) {
     eng.log = _utils.log;
 
     // Merge USER options onto DEFAULT options without modifying either.
-    opts = eng.opts = _utils.extend(true, { }, defaults, user_opts );
+    _opts = eng.opts = _utils.extend(true, { }, defaults, user_opts );
 
     // If physics are enabled, pass through the locations of necessary scripts.
     // These are required by the physics library; nothing to do with Extrovert.
-    if( opts.physics.enabled ) {
-      Physijs.scripts.worker = opts.physics.physijs.worker;
-      Physijs.scripts.ammo = opts.physics.physijs.ammo;
+    if( _opts.physics.enabled ) {
+      Physijs.scripts.worker = _opts.physics.physijs.worker;
+      Physijs.scripts.ammo = _opts.physics.physijs.ammo;
     }
 
     // Preload rasterizers
@@ -187,7 +187,7 @@ var extro = (function (window, THREE) {
     };
 
     // Return the combined, ultrafied options object.
-    return opts;
+    return _opts;
   }
 
 
@@ -238,7 +238,7 @@ var extro = (function (window, THREE) {
   Generate the "world".
   @method initWorld
   */
-  function initWorld( options, eng ) {
+  function initWorld( opts, eng ) {
 
     // TODO: CORS stuff.
     //THREE.ImageUtils.crossOrigin = '*';
@@ -246,16 +246,16 @@ var extro = (function (window, THREE) {
 
     // Start off by creating the scene object. Is this part of creating the
     // 'world'? No.
-    extro.createScene( options );
+    extro.createScene( opts );
 
     // Set up the camera -- also not part of the 'world'.
-    var ico = options.init_cam_opts ? _utils.extend(true, {}, options.camera, options.init_cam_opts ) : options.camera;
+    var ico = opts.init_cam_opts ? _utils.extend(true, {}, opts.camera, opts.init_cam_opts ) : opts.camera;
     extro.createCamera( ico );
 
     // Create an invisible plane for drag and drop
     // TODO: Only create this if drag-drop controls are enabled
     // This should be up to the XxxxxControls object.
-    if( options.controls.allow_drag ) {
+    if( opts.controls.allow_drag ) {
       eng.drag_plane = extro.createObject( {
         type: 'plane',
         dims: [2000,2000,8],
@@ -266,40 +266,42 @@ var extro = (function (window, THREE) {
     }
 
     // Create any predefined scene objects. These are objects added to the
-    // scene via JSON options etc.
-    createScenePrimitives( eng.scene, options );
+    // scene via JSON opts etc.
+    createScenePrimitives( eng.scene, opts );
 
     // We have to do an explicit update here because auto updates won't happen
-    // until the scene starts rendering, which it ain't, yet.
+    // until the scene starts rendering, which it ain't, yet. TODO: still necessary?
     eng.scene.updateMatrix();
 
     // -------------------------------------------------------------------------
-    // Examine the SOURCE data
+    // Transform
     // -------------------------------------------------------------------------
+    
+    // Massage the transformations.
+    var tforms = (opts.transform || opts.transforms) || // Either spelling
+      [{ type: 'extrude', src: 'img', container: 'body'}]; // Default if missing
+    tforms = ( !_utils.isArray( tforms ) ) ? [ tforms ] : tforms; // Force array
 
-    // No options.objects specified? Default.
-    // if( !options.objects || options.objects.length === 0 ) {
-      // options.objects = [{ type: 'wall', src: 'img' }];
-    // }
-
-    for( var idx = 0; idx < options.objects.length; idx++ ) {
-      var obj = options.objects[ idx ];
-      if( !obj ) continue;
-      var src = obj.src || '*';
-      var cont = obj.container || (options.src && options.src.container) || document.body;
+    for( var idx = 0; idx < tforms.length; idx++ ) {
+      
+      // Get the elements to be transformed
+      var trans = tforms[ idx ];
+      if( !trans ) continue;
+      var src = trans.src || '*';
+      var cont = trans.container || (opts.src && opts.src.container) || opts.container || document.body;
       if( typeof cont === 'string' ) {
         cont = _utils.$( cont );
         if(cont.length !== undefined) cont = cont[0];
       }
-
       var elems = ( typeof src === 'string' ) ?
         cont.querySelectorAll( src ) : src;
 
-      var gen = initGenerator( obj );
-      gen.generate( obj, elems );
+      // Create a generator and run the transform
+      var gen = initGenerator( trans );
+      gen.generate( trans, elems );
 
-      // options.creating && options.creating( elem, mesh );
-      // options.created && options.created( elem, mesh );
+      // opts.creating && opts.creating( elem, mesh );
+      // opts.created && opts.created( elem, mesh );
     }
 
     // -------------------------------------------------------------------------
@@ -308,7 +310,7 @@ var extro = (function (window, THREE) {
     // after everything's been created.
     // -------------------------------------------------------------------------
 
-    var oc = options.camera;
+    var oc = opts.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
     oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
 
@@ -317,7 +319,7 @@ var extro = (function (window, THREE) {
     // We do this after final cam positioning because the default light position,
     // if the user doesn't specify one, is wherever the camera is located.
     // -------------------------------------------------------------------------
-    extro.fiatLux( options.lights );
+    extro.fiatLux( opts.lights );
   }
 
 
@@ -341,9 +343,9 @@ var extro = (function (window, THREE) {
   */
   function initRenderer( opts ) {
 
-    if( opts.src && opts.src.container ) {
-      var cont = (typeof opts.src.container === 'string') ?
-        _utils.$( opts.src.container ): opts.src.container;
+    if( opts.target && opts.target.container ) {
+      var cont = (typeof opts.target.container === 'string') ?
+        _utils.$( opts.target.container ): opts.target.container;
       if( cont.length !== undefined )
         cont = cont[0];
       var rect = cont.getBoundingClientRect();
@@ -489,7 +491,7 @@ var extro = (function (window, THREE) {
   my.createMaterial = function( desc ) {
 
     var mat = new THREE.MeshLambertMaterial({ color: desc.color || 0xFFFFFF, map: desc.tex || null });
-    return (opts.physics.enabled && !desc.noPhysics) ?
+    return (_opts.physics.enabled && !desc.noPhysics) ?
       Physijs.createMaterial( mat, desc.friction, desc.restitution )
       : mat;
 
@@ -561,7 +563,7 @@ var extro = (function (window, THREE) {
   @param mass The mass of the object, if physics is enabled.
   */
   function createMesh( geo, mesh_type, mat, force_simple, mass ) {
-    return opts.physics.enabled && !force_simple ?
+    return _opts.physics.enabled && !force_simple ?
       new Physijs[ mesh_type + 'Mesh' ]( geo, mat, mass ) : new THREE.Mesh(geo, mat);
   }
 
@@ -591,7 +593,7 @@ var extro = (function (window, THREE) {
     eng.renderer.domElement.addEventListener( 'mousemove', mouse_move, false );
     /*eng.renderer.domElement.*/document.addEventListener( 'keydown', onKeyDown, false );
     /*eng.renderer.domElement.*/document.addEventListener( 'keyup', onKeyUp, false );
-    window.addEventListener( 'mousewheel', onMouseWheel, false );
+    eng.renderer.domElement.addEventListener( 'wheel', onMouseWheel, false );
     window.addEventListener( 'resize', window_resize, false );
   }
 
@@ -638,7 +640,7 @@ var extro = (function (window, THREE) {
         window.setTimeout(callback, 1000 / 60);
       };
 
-    opts.onload && opts.onload(); // Fire the 'onload' event
+    _opts.onload && _opts.onload(); // Fire the 'onload' event
     animate();
   }
 
@@ -673,11 +675,11 @@ var extro = (function (window, THREE) {
   function render() {
 
     // Update physics and controls
-    opts.physics.enabled && update();
+    _opts.physics.enabled && update();
     eng.controls && eng.controls.enabled && eng.controls.update( eng.clock.getDelta() );
 
     // Housekeeping for Phyijs's __dirtyPosition flag. Refactor this.
-    if( !opts.move_with_physics ) {
+    if( !_opts.move_with_physics ) {
        // Maintain the __dirtyPosition flag while dragging and after touching
       if( eng.selected !== null ) {
         eng.selected.__dirtyPosition = true;
@@ -789,9 +791,9 @@ var extro = (function (window, THREE) {
   @method applyForce
   */
   function applyForce( thing ) {
-    if( opts.physics.enabled ) {
+    if( _opts.physics.enabled ) {
       var rotation_matrix = new THREE.Matrix4().extractRotation( thing.object.matrix );
-      var effect = thing.face.normal.clone().negate().multiplyScalar( opts.click_force ).applyMatrix4( rotation_matrix );
+      var effect = thing.face.normal.clone().negate().multiplyScalar( _opts.click_force ).applyMatrix4( rotation_matrix );
       var force_offset = thing.point.clone().sub( thing.object.position );
       thing.object.applyImpulse( effect, force_offset );
     }
@@ -816,7 +818,7 @@ var extro = (function (window, THREE) {
 
     // Set up our ray depending on whether the camera is the child of a
     // transformed object or not.
-    if ( !opts.avatar ) {
+    if ( !_opts.avatar ) {
       eng.raycaster.setFromCamera( eng.mouse, eng.camera );
     }
     else {
@@ -835,7 +837,7 @@ var extro = (function (window, THREE) {
         eng.selected.has_been_touched = true;
         eng.drag_plane.position.copy( eng.selected.position );
         eng.offset.copy( intersects[ 0 ].point ).sub( eng.selected.position );
-        if( opts.physics.enabled ) {
+        if( _opts.physics.enabled ) {
           eng.selected.setAngularFactor( _utils.VZERO );
           eng.selected.setLinearFactor( _utils.VZERO );
           eng.selected.setAngularVelocity( _utils.VZERO );
@@ -849,7 +851,7 @@ var extro = (function (window, THREE) {
       else {
          applyForce( intersects[0] ); // [4]
       }
-      opts.clicked && opts.clicked( e, eng.selected );
+      _opts.clicked && _opts.clicked( e, eng.selected );
     }
 
     if( eng.controls && eng.controls.enabled ) {
@@ -876,7 +878,7 @@ var extro = (function (window, THREE) {
     if ( eng.selected ) {
       eng.raycaster.setFromCamera( eng.mouse, eng.camera );
       var intersects = eng.raycaster.intersectObject( eng.drag_plane );
-      if( opts.move_with_physics ) {
+      if( _opts.move_with_physics ) {
         var lin_vel = intersects[ 0 ].point.sub( eng.selected.position );
         lin_vel.z = 0;
         eng.selected.setLinearVelocity( lin_vel );
@@ -900,8 +902,8 @@ var extro = (function (window, THREE) {
       return;
     }
     e.preventDefault();
-    if( eng.selected && opts.physics.enabled ) {
-      if( opts.physics.enabled ) {
+    if( eng.selected && _opts.physics.enabled ) {
+      if( _opts.physics.enabled ) {
         var oneVec = new THREE.Vector3( 1, 1, 1 );
         eng.selected.setAngularFactor( oneVec );
         eng.selected.setLinearFactor( oneVec );
@@ -996,7 +998,7 @@ var extro = (function (window, THREE) {
   my.createPlacementPlane = function( pos, dims ) {
     dims = dims || [200000,200000,1];
     var geo = new THREE.BoxGeometry(dims[0], dims[1], dims[2]);
-    eng.placement_plane = opts.physics.enabled ?
+    eng.placement_plane = _opts.physics.enabled ?
       new Physijs.BoxMesh( geo, new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } ), 0 ) :
       new THREE.Mesh( geo, new THREE.MeshBasicMaterial( { color: 0xAB2323, opacity: 1.0, transparent: false } ));
     eng.placement_plane.visible = false;
