@@ -60,7 +60,7 @@ module.exports = function(grunt) {
         {
            expand: true,
            flatten: true,
-           src: ['bower_components/physijs/physijs_worker.js'],
+           src: ['bower_components/physijs/physijs_worker.js', 'bower_components/ammo.js/builds/ammo.js'],
            dest: 'dist'
         },
         ]
