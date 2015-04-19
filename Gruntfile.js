@@ -41,7 +41,7 @@ module.exports = function(grunt) {
       },
       dist: {
         sources: {
-          extro: ['src/extrovert.js', 'src/**/*.js', '!src/generators/gen-sample.js'],
+          extro: ['src/extrovert.js', 'src/**/*.js'],
           deps: ['bower_components/threejs/build/three.js', 'bower_components/physijs/physi.js'],
           merged: null /* filled at runtime */
         },
