@@ -28,17 +28,22 @@ See the Development Roadmap for information on the future of Extrovert.
 
 1. Download the Extrovert sources manually or via Bower or NPM:
 
-        bower install extrovert
+    ```bash
+    bower install extrovert
+    ```
 
 2. Link to the sources in your HTML.
 
-        <script src="/path/to/extrovert.min.js" type="text/javascript">
+    ```html
+    <script src="/path/to/extrovert.min.js" type="text/javascript"></script>
+    ```
 
 3. Initialize the Extrovert library:
 
-    ````javascript
-   extro.init({ /* options */ });
-   ````
+    ```javascript
+    extro.init({ /* options */ });
+    ```
+
 4. Voila. Insta-3D.
 
 ## Generators ##
@@ -54,14 +59,14 @@ Extrovert.js is built around the concept of generators. A *generator* is a piece
 
 You can mix and match multiple generators within a single Extrovert scene. For example, here we're using the `extrude` generator to extrude any on-page images, and a `box` generator to turn a background div into a flat plane.
 
-````javascript
+```javascript
 extro.init({
   objects: [
     { type: 'extrude' src: 'img' },
     { type: 'box' src: '#background' }
   ]
 });
-````
+```
 
 If a particular generator doesn't have the functionality you need, you can wire together multiple generators, create your own new generators, or modify the behavior of any existing generator.
 
