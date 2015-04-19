@@ -1,10 +1,22 @@
 # Extrovert.js #
 
-3Dify your websites, blogs, RSS feeds, and image galleries.
+*Because JavaScript be all like, yo, where my 3D at??*
 
->Because websites, blogs, RSS feed, and image galleries be all like, yo, where my 3D at?
+**Extrovert.js transforms arbitrary source data into textured 3D geometry** with support for physics, animations, cross-browser rendering, mouse and keyboard controls, and anything else we decide to put in it. It's intended for 3Dification of anything from on-page HTML to JSON responses fetched over AJAX to custom data formats specific to you or your project.
 
-Extrovert.js is a prototype JavaScript library that supports on-the-fly generation of 3D geometry from HTML pages or other arbitrary markup (RSS, JSON, xkcd comics, etc.).
+## Features ##
+
+- **3Dify your HTML markup** using Extrovert's built-in extrusion generator.
+- **3Dify arbitrary data** using Extrovert's system of customizable generators and rasterizers. XML, JSON, RSS, or any other format.
+- **Create virtually any 3D scene** using our built-in generators&mdash;or build your own.
+- **Physics support** with collisions, gravity, constraints, etc.
+- **Mouse and keyboard controls** mappable to translation or rotation around the major axes.
+- **Perspective and orthographic camera** support.
+- **Cross-browser compatible** with Chrome, Firefox, Internet Explorer, Safari, and other WebGL-capable browsers.
+- **Multiple loader formats** including AMD, CommonJS, and browser-global.
+- **Annotated sources** for custom Extrovert development.
+- **Automated tests** through QUnit and Mocha.
+- **No jQuery dependency**. Extrovert is jQuery-compatible, but doesn't require jQuery.
 
 ## Usage ##
 
@@ -18,39 +30,10 @@ Extrovert.js is a prototype JavaScript library that supports on-the-fly generati
 
 3. Initialize the Extrovert library:
 
-````javascript
-var opts = {
-   generator: {
-      name: 'gallery',
-      lookat: [0,0,3200]
-   },
-   container: 'section',
-   src: { selector: 'img' },
-   use_bin_packing: true,
-   physics: {
-      physijs: {
-         worker: '../js/physijs_worker.js',
-         ammo: 'ammo.js'
-      }
-   },
-   click_force: 60000
-};
+    ````javascript
+   extro.init({ /* options */ });
+   ````
+4. Voila. Insta-3D.
 
-EXTROVERT.init( opts );
-````
 
-## Development Roadmap ##
 
-Extrovert.js is in active development. Stuff we're currently focusing on:
-
-- Remove hard jQuery dependency.
-- Remove hard Three.js dependency.
-- Better IE / Safari and Linux support.
-- jQuery plugin version
-- More generators!
-- More rasterizers!
-- More controllers!
-- Implement [bin packing](http://codeincomplete.com/posts/2011/5/7/bin_packing/) in the engine.
-- HTML-to-SVG texture rasterization.
-- Additional physics libraries.
-- Additional samples and docs.
