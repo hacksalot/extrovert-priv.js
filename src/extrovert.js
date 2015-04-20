@@ -59,7 +59,9 @@ var extro = (function (window, THREE) {
     clicked: null,
     lights: [
       { type: 'ambient', color: 0xffffff }
-    ]
+    ],
+    target: { container: 'body', action: 'replace' },
+    transform: { type: 'extrude', src: 'img', container: 'body' }
   };
 
 
@@ -120,16 +122,16 @@ var extro = (function (window, THREE) {
   */
   my.init = function( options ) {
 
-    // Set up our alias to the utility library.
-    _utils = extro.Utils;
+    options = options || { };
 
     // Quick exit if the user requests a specific renderer and the browser
     // doesn't support it or if neither renderer type is supported.
+    _utils = extro.Utils;
     eng.supportsWebGL = _utils.detectWebGL();
     eng.supportsCanvas = _utils.detectCanvas();
-    if(( !eng.supportsWebGL && !eng.supportsCanvas ) ||
-       ( options.renderer === 'WebGL' && !eng.supportsWebGL ) ||
-       ( options.renderer === 'Canvas' && !eng.supportsCanvas ))
+    if( ( !eng.supportsWebGL && !eng.supportsCanvas ) ||
+        ( options.renderer === 'WebGL' && !eng.supportsWebGL ) ||
+        ( options.renderer === 'Canvas' && !eng.supportsCanvas ))
       return false;
 
     // Remove some troublesome stuff from the shader on IE. Needs work.
@@ -276,14 +278,14 @@ var extro = (function (window, THREE) {
     // -------------------------------------------------------------------------
     // Transform
     // -------------------------------------------------------------------------
-    
+
     // Massage the transformations.
     var tforms = (opts.transform || opts.transforms) || // Either spelling
       [{ type: 'extrude', src: 'img', container: 'body'}]; // Default if missing
     tforms = ( !_utils.isArray( tforms ) ) ? [ tforms ] : tforms; // Force array
 
     for( var idx = 0; idx < tforms.length; idx++ ) {
-      
+
       // Get the elements to be transformed
       var trans = tforms[ idx ];
       if( !trans ) continue;
@@ -385,9 +387,16 @@ var extro = (function (window, THREE) {
       var target_container = (typeof opts.target.container === 'string') ?
         _utils.$( opts.target.container ) : opts.target.container;
       if( target_container.length !== undefined ) target_container = target_container[0];
-      if( action === 'append' )
+
+      if( action === 'replace' ) {
+        while (target_container.firstChild) { //http://stackoverflow.com/a/3955238
+          target_container.removeChild(target_container.firstChild);
+        }
+      }
+
+      if ( action !== 'replaceWith' ) {
         target_container.appendChild( eng.renderer.domElement );
-      else if( action === 'replace' || action === 'replaceWith' ) {
+      } else {
         target_container.parentNode.insertBefore( eng.renderer.domElement, target_container );
         target_container.parentNode.removeChild( target_container );
       }
