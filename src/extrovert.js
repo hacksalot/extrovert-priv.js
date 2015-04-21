@@ -61,7 +61,7 @@ var extro = (function (window, THREE) {
       { type: 'ambient', color: 0xffffff }
     ],
     target: { container: 'body', action: 'replace' },
-    transform: { type: 'extrude', src: 'img', container: 'body' }
+    //transform: { type: 'extrude', src: 'img', container: 'body' }
   };
 
 
@@ -112,6 +112,11 @@ var extro = (function (window, THREE) {
   var _utils = null;
 
 
+  var _log = null;
+
+  var LOGGING = true;
+
+
 
   /**
   Initialize the Extrovert library and get some 3D up in that grill. This is the
@@ -122,11 +127,14 @@ var extro = (function (window, THREE) {
   */
   my.init = function( options ) {
 
+    _utils = extro.Utils;
+    _log = eng.log = _utils.log;
     options = options || { };
+    LOGGING && _log.msg('Extrovert %s', my.version);
+    LOGGING && _log.msg('User options: %o', options );
 
     // Quick exit if the user requests a specific renderer and the browser
     // doesn't support it or if neither renderer type is supported.
-    _utils = extro.Utils;
     eng.supportsWebGL = _utils.detectWebGL();
     eng.supportsCanvas = _utils.detectCanvas();
     if( ( !eng.supportsWebGL && !eng.supportsCanvas ) ||
@@ -164,12 +172,18 @@ var extro = (function (window, THREE) {
 
 
   /**
+  Official library version.
+  */
+  my.version = "0.1.0";
+
+
+
+  /**
   Initialize engine options. Merge user, generator, and engine options into a
   new combined options object and carry across other important settings.
   @method initOptions
   */
   function initOptions( user_opts ) {
-    eng.log = _utils.log;
 
     // Merge USER options onto DEFAULT options without modifying either.
     _opts = eng.opts = _utils.extend(true, { }, defaults, user_opts );
@@ -281,7 +295,7 @@ var extro = (function (window, THREE) {
 
     // Massage the transformations.
     var tforms = (opts.transform || opts.transforms) || // Either spelling
-      [{ type: 'extrude', src: 'img', container: 'body'}]; // Default if missing
+      [{ type: 'extrude', src: 'img'/*, container: 'body'*/}]; // Default if missing
     tforms = ( !_utils.isArray( tforms ) ) ? [ tforms ] : tforms; // Force array
 
     for( var idx = 0; idx < tforms.length; idx++ ) {
@@ -460,6 +474,7 @@ var extro = (function (window, THREE) {
     cam.updateMatrix(); // TODO: Are any of these calls still necessary?
     cam.updateMatrixWorld();
     cam.updateProjectionMatrix();
+    LOGGING && _log.msg('Created camera at %o: %o', cam.position, cam);
     return cam;
   };
 
@@ -524,6 +539,7 @@ var extro = (function (window, THREE) {
   @method createObject
   */
   my.createObject = function( desc ) {
+    LOGGING && _log.msg('Creating object: %o', desc);
     // Set up vars with reasonable defaults for color, opacity, transparency.
     var mesh = null, geo = null, mat = null;
     var rgb = desc.color || 0xFFFFFF;
@@ -1016,6 +1032,7 @@ var extro = (function (window, THREE) {
     eng.scene.updateMatrix();
     eng.placement_plane.updateMatrix();
     eng.placement_plane.updateMatrixWorld();
+    LOGGING && _log.msg('Created placement plane at [%o]: %o', eng.placement_plane.position, eng.placement_plane);
     return eng.placement_plane;
   };
 
