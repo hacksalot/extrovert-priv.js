@@ -466,6 +466,14 @@ var extro = (function (window, THREE) {
   @method createCamera
   */
   my.createCamera = function( copts ) {
+
+    if( copts.type === 'orthographic' ) {
+      copts.left = copts.left || eng.width / - 2;
+      copts.right = copts.right || eng.width / 2;
+      copts.top = copts.top || eng.height / 2;
+      copts.bottom = copts.bottom || eng.height / - 2;
+    }
+
     var cam = copts.type != 'orthographic' ?
       new THREE.PerspectiveCamera( copts.fov, eng.width / eng.height, copts.near, copts.far ) :
       new THREE.OrthographicCamera( copts.left, copts.right, copts.top, copts.bottom, copts.near, copts.far );
@@ -789,8 +797,9 @@ var extro = (function (window, THREE) {
   @method calcPosition
   */
   my.calcPosition = function( posX, posY, placement_plane ) {
-    eng.raycaster.setFromCamera( extro.toNDC( posX, posY, 0.5, new THREE.Vector3() ), eng.camera );
-    var intersects = eng.raycaster.intersectObject( placement_plane || eng.placement_plane );
+    eng.raycaster.setFromCamera( extro.toNDC( posX, posY, 0.5, new THREE.Vector2() ), eng.camera );
+    var p = placement_plane || eng.placement_plane;
+    var intersects = eng.raycaster.intersectObject( p );
     return (intersects.length > 0) ? intersects[0].point : null;
   };
 
@@ -983,7 +992,7 @@ var extro = (function (window, THREE) {
   Retrieve the position, in 3D space, of a recruited HTML element.
   @method getPosition
   */
-  my.getPosition = function( val, container, eng ) {
+  my.getPosition = function( val, container, eng, zDepth ) {
 
     // Safely get the position of the HTML element [1] relative to its parent
     var src_cont = (typeof container === 'string') ?
@@ -998,12 +1007,12 @@ var extro = (function (window, THREE) {
     var topLeft = extro.calcPosition( pos.left, pos.top, eng.placement_plane );
     var botRight = extro.calcPosition( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
 
-    // Calculate WORLD dimensions of the lement.
+    // Calculate dimensions of the element (in world units)
     var block_width = Math.abs( botRight.x - topLeft.x );
     var block_height = Math.abs( topLeft.y - botRight.y );
-    var block_depth = Math.abs( topLeft.z - botRight.z );
+    var block_depth = zDepth || Math.abs( topLeft.z - botRight.z ) || 1.0;
 
-    // Offset by the half-height/width so the corners line up and get out.
+    // Offset by the half-height/width so the corners line up
     return {
       pos:
         [topLeft.x + (block_width / 2),
