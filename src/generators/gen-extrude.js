@@ -18,7 +18,8 @@ The built-in extrusion generator for Extrovert.js.
       options: {
         name: 'extrude',
         material: { color: 0xFF8844, friction: 0.2, restitution: 1.0 },
-        block: { depth: 'height' }
+        block: { depth: 1 },
+        map: 'fit'
       },
 
       init: function( genOpts, eng ) {
@@ -40,16 +41,7 @@ The built-in extrusion generator for Extrovert.js.
 
       transform: function( obj ) {
         var cont = _noun.container || (_eng.opts.src && _eng.opts.src.container) || document.body;
-        var posInfo = extro.getPosition( obj, cont, _eng );
-        if(!_opts.block.depth)
-          posInfo.depth = posInfo.height;
-        else if( _opts.block.depth === 'height' )
-          posInfo.depth = posInfo.height;
-        else if (_opts.block.depth === 'width' )
-          posInfo.depth = posInfo.width;
-        else if (_opts.block.depth > 0)
-          posInfo.depth = _opts.block.depth;
-        return posInfo;
+        return extro.getPosition( obj, cont, _opts.block.depth );
       },
 
       rasterize: function( obj ) {
@@ -59,21 +51,26 @@ The built-in extrusion generator for Extrovert.js.
             new extro['paint_' + _noun.rasterizer]() : _noun.rasterizer;
         }
         rast = rast || extro.getRasterizer( obj );
-
         var tileTexture = rast.paint(( _noun.adapt && _noun.adapt(obj) ) || obj );
-        var material = extro.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
+
+        var material = extro.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 0.0 });
+
+        if( !_opts.map || _opts.map === 'all' ) {
+          return material;
+        }
+
         var matArray;
-        if( !_opts.block.depth || _opts.block.depth === 'height' )
-          matArray = [ _side_mat, _side_mat, material, material, material, material ];
-        else if (_opts.block.depth === 'width' )
-          matArray = [ material, material, _side_mat, _side_mat, material, material ];
-        else
-          matArray = [ _side_mat, _side_mat, _side_mat, _side_mat, material, material ];
+        if( _opts.map == 'fit' ) {
+          if( !_opts.block.depth || _opts.block.depth === 'height' )
+            matArray = [ _side_mat, _side_mat, material, material, material, material ];
+          else if (_opts.block.depth === 'width' )
+            matArray = [ material, material, _side_mat, _side_mat, material, material ];
+          else
+            matArray = [ _side_mat, _side_mat, _side_mat, _side_mat, material, material ];
+        }
 
         return extro.createCubeMaterial( matArray );
-      },
-
-
+      }
 
     };
   };

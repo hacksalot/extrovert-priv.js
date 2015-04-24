@@ -989,10 +989,13 @@ var extro = (function (window, THREE) {
 
 
   /**
-  Retrieve the position, in 3D space, of a recruited HTML element.
+  Retrieve 3D position info for a specific HTML DOM element.
   @method getPosition
+  @param val Any DOM element.
+  @param container A DOM element or CSS selector for the container element.
+  @param zDepth The depth of the HTML element in world units.
   */
-  my.getPosition = function( val, container, eng, zDepth ) {
+  my.getPosition = function( val, container, zDepth ) {
 
     // Safely get the position of the HTML element [1] relative to its parent
     var src_cont = (typeof container === 'string') ?
@@ -1006,10 +1009,15 @@ var extro = (function (window, THREE) {
     // WORLD coords, based on where the camera is.
     var topLeft = extro.calcPosition( pos.left, pos.top, eng.placement_plane );
     var botRight = extro.calcPosition( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
-
     // Calculate dimensions of the element (in world units)
     var block_width = Math.abs( botRight.x - topLeft.x );
     var block_height = Math.abs( topLeft.y - botRight.y );
+    
+    if(zDepth === 'width')
+      zDepth = block_width;
+    else if (zDepth === 'height')
+      zDepth = block_height;
+
     var block_depth = zDepth || Math.abs( topLeft.z - botRight.z ) || 1.0;
 
     // Offset by the half-height/width so the corners line up
