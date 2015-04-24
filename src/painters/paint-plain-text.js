@@ -9,6 +9,10 @@ A simple Extrovert HTML rasterizer.
 
 (function (window, THREE, extro) {
 
+  /**
+  A simple plain text rasterizer with support for styled title and body text.
+  @class paint_plain_text
+  */
   extro.paint_plain_text = function () {
     return {
       paint: function( val, opts ) {
@@ -19,12 +23,12 @@ A simple Extrovert HTML rasterizer.
         // Create a canvas element. TODO: Reuse a single canvas.
         var canvas = document.createElement('canvas');
         var context = canvas.getContext('2d');
-        canvas.width = 250;//val.offsetWidth;
-        canvas.height = 100;//val.offsetHeight;
+        canvas.width = opts.width;
+        canvas.height = opts.height;
 
         // Fill the canvas with the background color
         //var bkColor = $val.css('background-color');
-        var bkColor = opts.bkcolor || 'rgb(255,255,255)';
+        var bkColor = opts.bkColor || 'rgb(255,255,255)';
         context.fillStyle = bkColor;
         context.fillRect(0, 0, canvas.width, canvas.height);
 

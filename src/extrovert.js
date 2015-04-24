@@ -380,6 +380,8 @@ var extro = (function (window, THREE) {
     }
     var rendOpts = rendName === 'Canvas' ? undefined : { antialias: true };
 
+    LOGGING && _log.msg("Creating '%s' renderer with size %d x %d.", rendName, eng.width, eng.height);
+
     eng.renderer = new THREE[rendName + 'Renderer']( rendOpts );
     eng.renderer.setPixelRatio( window.devicePixelRatio );
     eng.renderer.setSize( eng.width, eng.height );

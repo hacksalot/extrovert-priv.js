@@ -14,12 +14,6 @@ A simple Extrovert HTML rasterizer.
       paint: function( val, opts ) {
         var _utils = extro.Utils;
 
-        // Get the element content
-        //var title_elem = val.querySelector( opts.src.title );
-        //var title = title_elem.innerHTML;//.text();//.trim();
-        //var content_elem = val.querySelector( opts.src.content );
-        //var content = content_elem.innerHTML;//text();//.trim();
-
         // Create a canvas element. TODO: Reuse a single canvas.
         var canvas = document.createElement('canvas');
         var context = canvas.getContext('2d');
@@ -27,7 +21,6 @@ A simple Extrovert HTML rasterizer.
         canvas.height = val.offsetHeight;
 
         // Fill the canvas with the background color
-        //var bkColor = $val.css('background-color');
         var bkColor = _utils.getComputedStyle(val, 'background-color');
         if(bkColor === 'rgba(0, 0, 0, 0)')
           bkColor = 'rgb(0,0,0)';
@@ -37,10 +30,7 @@ A simple Extrovert HTML rasterizer.
         // Create a texture from the canvas
         var texture = new THREE.Texture( canvas );
         texture.needsUpdate = true;
-        return {
-          tex: texture,
-          mat: new THREE.MeshLambertMaterial( { map: texture } )
-        };
+        return texture;
       }
     };
   };

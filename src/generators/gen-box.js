@@ -53,7 +53,7 @@ The built-in extrusion generator for Extrovert.js.
         }
         
         var mat_info = extro.createCubeMaterial( sides );
-        extro.createObject({ type: 'box', pos: [0,0,0], dims: [250,250,250], mat: mat_info, mass: 1000 });
+        extro.createObject({ type: 'box', pos: [0,0,0], dims: [_opts.block.width,_opts.block.height,_opts.block.depth], mat: mat_info, mass: 1000 });
       },
 
       rasterize: function( obj ) {
@@ -64,7 +64,7 @@ The built-in extrusion generator for Extrovert.js.
         }
         rast = rast || extro.getRasterizer( obj );
 
-        var tileTexture = rast.paint(( _noun.adapt && _noun.adapt(obj) ) || obj );
+        var tileTexture = rast.paint(( _noun.adapt && _noun.adapt(obj) ) || obj, { width: _opts.block.width, height: _opts.block.height } );
         var material = extro.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
         return material;
       },

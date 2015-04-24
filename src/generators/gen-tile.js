@@ -52,7 +52,7 @@ The built-in tile generator for Extrovert.js.
           else {
             rast = extro.getRasterizer( obj );
           }
-          var tileTexture = rast.paint(( noun.adapt && noun.adapt(obj) ) || obj );
+          var tileTexture = rast.paint(( noun.adapt && noun.adapt(obj) ) || obj, { width: _opts.dims[0], height: _opts.dims[1] } );
           var tileMat = extro.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
           extro.createObject({ type: 'box', pos: tilePos, dims: this.options.dims, mat: tileMat, mass: 1000 });
         }
