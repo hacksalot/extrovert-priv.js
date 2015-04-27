@@ -6,39 +6,60 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 @version 1.0
 */
 
-// https://github.com/umdjs/umd/blob/master/returnExportsGlobal.js
-// Uses Node, AMD or browser globals to create a module. This example creates
-// a global even when AMD is used. This is useful if you have some scripts
-// that are loaded by an AMD loader, but they still want access to globals.
-// If you do not need to export a global for the AMD case,
-// see returnExports.js.
 
-// If you want something that will work in other stricter CommonJS environments,
-// or if you need to create a circular dependency, see commonJsStrictGlobal.js
-
-// Defines a module "extrovert" that depends another module called
-// "b". Note that the name of the module is implied by the file name. It is
-// best if the file name and the exported global have matching names.
-
-// If the 'b' module also uses this type of boilerplate, then
-// in the browser, it will create a global .b that is used below.
+// Define the Extrovert module. Support AMD, CommonJS, and global formats.
+//
+//     (function (root, factory) {
+//       if (typeof define === 'function' && define.amd) {
+//         define(['b'], function (b) {
+//           return (root.extrovert = factory(b));
+//         });
+//       } else if (typeof exports === 'object') {
+//         module.exports = factory(require('b'));
+//       } else {
+//         root.extrovert = factory(root.b);
+//       }
+//     }(this, function (b) {
+//       var my = { };
+//       /* Extrovert library code */
+//       return my;
+//     }));
+//
+// This module pattern is based on the ["returnExportsGlobal"][2] flavor of
+// [UMD][1], which creates a global even when AMD is used. See also the
+// ["returnExports"][3] and ["commonJsStrictGlobal"][4] patterns.
+//
+// Note: The name of *this* module, "extrovert" is inferred from the file name.
+// The exported global and the file should have matching names.
+//
+// [1]: https://github.com/umdjs/umd
+// [2]: https://github.com/umdjs/umd/blob/master/returnExportsGlobal.js
+// [3]: https://github.com/umdjs/umd/blob/master/returnExports.js
+// [4]: https://github.com/umdjs/umd/blob/master/commonJsStrictGlobal.js
 
 (function (root, factory) {
+
   if (typeof define === 'function' && define.amd) {
-    // AMD. Register as an anonymous module.
+
+    // AMD. Register as an anonymous module with a dependency on 'b'.
     define(['b'], function (b) {
         return (root.extrovert = factory(b));
     });
+
   } else if (typeof exports === 'object') {
-    // Node. Does not work with strict CommonJS, but
-    // only CommonJS-like enviroments that support module.exports,
-    // like Node.
+
+    // CommonJS. Support basic CJS enviroments w/ module.exports.
     module.exports = factory(require('b'));
+
   } else {
-    // Browser globals
+
+    // Global. Expose our one-and-only module object.
     root.extrovert = factory(root.b);
+
   }
+
 }(this, function (b) {
+
   //use b in some fashion.
 
   // Just return a value to define the module export.
