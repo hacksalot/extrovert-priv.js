@@ -7,7 +7,8 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 */
 
 
-// Define the Extrovert module. Support AMD, CommonJS, and global formats.
+// Define the Extrovert module. Support AMD, CommonJS, and global formats using
+// this pattern:
 //
 //     (function (root, factory) {
 //       if (typeof define === 'function' && define.amd) {
@@ -21,7 +22,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 //       }
 //     }(this, function (b) {
 //       var my = { };
-//       /* Extrovert library code */
+//       /* Extrovert library code here */
 //       return my;
 //     }));
 //
@@ -53,24 +54,19 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 
   } else {
 
-    // Global. Expose our one-and-only module object.
+    // Global. Expose our module object.
     root.extrovert = factory(root.b);
 
   }
 
 }(this, function (b) {
 
-  //use b in some fashion.
 
-  // Just return a value to define the module export.
-  // This example returns an object, but the module
-  // can return a function as the exported value.
-  //return {};
 
   /**
-  Explicit module object.
+  Define the module object and set the version number.
   */
-  var my = {};
+  var my = { version: '0.1.0' };
 
 
 
@@ -111,9 +107,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     clicked: null,
     lights: [
       { type: 'ambient', color: 0xffffff }
-    ],
-    target: { container: 'body', action: 'replace' },
-    //transform: { type: 'extrude', src: 'img', container: 'body' }
+    ]
   };
 
 
@@ -121,7 +115,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   /**
   Internal engine settings, not to be confused with options. Represents the run-
   time state of the Extrovert engine. We group them into an 'eng' object for no
-  reason other than to avoid having a lot of variables scattered about.
+  reason other than to avoid having a lot of private variables scattered about.
   */
   var eng = {
     camera: null,
@@ -142,7 +136,8 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     generator: null,
     clock: new THREE.Clock(),
     supportsWebGL: false,
-    supportsCanvas: false
+    supportsCanvas: false,
+    target: 'body'
   };
 
 
@@ -163,8 +158,18 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   var _utils = null;
 
 
+
+  /**
+  An alias to our logging facilities.
+  */
   var _log = null;
 
+
+
+  /**
+  A global flag that controls whether log statements are executed, ignored, or
+  stripped from the source output.
+  */
   var LOGGING = true;
 
 
@@ -176,7 +181,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   @method init
   @param options Options specified by the user.
   */
-  my.init = function( options ) {
+  my.init = function( target, options ) {
 
     _utils = extrovert.Utils;
     _log = eng.log = _utils.log;
@@ -204,7 +209,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     }
 
     // Initialize all the things
-    initOptions( options );
+    initOptions( target, options );
     initRenderer( _opts );
     initWorld( _opts, eng );
     initCanvas( _opts );
@@ -223,18 +228,13 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 
 
   /**
-  Official library version.
-  */
-  my.version = "0.1.0";
-
-
-
-  /**
   Initialize engine options. Merge user, generator, and engine options into a
   new combined options object and carry across other important settings.
   @method initOptions
   */
-  function initOptions( user_opts ) {
+  function initOptions( target, user_opts ) {
+
+    eng.target = target;
 
     // Merge USER options onto DEFAULT options without modifying either.
     _opts = eng.opts = _utils.extend(true, { }, defaults, user_opts );
@@ -410,9 +410,9 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   */
   function initRenderer( opts ) {
 
-    if( opts.target && opts.target.container ) {
-      var cont = (typeof opts.target.container === 'string') ?
-        _utils.$( opts.target.container ): opts.target.container;
+    if( eng.target ) {
+      var cont = (typeof eng.target === 'string') ?
+        _utils.$( eng.target ): eng.target;
       if( cont.length !== undefined )
         cont = cont[0];
       var rect = cont.getBoundingClientRect();
@@ -449,10 +449,10 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   @method initCanvas
   */
   function initCanvas( opts ) {
-    if( opts.target && opts.target.container ) {
-      var action = opts.target.action || 'append';
-      var target_container = (typeof opts.target.container === 'string') ?
-        _utils.$( opts.target.container ) : opts.target.container;
+    if( eng.target ) {
+      var action = opts.action || 'append';
+      var target_container = (typeof eng.target === 'string') ?
+        _utils.$( eng.target ) : eng.target;
       if( target_container.length !== undefined ) target_container = target_container[0];
 
       if( action === 'replace' ) {
