@@ -61,4 +61,4 @@ The built-in tile generator for Extrovert.js.
     };
   };
 
-}(window, extro));
+}(window, extrovert));

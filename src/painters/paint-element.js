@@ -35,4 +35,4 @@ A simple Extrovert HTML rasterizer.
     };
   };
 
-}(window, THREE, extro));
+}(window, THREE, extrovert));

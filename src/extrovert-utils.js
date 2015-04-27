@@ -9,7 +9,7 @@ Utilities for Extrovert.js.
 
 
 
-extro.Utils = (function (window, THREE) {
+extrovert.Utils = (function (window, THREE) {
 
 
 

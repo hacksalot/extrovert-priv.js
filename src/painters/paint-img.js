@@ -18,4 +18,4 @@ A simple Extrovert image rasterizer.
     };
   };
 
-}(window, THREE, extro));
+}(window, THREE, extrovert));

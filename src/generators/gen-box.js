@@ -74,4 +74,4 @@ The built-in extrusion generator for Extrovert.js.
     };
   };
 
-}(window, extro));
+}(window, extrovert));

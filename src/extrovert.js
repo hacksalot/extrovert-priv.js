@@ -6,14 +6,45 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 @version 1.0
 */
 
+// https://github.com/umdjs/umd/blob/master/returnExportsGlobal.js
+// Uses Node, AMD or browser globals to create a module. This example creates
+// a global even when AMD is used. This is useful if you have some scripts
+// that are loaded by an AMD loader, but they still want access to globals.
+// If you do not need to export a global for the AMD case,
+// see returnExports.js.
 
+// If you want something that will work in other stricter CommonJS environments,
+// or if you need to create a circular dependency, see commonJsStrictGlobal.js
 
-/**
-Set up the one-and-only global extro symbol for old-style includes.
-*/
-var extro = (function (window, THREE) {
+// Defines a module "extrovert" that depends another module called
+// "b". Note that the name of the module is implied by the file name. It is
+// best if the file name and the exported global have matching names.
 
+// If the 'b' module also uses this type of boilerplate, then
+// in the browser, it will create a global .b that is used below.
 
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(['b'], function (b) {
+        return (root.extrovert = factory(b));
+    });
+  } else if (typeof exports === 'object') {
+    // Node. Does not work with strict CommonJS, but
+    // only CommonJS-like enviroments that support module.exports,
+    // like Node.
+    module.exports = factory(require('b'));
+  } else {
+    // Browser globals
+    root.extrovert = factory(root.b);
+  }
+}(this, function (b) {
+  //use b in some fashion.
+
+  // Just return a value to define the module export.
+  // This example returns an object, but the module
+  // can return a function as the exported value.
+  //return {};
 
   /**
   Explicit module object.
@@ -126,7 +157,7 @@ var extro = (function (window, THREE) {
   */
   my.init = function( options ) {
 
-    _utils = extro.Utils;
+    _utils = extrovert.Utils;
     _log = eng.log = _utils.log;
     options = options || { };
     LOGGING && _log.msg('Extrovert %s', my.version);
@@ -196,9 +227,9 @@ var extro = (function (window, THREE) {
 
     // Preload rasterizers
     eng.rasterizers = {
-      img: new extro.paint_img(),
-      element: new extro.paint_element(),
-      plain_text: new extro.paint_plain_text()
+      img: new extrovert.paint_img(),
+      element: new extrovert.paint_element(),
+      plain_text: new extrovert.paint_plain_text()
     };
 
     // Return the combined, ultrafied options object.
@@ -217,7 +248,7 @@ var extro = (function (window, THREE) {
       r = eng.rasterizers.img;
     else if (obj.nodeType !== undefined )
       r = eng.rasterizers.elem;
-    else if (extro.Utils.isPlainObject( obj ) )
+    else if (extrovert.Utils.isPlainObject( obj ) )
       r = eng.rasterizers.plain_text;
     return r;
   };
@@ -234,11 +265,11 @@ var extro = (function (window, THREE) {
     // object with a .name field specifying any valid generator, or undefined.
     var gen = null;
     if( !genOptions.type )
-      gen = new extro.extrude();
+      gen = new extrovert.extrude();
     else if (typeof genOptions === 'string')
-      gen = new extro[ genOptions ]();
+      gen = new extrovert[ genOptions ]();
     else
-      gen = new extro[ genOptions.type ]();
+      gen = new extrovert[ genOptions.type ]();
 
     // Initialize the generator with merged options
     var mergedGenOptions = _utils.extend(true, { }, gen.options, genOptions );
@@ -261,17 +292,17 @@ var extro = (function (window, THREE) {
 
     // Start off by creating the scene object. Is this part of creating the
     // 'world'? No.
-    extro.createScene( opts );
+    extrovert.createScene( opts );
 
     // Set up the camera -- also not part of the 'world'.
     var ico = opts.init_cam_opts ? _utils.extend(true, {}, opts.camera, opts.init_cam_opts ) : opts.camera;
-    extro.createCamera( ico );
+    extrovert.createCamera( ico );
 
     // Create an invisible plane for drag and drop
     // TODO: Only create this if drag-drop controls are enabled
     // This should be up to the XxxxxControls object.
     if( opts.controls.allow_drag ) {
-      eng.drag_plane = extro.createObject( {
+      eng.drag_plane = extrovert.createObject( {
         type: 'plane',
         dims: [2000,2000,8],
         visible: false,
@@ -334,7 +365,7 @@ var extro = (function (window, THREE) {
     // We do this after final cam positioning because the default light position,
     // if the user doesn't specify one, is wherever the camera is located.
     // -------------------------------------------------------------------------
-    extro.fiatLux( opts.lights );
+    extrovert.fiatLux( opts.lights );
   }
 
 
@@ -428,7 +459,7 @@ var extro = (function (window, THREE) {
   */
   my.createControls = function( control_opts, camera, domElement ) {
     if( control_opts.type === 'universal' ) {
-      return new extro.UniversalControls( camera, undefined, control_opts );
+      return new extrovert.UniversalControls( camera, undefined, control_opts );
     }
     return null;
   };
@@ -771,7 +802,7 @@ var extro = (function (window, THREE) {
   @method calcPosition
   */
   my.calcPosition = function( posX, posY, placement_plane ) {
-    eng.raycaster.setFromCamera( extro.toNDC( posX, posY, 0.5, new THREE.Vector2() ), eng.camera );
+    eng.raycaster.setFromCamera( extrovert.toNDC( posX, posY, 0.5, new THREE.Vector2() ), eng.camera );
     var p = placement_plane || eng.placement_plane;
     var intersects = eng.raycaster.intersectObject( p );
     return (intersects.length > 0) ? intersects[0].point : null;
@@ -786,7 +817,7 @@ var extro = (function (window, THREE) {
   */
   my.calcPosition2 = function( posX, posY, unused ) {
     var vector = new THREE.Vector3();
-    vector = extro.toNDC( posX, posY, 0.5, vector );
+    vector = extrovert.toNDC( posX, posY, 0.5, vector );
     vector.unproject( eng.camera );
     var dir = vector.sub( eng.camera.position ).normalize();
     var distance = -eng.camera.position.z / dir.z;
@@ -824,7 +855,7 @@ var extro = (function (window, THREE) {
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
 
     // Convert to normalized device coordinates
-    eng.mouse = extro.toNDC( xpos, ypos, 0.5, eng.mouse );
+    eng.mouse = extrovert.toNDC( xpos, ypos, 0.5, eng.mouse );
 
     // Set up our ray depending on whether the camera is the child of a
     // transformed object or not.
@@ -884,7 +915,7 @@ var extro = (function (window, THREE) {
     e.preventDefault();
     var xpos = e.offsetX === undefined ? e.layerX : e.offsetX; //[1]
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
-    eng.mouse = extro.toNDC( xpos, ypos, 0.5, eng.mouse );
+    eng.mouse = extrovert.toNDC( xpos, ypos, 0.5, eng.mouse );
     if ( eng.selected ) {
       eng.raycaster.setFromCamera( eng.mouse, eng.camera );
       var intersects = eng.raycaster.intersectObject( eng.drag_plane );
@@ -981,8 +1012,8 @@ var extro = (function (window, THREE) {
 
     // Get the position of the element's left-top and right-bottom corners in
     // WORLD coords, based on where the camera is.
-    var topLeft = extro.calcPosition( pos.left, pos.top, eng.placement_plane );
-    var botRight = extro.calcPosition( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
+    var topLeft = extrovert.calcPosition( pos.left, pos.top, eng.placement_plane );
+    var botRight = extrovert.calcPosition( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
     // Calculate dimensions of the element (in world units)
     var block_width = Math.abs( botRight.x - topLeft.x );
     var block_height = Math.abs( topLeft.y - botRight.y );
@@ -1065,9 +1096,7 @@ var extro = (function (window, THREE) {
   */
   return my;
 
-
-
-}(window, THREE));
+}));
 
 //
 // [1]: FireFox doesn't support .offsetX:
