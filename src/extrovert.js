@@ -90,8 +90,7 @@ var extro = (function (window, THREE) {
     generator: null,
     clock: new THREE.Clock(),
     supportsWebGL: false,
-    supportsCanvas: false,
-    pass_mouse_input: true
+    supportsCanvas: false
   };
 
 
@@ -428,35 +427,10 @@ var extro = (function (window, THREE) {
   @method createControls
   */
   my.createControls = function( control_opts, camera, domElement ) {
-    var controls = null;
-    var track_opts = null;
-    if( !control_opts || !control_opts.type || control_opts.type === 'trackball' ) {
-      track_opts = { ignore_events: 'mousedown mousemove mouseup' };
-      if( control_opts && control_opts.target )
-        track_opts.target = control_opts.target;
-      controls = new THREE.TrackballControls( camera, domElement, track_opts );
-      controls.rotateSpeed = 1.0;
-      controls.zoomSpeed = 1.2;
-      controls.panSpeed = 0.8;
-      controls.noZoom = false;
-      controls.noPan = false;
-      controls.staticMoving = true;
-      controls.dynamicDampingFactor = 0.3;
-      controls.keys = [ 65, 83, 68 ];
+    if( control_opts.type === 'universal' ) {
+      return new extro.UniversalControls( camera, undefined, control_opts );
     }
-    else if( control_opts.type === 'fly' ) {
-      controls = new THREE.FlyControls( camera, domElement );
-    }
-    else if( control_opts.type === 'firstperson' ) {
-      controls = new THREE.FirstPersonControls( camera, domElement );
-    }
-    else if( control_opts.type === 'pointerlock' ) {
-      controls = new THREE.PointerLockControls( camera );
-    }
-    else if( control_opts.type === 'universal' ) {
-      controls = new extro.UniversalControls( camera, undefined, control_opts );
-    }
-    return controls;
+    return null;
   };
 
 
@@ -623,9 +597,9 @@ var extro = (function (window, THREE) {
   @method initEvents
   */
   function initEvents() {
-    eng.renderer.domElement.addEventListener( 'mousedown', mouse_down, false );
-    eng.renderer.domElement.addEventListener( 'mouseup', mouse_up, false );
-    eng.renderer.domElement.addEventListener( 'mousemove', mouse_move, false );
+    eng.renderer.domElement.addEventListener( 'mousedown', onMouseDown, false );
+    eng.renderer.domElement.addEventListener( 'mouseup', onMouseUp, false );
+    eng.renderer.domElement.addEventListener( 'mousemove', onMouseMove, false );
     /*eng.renderer.domElement.*/document.addEventListener( 'keydown', onKeyDown, false );
     /*eng.renderer.domElement.*/document.addEventListener( 'keyup', onKeyUp, false );
     eng.renderer.domElement.addEventListener( 'wheel', onMouseWheel, false );
@@ -839,9 +813,9 @@ var extro = (function (window, THREE) {
 
   /**
   Handle the 'mousedown' event.
-  @method mouse_down
+  @method onMouseDown
   */
-  function mouse_down( e ) {
+  function onMouseDown( e ) {
 
     e.preventDefault();
 
@@ -899,9 +873,9 @@ var extro = (function (window, THREE) {
 
   /**
   Handle the 'mousemove' event. TODO: physics integration.
-  @method mouse_move
+  @method onMouseMove
   */
-  function mouse_move( e ) {
+  function onMouseMove( e ) {
     if( eng.controls && eng.controls.enabled ) {
       eng.controls.mousemove( e );
       return;
@@ -930,9 +904,9 @@ var extro = (function (window, THREE) {
 
   /**
   Handle the 'mouseup' event.
-  @method mouse_up
+  @method onMouseUp
   */
-  function mouse_up( e ) {
+  function onMouseUp( e ) {
     if( eng.controls && eng.controls.enabled ) {
       eng.controls.mouseup( e );
       return;
@@ -1012,7 +986,7 @@ var extro = (function (window, THREE) {
     // Calculate dimensions of the element (in world units)
     var block_width = Math.abs( botRight.x - topLeft.x );
     var block_height = Math.abs( topLeft.y - botRight.y );
-    
+
     if(zDepth === 'width')
       zDepth = block_width;
     else if (zDepth === 'height')
