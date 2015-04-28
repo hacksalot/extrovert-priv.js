@@ -69,11 +69,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   var my = { version: '0.1.0' };
 
 
-  /**
-  Set up jQuery if present
-  */
-  var $ = window.jQuery;
-
 
   /**
   Default engine options. These are overridden by user options.
@@ -233,8 +228,9 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 
 
   /**
-  Quick 'n dirty jQuery plugin support (if jQuery is present).
+  Simple jQuery plugin support (if jQuery is present).
   */
+  var $ = window.jQuery;
   if( $ ) {
     $.fn.extrovert = function( opts ) {
       return this.each(function() {
