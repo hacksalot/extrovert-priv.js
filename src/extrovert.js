@@ -94,11 +94,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
         ammo: 'ammo.js'
       }
     },
-    block: {
-      width: 128, // Not used
-      height: 64, // Not used
-      depth: 2
-    },
+    block: { depth: 1 },
     move_with_physics: true,
     click_force: 900000,
     onload: null,
@@ -107,7 +103,10 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     clicked: null,
     lights: [
       { type: 'ambient', color: 0xffffff }
-    ]
+    ]//,
+    // transforms: [
+      // { type: 'extrude', src: 'img' }
+    // ]
   };
 
 
@@ -249,6 +248,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   function initOptions( target, user_opts ) {
 
     eng.target = target;
+    eng.userOpts = user_opts;
 
     // Merge USER options onto DEFAULT options without modifying either.
     _opts = eng.opts = _utils.extend(true, { }, defaults, user_opts );
@@ -291,24 +291,35 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 
 
   /**
-  Initialize a generator.
+  Initialize a generator from a transformation description.
   @method initGenerator
+  @param transformOptions A single transformation description from the
+  `transforms` array passed in by the user, if any.
+
+      {
+        type: 'extrude',
+        rasterizer: 'element',
+        etc: "..."
+      }
+
   */
-  function initGenerator( genOptions ) {
+  function initGenerator( transformOptions ) {
     // Create the generator object
     // options.generator can be the name of any valid generator, or an options
     // object with a .name field specifying any valid generator, or undefined.
     var gen = null;
-    if( !genOptions.type )
+    if( !transformOptions.type )
       gen = new extrovert.extrude();
-    else if (typeof genOptions === 'string')
-      gen = new extrovert[ genOptions ]();
+    else if (typeof transformOptions === 'string')
+      gen = new extrovert[ transformOptions ]();
     else
-      gen = new extrovert[ genOptions.type ]();
+      gen = new extrovert[ transformOptions.type ]();
 
     // Initialize the generator with merged options
-    var mergedGenOptions = _utils.extend(true, { }, gen.options, genOptions );
-    gen.init && gen.init( mergedGenOptions, eng );
+    var mergedOptions = _utils.extend(true, { }, defaults, gen.options );
+    mergedOptions = _utils.extend(true, { }, mergedOptions, eng.userOpts );
+    mergedOptions = _utils.extend(true, { }, mergedOptions, transformOptions );
+    gen.init && gen.init( mergedOptions, eng );
 
     return gen;
   }
@@ -392,7 +403,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     // -------------------------------------------------------------------------
 
     var oc = opts.camera;
-    oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2] );
+    oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2], 'YXZ' );
     oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
 
     // -------------------------------------------------------------------------
@@ -611,7 +622,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     if( desc.pos )
       mesh.position.set( desc.pos[0], desc.pos[1], desc.pos[2] );
     if( desc.rot )
-      mesh.rotation.set( desc.rot[0], desc.rot[1], desc.rot[2] );
+      mesh.rotation.set( desc.rot[0], desc.rot[1], desc.rot[2], 'YXZ' );
     // Set visibility flag
     if( desc.visible === false )
       mesh.visible = false;
