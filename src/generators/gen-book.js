@@ -1,5 +1,5 @@
 /**
-The built-in tile generator for Extrovert.js.
+A "book" generator for Extrovert.js.
 @module gen-tile.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
@@ -9,7 +9,7 @@ The built-in tile generator for Extrovert.js.
 
 (function (window, extro) {
 
-  extro.tile = function() {
+  extro.book = function() {
 
     var _opts = null;
     var _eng = null;
@@ -19,12 +19,13 @@ The built-in tile generator for Extrovert.js.
     return {
 
       options: {
-        name: 'tile',
+        name: 'book',
         material: { color: 0xFF8844, friction: 0.2, restitution: 1.0 },
         block: { depth: 'height' },
         clickForce: 900000,
         rows: 10, cols: 10,
-        dims: [250, 500, 2]
+        dims: [512, 1024, 20],
+        pagify: true
       },
 
       init: function( genOpts, eng ) {
@@ -39,8 +40,7 @@ The built-in tile generator for Extrovert.js.
         var extents = [0,0];
         for( var i = 0; i < elems.length; i++ ) {
           var obj = elems[ i ];
-          var row = i / _opts.cols;
-          var col = i % _opts.cols;
+
           var tilePos = [col * _opts.dims[0], row * _opts.dims[1], 0 ];
           extents[0] = tilePos[0] + (_opts.dims[0] / 2);
           extents[1] = tilePos[1] + (_opts.dims[1] / 2);
@@ -54,7 +54,17 @@ The built-in tile generator for Extrovert.js.
           else {
             rast = extro.getRasterizer( obj );
           }
-          var tileTexture = rast.paint(( noun.adapt && noun.adapt(obj) ) || obj, { width: _opts.dims[0], height: _opts.dims[1], bkColor: _opts.bkColor, textColor: _opts.textColor } );
+          var done = false;
+          while (!done ) {
+            var tileTexture = rast.paint(( noun.adapt && noun.adapt(obj) ) || obj,
+              { width: _opts.dims[0],
+                height: _opts.dims[1],
+                bkColor: _opts.bkColor,
+                textColor: _opts.textColor }, info );
+            if (info.
+          }
+          
+
           var tileMat = extro.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
           extro.createObject({ type: 'box', pos: tilePos, dims: this.options.dims, mat: tileMat, mass: 1000 });
         }

@@ -96,7 +96,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     },
     block: { depth: 1 },
     move_with_physics: true,
-    click_force: 900000,
+    clickForce: 900000,
     onload: null,
     onerror: null,
     created: null,
@@ -336,11 +336,8 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     //THREE.ImageUtils.crossOrigin = '*';
     //THREE.Loader.prototype.crossOrigin = '*';
 
-    // Start off by creating the scene object. Is this part of creating the
-    // 'world'? No.
     extrovert.createScene( opts );
 
-    // Set up the camera -- also not part of the 'world'.
     var ico = opts.init_cam_opts ? _utils.extend(true, {}, opts.camera, opts.init_cam_opts ) : opts.camera;
     extrovert.createCamera( ico );
 
@@ -880,7 +877,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   function applyForce( thing ) {
     if( _opts.physics.enabled ) {
       var rotation_matrix = new THREE.Matrix4().extractRotation( thing.object.matrix );
-      var effect = thing.face.normal.clone().negate().multiplyScalar( _opts.click_force ).applyMatrix4( rotation_matrix );
+      var effect = thing.face.normal.clone().negate().multiplyScalar( _opts.clickForce ).applyMatrix4( rotation_matrix );
       var force_offset = thing.point.clone().sub( thing.object.position );
       thing.object.applyImpulse( effect, force_offset );
     }

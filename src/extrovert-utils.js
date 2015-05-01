@@ -53,30 +53,64 @@ extrovert.Utils = (function (window, THREE) {
   - http://stackoverflow.com/a/11361958
   - http: //www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
   @method wrap_text
+  @param A Canvas context.
+  @param x Text origin.
+  @param y Text origin.
+  @param maxWidth Width to break lines at.
+  @param lineHeight Height of each line.
+  @param measureOnly If true, measure the text without drawing it.
   */
   my.wrapText = function( context, text, x, y, maxWidth, lineHeight, measureOnly ) {
 
     var numLines = 1;
     var start_of_line = true;
-    var lines = text.split('\n');
     var line_partial = '';
     var try_line = '';
+    var extents = [0,0];
 
+    // Split the input text on linebreaks
+    var lines = text.split('\n');    
+    
+    // Iterate over each "hard" line
     for (var line_no = 0; line_no < lines.length; line_no++) {
+      
+      // Get the words in the line
       var words = lines[ line_no ].split(' ');
       start_of_line = true;
       line_partial = '';
+      
+      // Iterate over the words in the line
       for( var w = 0; w < words.length; w++ ) {
+        
+        // Establish a candidate line based on any existing text, plus the next word
         try_line = line_partial + (start_of_line ? "" : " ") + words[ w ];
+        
+        // Measure the candidate line        
         var metrics = context.measureText( try_line );
+        
+        // If the candidate line length is less than the maxWidth, append this
+        // word to the candidate line and continue.
         if( metrics.width <= maxWidth ) {
           start_of_line = false;
           line_partial = try_line;
         }
+        
+        // If the candidate line length is greater than the maxWidth, paint the
+        // previous incarnation of the line (without the last word) and reset.
         else {
+          
+          // Measure the to-be-painted line and update extents, in case we're measuring
+          metrics = context.measureText( line_partial );
+          if( metrics.width > extents[0] )
+            extents[0] = metrics.width;
+          
+          // Paint the text here (as long as we're not measuring)
           measureOnly || context.fillText( line_partial, x, y);
+          
+          // Reset the line, preloaded with the text that didn't fit.
           start_of_line = true;
           y += lineHeight;
+          extents[1] = y;
           numLines++;
           line_partial = words[w]; // Drop the space
           metrics = context.measureText( line_partial );
@@ -88,10 +122,17 @@ extrovert.Utils = (function (window, THREE) {
           }
         }
       }
+      
+      // Handle any remaining text
       measureOnly || context.fillText( line_partial, x, y );
       y += lineHeight;
+      extents[1] = y;
     }
-    return numLines;
+    
+    return {
+      numLines: numLines,
+      extents: extents
+    };
   };
 
 
