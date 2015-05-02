@@ -4,10 +4,15 @@
     "James Devlin <james@indevious.com>"
   ],
   "description": "3Dify your websites, blogs, RSS feeds, and image galleries.",
-  "main": ["dist/extrovert.js","dist/extrovert.deps.js","dist/extrovert.all.js"],
+  "main": [
+    "dist/extrovert.js",
+    "dist/extrovert.deps.js",
+    "dist/extrovert.all.js"
+  ],
   "dependencies": {
     "threejs": "*",
-    "physijs": "*"
+    "physijs": "*",
+    "in.scribe": "~0.1.0"
   },
   "ignore": [
     "bower_components/",

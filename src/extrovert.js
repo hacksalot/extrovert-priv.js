@@ -22,6 +22,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 //       }
 //     }(this, function (b) {
 //       var my = { };
+//       var my = { };
 //       /* Extrovert library code here */
 //       return my;
 //     }));
