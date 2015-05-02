@@ -7,7 +7,7 @@ A simple Extrovert HTML rasterizer.
 @version 1.0
 */
 
-(function (window, THREE, extro) {
+(function (window, extro) {
 
   extro.paint_element = function () {
     return {
@@ -28,11 +28,9 @@ A simple Extrovert HTML rasterizer.
         context.fillRect(0, 0, canvas.width, canvas.height);
 
         // Create a texture from the canvas
-        var texture = new THREE.Texture( canvas );
-        texture.needsUpdate = true;
-        return texture;
+        return extro.createTextureFromCanvas( canvas, true );
       }
     };
   };
 
-}(window, THREE, extrovert));
+}(window, extrovert));

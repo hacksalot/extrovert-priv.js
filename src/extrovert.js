@@ -583,6 +583,30 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 
 
   /**
+  Create a texture from a canvas. Defer to THREE for now.
+  @method createTextureFromCanvas
+  */
+  my.createMaterialFromCanvas = function( canvas, needsUpdate ) {
+    var texture = new THREE.Texture( canvas );
+    texture.needsUpdate = needsUpdate || false;
+    return { tex: texture, mat: new THREE.MeshLambertMaterial( { map: tex } ) };
+  };
+
+
+
+  /**
+  Create a texture from a canvas. Defer to THREE for now.
+  @method createTextureFromCanvas
+  */
+  my.createTextureFromCanvas = function( canvas, needsUpdate ) {
+    var texture = new THREE.Texture( canvas );
+    texture.needsUpdate = needsUpdate || false;
+    return texture;
+  };
+
+
+
+  /**
   Create a six-sided material from an array of materials.
   @method createCubeMaterial
   */
@@ -1118,6 +1142,16 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     eng.camera.updateProjectionMatrix();
     eng.renderer.setSize( eng.width, eng.height );
   }
+
+
+
+  /**
+  Load an image as a texture. Defers to THREE for now.
+  @method loadTexture
+  */
+  my.loadTexture = function( src ) {
+    return THREE.ImageUtils.loadTexture( src );
+  };
 
 
 

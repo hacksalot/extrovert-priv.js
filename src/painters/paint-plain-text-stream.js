@@ -7,7 +7,7 @@ A simple Extrovert HTML rasterizer.
 @version 1.0
 */
 
-(function (window, THREE, extro, inscribe) {
+(function (window, extro, inscribe) {
 
   /**
   A simple plain text rasterizer with support for styled title and body text.
@@ -44,14 +44,9 @@ A simple Extrovert HTML rasterizer.
           { padding: padding, maxWidth: canvas.width, lineHeight: line_height } );
         
         info.numLines = wrapInfo.numLines;
-
-        // Create a texture from the canvas
-        var texture = new THREE.Texture( canvas );
-        texture.needsUpdate = true;
-
-        return texture;
+        return extro.createTextureFromCanvas( canvas, true );
       }
     };
   };
 
-}(window, THREE, extrovert, inscribe));
+}(window, extrovert, inscribe));

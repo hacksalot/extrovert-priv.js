@@ -7,15 +7,14 @@ A simple Extrovert image rasterizer.
 @version 1.0
 */
 
-// TODO: Rasterizers should not have THREE.js dependencies
-(function (window, THREE, extro) {
+(function (window, extro) {
 
   extro.paint_img = function () {
     return {
       paint: function( obj ) {
-        return THREE.ImageUtils.loadTexture( typeof obj === 'string' ? obj : obj.src );
+        return extro.loadTexture( typeof obj === 'string' ? obj : obj.src );
       }
     };
   };
 
-}(window, THREE, extrovert));
+}(window, extrovert));

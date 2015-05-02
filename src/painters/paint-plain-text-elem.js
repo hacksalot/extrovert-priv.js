@@ -7,7 +7,7 @@ A simple Extrovert HTML rasterizer.
 @version 1.0
 */
 
-(function (window, THREE, extro) {
+(function (window, extro, inscribe) {
 
   extro.paint_plain_text_elem = function () {
     return {
@@ -67,15 +67,9 @@ A simple Extrovert HTML rasterizer.
 
         _utils.wrapText( context, massaged_content, 10, 20 + (num_lines * title_line_height) + line_height, canvas.width - 20, line_height, false );
 
-        // Create a texture from the canvas
-        var texture = new THREE.Texture( canvas );
-        texture.needsUpdate = true;
-        return {
-          tex: texture,
-          mat: new THREE.MeshLambertMaterial( { map: texture/*, side: THREE.DoubleSide*/ } )
-        };
+        return extro.createMaterialFromCanvas( canvas, true );
       }
     };
   };
 
-}(window, THREE, extrovert));
+}(window, extrovert, inscribe));

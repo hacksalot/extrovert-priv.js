@@ -7,15 +7,15 @@ A simple Extrovert HTML rasterizer.
 @version 1.0
 */
 
-(function (window, THREE, extro) {
+(function (window, extro) {
 
   extro.paint_color = function () {
     return {
       paint: function( val, opts ) {
         // Create a texture from the canvas
-        return new THREE.Texture( canvas );
+        return extro.createTextureFromCanvas( canvas );
       }
     };
   };
 
-}(window, THREE, extrovert));
+}(window, extrovert));
