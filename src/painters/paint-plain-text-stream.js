@@ -46,7 +46,7 @@ A simple Extrovert HTML rasterizer.
         // Paint the text
         context.font = _utils.getComputedStyle( document.body, 'font' );
         context.fillStyle = opts.bkColor || 'rgb(0,0,0)';
-        painter.renderText( context, massaged_content, false,
+        painter.inscribe( massaged_content, 'text', context, 
           { padding: padding,
             maxWidth: canvas.width,
             lineHeight: lineHeight,
