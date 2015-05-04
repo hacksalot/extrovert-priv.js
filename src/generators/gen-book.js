@@ -17,23 +17,21 @@ A "book" generator for Extrovert.js.
     var _eng = null;
     var _side_mat = null;
     var _noun = null;
-    var LOGGING = true;
 
 
 
-    
+
     /**
-    Adjust textures for simple mode to allow continuation of the texture around
-    the sides of the cube/object.
+    Adjust page textures mapping. Necessary because the page geometry is paper-
+    back size (or user specified), but the page texture should be power-of-2 in
+    both dimensions.
     @method patch_textures
     */
-    function patchTextures( cubeGeo ) {
+    function mapTextures( cubeGeo ) {
 
       for (i = 0; i < cubeGeo.faces.length ; i++) {
          var face = cubeGeo.faces[ i ];
          var fvu = cubeGeo.faceVertexUvs[0][i];
-         // Quick kludge for textures on non-front faces. Replace with correct
-         // mapping, wrapping, or dedicated textures.
          if( Math.abs( face.normal.z ) > 0.9) {
             for( var fv = 0; fv < 3; fv++ ) {
               if( Math.abs( fvu[fv].y ) < 0.01 ) {
@@ -57,7 +55,7 @@ A "book" generator for Extrovert.js.
         block: { depth: 'height' },
         clickForce: 900000,
         rows: 10, cols: 10,
-        dims: [512, 814, 20], // Std paperback = 4.25 x 6.75
+        dims: [512, 814, 20], // Std paperback = 4.25 x 6.75 = 512x814
         pagify: true,
         cover: null
       },
@@ -75,7 +73,7 @@ A "book" generator for Extrovert.js.
 
       generate: function( noun, elems ) {
 
-        LOGGING && _eng.log.msg('book.generate( %o, %o )', noun, elems);
+        extro.LOGGING && _eng.log.msg('book.generate( %o, %o )', noun, elems);
         _noun = noun;
 
         for( var i = 0; i < elems.length; i++ ) {
@@ -99,20 +97,19 @@ A "book" generator for Extrovert.js.
             var info = { };
 
             var tileTextures = rast.paint(( noun.adapt && noun.adapt(obj) ) || obj,
-              { width: 512, // Force power-of-2 textures
-                height: 1024,
+              { width: _opts.texWidth || 512, // Force power-of-2 textures by default
+                height: _opts.texHeight || 1024,
                 bkColor: _opts.bkColor,
                 textColor: _opts.textColor }, info );
 
             for( tt = 0; tt < tileTextures.length; tt++ ) {
 
+            
               var tilePos = [0, 0, -(tt * _opts.dims[2]) ];
               var tileMat = extro.createMaterial({ tex: tileTextures[tt], friction: 0.2, restitution: 1.0 });
               var mesh = extro.createObject({ type: 'box', pos: tilePos, dims: this.options.dims, mat: tileMat, mass: 1000 });
-              patchTextures( mesh.geometry );
-           
-              
-              LOGGING && _eng.log.msg('Generating page %o at position %f, %f, %f', mesh, tilePos[0], tilePos[1], tilePos[2]);
+              mapTextures( mesh.geometry );
+              extro.LOGGING && _eng.log.msg('Generating page %o at position %f, %f, %f', mesh, tilePos[0], tilePos[1], tilePos[2]);
 
             }
           }
