@@ -1,6 +1,6 @@
 /**
 A simple Extrovert HTML rasterizer.
-@module paint-plain-text.js
+@module paint-plain-text-stream.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
 @license MIT
@@ -10,15 +10,26 @@ A simple Extrovert HTML rasterizer.
 (function (window, extro, inscribe) {
 
   /**
-  A simple plain text rasterizer with support for styled title and body text.
+  A simple streaming plain text rasterizer.
   @class paint_plain_text_stream
+  @returns An array of textures.
   */
   extro.paint_plain_text_stream = function () {
+
     return {
       paint: function( val, opts, info ) {
 
         var _utils = extro.Utils;
         opts = opts || { };
+
+        var painter = new inscribe();
+        var textures = [];
+        var wrapInfo = { };
+        var lineHeight = opts.lineHeight || 16;
+        var massaged_content = val.text.replace('\n',' ');
+        var padding = opts.padding || 10;
+
+        info.numLines = 0;
 
         // Create a canvas element.
         var canvas = document.createElement('canvas');
@@ -31,22 +42,41 @@ A simple Extrovert HTML rasterizer.
         var bkColor = opts.bkColor || 'rgb(255,255,255)';
         context.fillStyle = bkColor;
         context.fillRect(0, 0, canvas.width, canvas.height);
-        
+
         // Paint the text
         context.font = _utils.getComputedStyle( document.body, 'font' );
         context.fillStyle = opts.bkColor || 'rgb(0,0,0)';
-        var line_height = opts.lineHeight || 16;
-        var massaged_content = val.text.replace('\n',' ');
-        var padding = opts.padding || 10;
-        
-        var painter = new inscribe();
-        var wrapInfo = painter.renderText( context, massaged_content, false, 
-          { padding: padding, maxWidth: canvas.width, lineHeight: line_height } );
-        
-        info.numLines = wrapInfo.numLines;
-        return extro.createTextureFromCanvas( canvas, true );
+        painter.renderText( context, massaged_content, false,
+          { padding: padding,
+            maxWidth: canvas.width,
+            lineHeight: lineHeight,
+            chunkSize: 35,
+            pageEmitted: function ( context ) {
+              textures.push( extro.createTextureFromCanvas( context.canvas, true ) );
+              var newCanvas = document.createElement('canvas');
+              newCanvas.width = opts.width;
+              newCanvas.height = opts.height;
+              var newContext = newCanvas.getContext('2d');
+              // Fill the canvas with the background color
+              //var bkColor = $val.css('background-color');
+              var bkColor = opts.bkColor || 'rgb(255,255,255)';
+              newContext.fillStyle = bkColor;
+              newContext.fillRect(0, 0, newCanvas.width, newCanvas.height);
+
+              // Paint the text
+              newContext.font = _utils.getComputedStyle( document.body, 'font' );
+              newContext.fillStyle = opts.bkColor || 'rgb(0,0,0)';              
+              
+              return newContext;
+            }
+        });
+
+        return textures;
       }
+
     };
   };
+
+
 
 }(window, extrovert, inscribe));
