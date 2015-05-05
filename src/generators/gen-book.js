@@ -11,14 +11,10 @@ The built-in "book" generator for Extrovert.js.
 
   extro.book = function() {
 
-
-
     var _opts = null;
     var _eng = null;
     var _side = null;
     var _noun = null;
-
-
 
     /**
     Adjust page textures mapping. Necessary because the page geometry is paper-
@@ -40,11 +36,7 @@ The built-in "book" generator for Extrovert.js.
       cubeGeo.uvsNeedUpdate = true;
     }
 
-
-
     return {
-
-
 
       options: {
         name: 'book',
@@ -61,8 +53,6 @@ The built-in "book" generator for Extrovert.js.
         }
       },
 
-
-
       init: function( genOpts, eng ) {
         _opts = genOpts;
         _eng = eng;
@@ -70,10 +60,7 @@ The built-in "book" generator for Extrovert.js.
         _side = extro.provider.createMaterial( genOpts.material );
       },
 
-
-
       generate: function( noun, elems ) {
-
         extro.LOGGING && _eng.log.msg('book.generate( %o, %o )', noun, elems);
         _noun = noun;
 
@@ -87,9 +74,7 @@ The built-in "book" generator for Extrovert.js.
         function _isOdd( val, index ) { return !_isEven(val, index); }
 
         for( var i = 0; i < elems.length; i++ ) {
-
           var obj = (noun.adapt && noun.adapt( elems[ i ] )) || elems[ i ];
-
           var rast = null;
           if( noun.rasterizer ) {
             rast = ( typeof noun.rasterizer === 'string' ) ?
@@ -100,7 +85,6 @@ The built-in "book" generator for Extrovert.js.
           }
 
           if( _opts.pagify ) {
-
             var done = false,
               info = { },
               rastOpts = {
@@ -116,22 +100,16 @@ The built-in "book" generator for Extrovert.js.
             var back = mats.filter( _isOdd );
 
             for( var tt = 0; tt < front.length; tt++ ) {
-
               var tilePos = [0, 0, -(tt * _opts.dims[2]) - _opts.dims[2] ];
               var matArray = [ _side, _side, _side, _side, front[ tt ], tt < back.length ? back[ tt ] : _side ];
               var meshMat = extro.provider.createCubeMaterial( matArray );
               var mesh = extro.createObject({ type: 'box', pos: tilePos, dims: _opts.dims, mat: meshMat, mass: 1000 });
               mapTextures( mesh.geometry );
               extro.LOGGING && _eng.log.msg('Generating page %o at position %f, %f, %f', mesh, tilePos[0], tilePos[1], tilePos[2]);
-
             }
           }
         }
       }
-
-
-
     };
   };
-
 }(window, extrovert));
