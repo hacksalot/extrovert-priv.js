@@ -41,7 +41,7 @@ module.exports = function(grunt) {
       },
       dist: {
         sources: {
-          extro: ['src/extrovert.js', 'bower_components/in.scribe/in.scribe.js', 'src/**/*.js'],
+          extro: ['dist/extrovert.js', 'bower_components/in.scribe/in.scribe.js', 'src/**/*.js', '!src/extrovert.annotated.js' ],
           deps: ['bower_components/threejs/build/three.js', 'bower_components/physijs/physi.js'],
           merged: null /* filled at runtime */
         },
@@ -55,6 +55,16 @@ module.exports = function(grunt) {
 
 
     copy: {
+      pre: {
+        files: [{ 
+          expand: true, flatten: true,
+          src: ['src/extrovert*.annotated.js'],
+          dest: 'src',
+          rename: function( dest, src ) {
+            return "src/" + src.replace('.annotated', '');
+          }
+        }]
+      },
       physijs: {
         files: [
         {
@@ -78,6 +88,18 @@ module.exports = function(grunt) {
       },
     },
 
+    
+    comments: {
+      main: {
+        // Target-specific file lists and/or options go here. 
+        options: {
+          singleline: true,
+          multiline: true
+        },
+        src: [ 'src/extrovert.js'] // files to remove comments from 
+      }
+    },
+    
 
     uglify: {
       options: {
@@ -159,14 +181,15 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-compress');
+  grunt.loadNpmTasks('grunt-stripcomments');
 
   // Fill in the .merged prop (see concat {} settings above) at runtime
   opts.concat.dist.sources.merged = opts.concat.dist.sources.deps.concat( opts.concat.dist.sources.extro );
   
   var cfgs = {
-    debug: ['clean', 'jshint', 'concat', 'copy:physijs', 'clean:temp'],
-    release: ['clean', 'jshint', 'concat', 'copy:physijs', 'uglify', 'compress:main', 'copy:rename', 'clean:temp'],
-    quick: ['clean','jshint','concat','copy:physijs','uglify','clean:temp'],
+    debug: ['clean', 'jshint', 'copy:pre', 'comments', 'concat', 'copy:physijs', 'clean:temp'],
+    release: ['clean', 'jshint', 'copy:pre', 'comments', 'concat', 'copy:physijs', 'uglify:dist', 'compress:main', 'copy:rename', 'clean:temp'],
+    quick: ['clean','jshint','concat','copy:physijs','uglify:dist','clean:temp'],
     test: ['default', 'connect:auto', 'qunit'],
     testmanual: ['default', 'connect:manual']
   };
