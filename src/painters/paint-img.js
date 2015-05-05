@@ -3,7 +3,6 @@ A simple Extrovert image rasterizer.
 @module paint-img.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
-@license MIT
 @version 1.0
 */
 
