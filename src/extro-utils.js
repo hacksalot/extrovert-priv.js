@@ -7,25 +7,17 @@ Utilities for Extrovert.js.
 @version 1.0
 */
 
-
-
 extrovert.Utils = (function (window, THREE) {
-
-
 
   /**
   Module object.
   */
   var my = {};
 
-
-
   /**
   The infamous zero vector, whose reputation precedes itself.
   */
   my.VZERO = new THREE.Vector3(0, 0, 0);
-
-
 
   /**
   Perform a color blend (darken, lighten, or gradient) on a color (string) and
@@ -45,8 +37,6 @@ extrovert.Utils = (function (window, THREE) {
     }
   };
   /* jshint ignore:end */
-
-
 
   /**
   Improved wrap text drawing helper for canvas. See:
@@ -135,8 +125,6 @@ extrovert.Utils = (function (window, THREE) {
     };
   };
 
-
-
   /**
   Figure out if the browser/machine supports WebGL.
   @method detectWebGL
@@ -170,8 +158,6 @@ extrovert.Utils = (function (window, THREE) {
     return false;
   };
 
-
-
   /**
   Figure out if the browser supports Canvas.
   http://stackoverflow.com/q/2745432
@@ -181,8 +167,6 @@ extrovert.Utils = (function (window, THREE) {
     var elem = document.createElement('canvas');
     return !!(elem.getContext && elem.getContext('2d'));
   };
-
-
 
   /**
   Calculate the vertices of the near and far planes. Don't use THREE.Frustum
@@ -216,8 +200,6 @@ extrovert.Utils = (function (window, THREE) {
     };
   };
 
-
-
   /**
   Determine if the supplied object is a "plain object", ie, an object created
   via { } or new. Loosely based on jQuery.isPlainObject.
@@ -241,8 +223,6 @@ extrovert.Utils = (function (window, THREE) {
     return true;
   };
 
-
-
   /**
   Determine if the specified object is an array.
   @method isArray
@@ -250,8 +230,6 @@ extrovert.Utils = (function (window, THREE) {
   my.isArray = function( obj ) {
     return Object.prototype.toString.call( obj ) === '[object Array]';
   };
-
-
 
   /**
   Simple plain JavaScript version of jQuery .extend.
@@ -262,8 +240,6 @@ extrovert.Utils = (function (window, THREE) {
           arguments[0][key] = arguments[i][key];
     return arguments[0];
   }*/
-
-
 
   /**
   Industrial-strength plain JavaScript version of .extend based on jQuery sources.
@@ -321,8 +297,6 @@ extrovert.Utils = (function (window, THREE) {
     return target;
   };
 
-
-
   /**
   Retrieve the location of the given element. This implementation loosely based
   on jQuery's method.
@@ -357,8 +331,6 @@ extrovert.Utils = (function (window, THREE) {
     };
   };
 
-
-
   /**
   Message logger from http://stackoverflow.com/a/25867340.
   @class log
@@ -382,8 +354,6 @@ extrovert.Utils = (function (window, THREE) {
       }
     };
   })();
-
-
 
   /**
   Retrieve the computed CSS style for a given property. Taken from somewhere.
@@ -418,8 +388,6 @@ extrovert.Utils = (function (window, THREE) {
     }
   };
 
-
-
   /**
   Simple jQuery-like selector. We don't want to pull in jQuery itself, and at 8k
   minified, a standalone selector library like Sizzle is overkill, so we roll a
@@ -435,8 +403,6 @@ extrovert.Utils = (function (window, THREE) {
     // }
     return document[selectorType](selector);
   };
-
-
 
   /**
   Retrieve the value of the specified cookie.
@@ -459,8 +425,6 @@ extrovert.Utils = (function (window, THREE) {
     return '';
   };
 
-
-
   /**
   Sets a cookie.
   This is for internal use but we expose it as part of the extro interface for
@@ -475,8 +439,6 @@ extrovert.Utils = (function (window, THREE) {
     document.cookie = sCookie;
   };
 
-
-
   /**
   Clear a cookie.
   This is for internal use but we expose it as part of the extro interface for
@@ -487,8 +449,6 @@ extrovert.Utils = (function (window, THREE) {
   {
     my.setCookie(sName,'');
   };
-
-
 
   /**
   Utility function for drawing a rounded rect (2D). Currently unused.
@@ -506,13 +466,9 @@ extrovert.Utils = (function (window, THREE) {
     ctx.quadraticCurveTo( x, y, x, y + radius );
   }
 
-
-
   /**
   Module return.
   */
   return my;
-
-
 
 }(window, THREE));

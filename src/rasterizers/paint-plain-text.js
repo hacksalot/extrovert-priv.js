@@ -52,7 +52,7 @@ A simple Extrovert HTML rasterizer.
         info.numLines = numLines;
         
         // Create a texture from the canvas
-        return extro.createTextureFromCanvas( canvas, true );
+        return extro.provider.createTextureFromCanvas( canvas, true );
       }
     };
   };

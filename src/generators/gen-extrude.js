@@ -25,7 +25,7 @@ The built-in extrusion generator for Extrovert.js.
       init: function( genOpts, eng ) {
         _opts = genOpts;
         _eng = eng;
-        _side_mat = extro.createMaterial( genOpts.material );
+        _side_mat = extro.provider.createMaterial( genOpts.material );
         extro.createPlacementPlane( [ 0,0,0 ] );
       },
 
@@ -53,7 +53,7 @@ The built-in extrusion generator for Extrovert.js.
         rast = rast || extro.getRasterizer( obj );
         var tileTexture = rast.paint(( _noun.adapt && _noun.adapt(obj) ) || obj );
 
-        var material = extro.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 0.0 });
+        var material = extro.provider.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 0.0 });
 
         if( !_opts.map || _opts.map === 'all' ) {
           return material;
@@ -69,7 +69,7 @@ The built-in extrusion generator for Extrovert.js.
             matArray = [ _side_mat, _side_mat, _side_mat, _side_mat, material, material ];
         }
 
-        return extro.createCubeMaterial( matArray );
+        return extro.provider.createCubeMaterial( matArray );
       }
 
     };

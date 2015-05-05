@@ -27,7 +27,7 @@ A simple Extrovert HTML rasterizer.
         context.fillRect(0, 0, canvas.width, canvas.height);
 
         // Create a texture from the canvas
-        return extro.createTextureFromCanvas( canvas, true );
+        return extro.provider.createTextureFromCanvas( canvas, true );
       }
     };
   };

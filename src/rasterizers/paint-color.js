@@ -12,7 +12,7 @@ A simple Extrovert HTML rasterizer.
     return {
       paint: function( val, opts ) {
         // Create a texture from the canvas
-        return extro.createTextureFromCanvas( canvas );
+        return extro.provider.createTextureFromCanvas( canvas );
       }
     };
   };

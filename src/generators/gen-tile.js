@@ -31,7 +31,7 @@ The built-in tile generator for Extrovert.js.
         _opts = genOpts;
         _eng = eng;
         extro.createPlacementPlane( [0,0,200] );
-        _side_mat = extro.createMaterial( genOpts.material );
+        _side_mat = extro.provider.createMaterial( genOpts.material );
       },
 
       generate: function( noun, elems ) {
@@ -55,7 +55,7 @@ The built-in tile generator for Extrovert.js.
             rast = extro.getRasterizer( obj );
           }
           var tileTexture = rast.paint(( noun.adapt && noun.adapt(obj) ) || obj, { width: _opts.dims[0], height: _opts.dims[1], bkColor: _opts.bkColor, textColor: _opts.textColor } );
-          var tileMat = extro.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
+          var tileMat = extro.provider.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
           extro.createObject({ type: 'box', pos: tilePos, dims: this.options.dims, mat: tileMat, mass: 1000 });
         }
       }

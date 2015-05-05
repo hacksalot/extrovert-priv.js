@@ -1,5 +1,5 @@
 /**
-The built-in extrusion generator for Extrovert.js.
+The built-in box generator for Extrovert.js.
 @module gen-box.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
@@ -12,6 +12,33 @@ The built-in extrusion generator for Extrovert.js.
   extro.box = function() {
 
     var _opts, _eng, _side_mat, _noun;
+    
+    /**
+    Adjust textures for simple mode to allow continuation of the texture around
+    the sides of the cube/object.
+    @method patch_textures
+    */
+    function patchTextures( cubeGeo ) {
+
+      for (i = 0; i < cubeGeo.faces.length ; i++) {
+         var face = cubeGeo.faces[ i ];
+         var fvu = cubeGeo.faceVertexUvs[0][i];
+         // Quick kludge for textures on non-front faces. Replace with correct
+         // mapping, wrapping, or dedicated textures.
+         if(face.normal.y > 0.9) {
+            fvu[0].x = fvu[0].y = fvu[1].x = fvu[1].y = fvu[2].x = fvu[2].y = 0.99;
+         }
+         else if(face.normal.y < -0.9) {
+            fvu[0].x = fvu[0].y = fvu[1].x = fvu[1].y = fvu[2].x = fvu[2].y = 0.01;
+         }
+         else if(face.normal.x > 0.9 || face.normal.x < -0.9) {
+            fvu[0].x = fvu[0].x > 0.5 ? 0.02 : 0.00;
+            fvu[1].x = fvu[1].x > 0.5 ? 0.02 : 0.00;
+            fvu[2].x = fvu[2].x > 0.5 ? 0.02 : 0.00;
+         }
+      }
+      cubeGeo.uvsNeedUpdate = true;
+    }    
 
     return {
 
@@ -24,7 +51,7 @@ The built-in extrusion generator for Extrovert.js.
       init: function( genOpts, eng ) {
         _opts = genOpts;
         _eng = eng;
-        _side_mat = extro.createMaterial( genOpts.material );
+        _side_mat = extro.provider.createMaterial( genOpts.material );
         extro.createPlacementPlane( [ 0,0,0 ] );
       },
 
@@ -65,7 +92,7 @@ The built-in extrusion generator for Extrovert.js.
         rast = rast || extro.getRasterizer( obj );
 
         var tileTexture = rast.paint(( _noun.adapt && _noun.adapt(obj) ) || obj, { width: _opts.block.width, height: _opts.block.height } );
-        var material = extro.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
+        var material = extro.provider.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
         return material;
       },
 

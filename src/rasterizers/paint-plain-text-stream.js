@@ -50,7 +50,7 @@
             lineHeight: lineHeight,
             chunkSize: 35,
             pageEmitted: function ( context ) {
-              textures.push( extro.createTextureFromCanvas( context.canvas, true ) );
+              textures.push( extro.provider.createTextureFromCanvas( context.canvas, true ) );
               var newCanvas = document.createElement('canvas');
               newCanvas.width = opts.width;
               newCanvas.height = opts.height;

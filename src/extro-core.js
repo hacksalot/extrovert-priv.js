@@ -1,81 +1,29 @@
 /**!
 Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
-@copyright Copyright (c) 2015 by James M. Devlin
-@author James M. Devlin | james@indevious.com
-@version 1.0
+@author James Devlin | james@indevious.com
+@version 0.1.0
+@module extro-core
 */
 
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// extrovert.annotated.js is the canonical annotated version of Extrovert.js.
-//
-///////////////////////////////////////////////////////////////////////////////
-
-//
-// Define the Extrovert module. Support AMD, CommonJS, and global formats using
-// this pattern:
-//
-//     (function (root, factory) {
-//       if (typeof define === 'function' && define.amd) {
-//         define(['b'], function (b) {
-//           return (root.extrovert = factory(b));
-//         });
-//       } else if (typeof exports === 'object') {
-//         module.exports = factory(require('b'));
-//       } else {
-//         root.extrovert = factory(root.b);
-//       }
-//     }(this, function (b) {
-//       var my = { };
-//       var my = { };
-//       /* Extrovert library code here */
-//       return my;
-//     }));
-//
-// This module pattern is based on the ["returnExportsGlobal"][2] flavor of
-// [UMD][1], which creates a global even when AMD is used. See also the
-// ["returnExports"][3] and ["commonJsStrictGlobal"][4] patterns.
-//
-// Note: The name of *this* module, "extrovert" is inferred from the file name.
-// The exported global and the file should have matching names.
-//
-// [1]: https://github.com/umdjs/umd
-// [2]: https://github.com/umdjs/umd/blob/master/returnExportsGlobal.js
-// [3]: https://github.com/umdjs/umd/blob/master/returnExports.js
-// [4]: https://github.com/umdjs/umd/blob/master/commonJsStrictGlobal.js
-
 (function (root, factory) {
-
   if (typeof define === 'function' && define.amd) {
-
     // AMD. Register as an anonymous module with a dependency on 'b'.
     define(['b'], function (b) {
-        return (root.extrovert = factory(b));
+      return (root.extrovert = factory(b));
     });
-
   } else if (typeof exports === 'object') {
-
     // CommonJS. Support basic CJS enviroments w/ module.exports.
     module.exports = factory(require('b'));
-
   } else {
-
     // Global. Expose our module object.
     root.extrovert = factory(root.b);
-
   }
-
 }(this, function (b) {
-
-
 
   /**
   Define the module object and set the version number.
   */
   var my = { version: '0.1.0' };
-
-
 
   /**
   Default engine options. These are overridden by user options.
@@ -116,8 +64,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     // ]
   };
 
-
-
   /**
   Internal engine settings, not to be confused with options. Represents the run-
   time state of the Extrovert engine. We group them into an 'eng' object for no
@@ -146,8 +92,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     target: 'body'
   };
 
-
-
   /**
   The one and only ultrafied combined options object. Once initOptions has been
   called, this will contain the final, authoritative, combined set of engine +
@@ -155,22 +99,15 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   */
   var _opts = null;
 
-
-
   /**
-  An alias to extroVERT.Utils. Prevents us from having to say extroVERT.Utils.xxx
-  all over the place.
+  An alias to extrovert.Utils.
   */
   var _utils = null;
-
-
 
   /**
   An alias to our logging facilities.
   */
   var _log = null;
-
-
 
   /**
   A global flag that controls whether log statements are executed, ignored, or
@@ -178,20 +115,18 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   */
   my.LOGGING = true;
 
-
-
   /**
-  Initialize the Extrovert library and get some 3D up in that grill. This is the
-  main entry point for the Extrovert library and is responsible for creating and
-  starting the initial scene.
+  Initialize the Extrovert library and get some 3D up in that grill.
   @method init
-  @param options Options specified by the user.
+  @param target Target selector, DOM node, or DOM collection.
+  @param options Transformation options.
   */
   my.init = function( target, options ) {
 
     _utils = extrovert.Utils;
     _log = eng.log = _utils.log;
     options = options || { };
+    my.provider = my.threeJsProvider;
     my.LOGGING && _log.msg('Extrovert %s', my.version);
     my.LOGGING && _log.msg('User options: %o', options );
 
@@ -231,8 +166,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     return true;
   };
 
-
-
   /**
   Simple jQuery plugin support (if jQuery is present).
   */
@@ -245,8 +178,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     };
   }
 
-
-
   /**
   Initialize engine options. Merge user, generator, and engine options into a
   new combined options object and carry across other important settings.
@@ -258,7 +189,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     eng.userOpts = user_opts;
 
     // Merge USER options onto DEFAULT options without modifying either.
-    _opts = eng.opts = _utils.extend(true, { }, defaults, user_opts );
+    _opts = eng.opts = my.options = _utils.extend(true, { }, defaults, user_opts );
 
     // If physics are enabled, pass through the locations of necessary scripts.
     // These are required by the physics library; nothing to do with Extrovert.
@@ -278,8 +209,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     return _opts;
   }
 
-
-
   /**
   Return an appropriate rasterizer for the given object.
   @method getRasterizer
@@ -294,8 +223,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
       r = eng.rasterizers.plain_text;
     return r;
   };
-
-
 
   /**
   Initialize a generator from a transformation description.
@@ -331,8 +258,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     return gen;
   }
 
-
-
   /**
   Generate the "world".
   @method initWorld
@@ -346,7 +271,18 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     extrovert.createScene( opts );
 
     var ico = opts.init_cam_opts ? _utils.extend(true, {}, opts.camera, opts.init_cam_opts ) : opts.camera;
-    extrovert.createCamera( ico );
+    if( ico.type === 'orthographic' ) {
+      ico.left = ico.left || eng.width / - 2;
+      ico.right = ico.right || eng.width / 2;
+      ico.top = ico.top || eng.height / 2;
+      ico.bottom = ico.bottom || eng.height / - 2;
+    }
+    else {
+      ico.aspect = eng.width / eng.height;
+    }
+    var cam = my.provider.createCamera( ico );
+    extrovert.LOGGING && _log.msg('Created camera at %o: %o', cam.position, cam);
+    eng.camera = cam;
 
     // Create an invisible plane for drag and drop
     // TODO: Only create this if drag-drop controls are enabled
@@ -399,10 +335,10 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
       // opts.creating && opts.creating( elem, mesh );
       // opts.created && opts.created( elem, mesh );
     }
-    
+
     // -------------------------------------------------------------------------
     // Transform
-    // -------------------------------------------------------------------------    
+    // -------------------------------------------------------------------------
 
     // Set final camera position and orientation. Some generators depend on a
     // particular cam position for layouting, so we don't mess with it until
@@ -417,8 +353,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     extrovert.fiatLux( opts.lights );
   }
 
-
-
   /**
   Initialize keyboard and mouse controls for the scene. Right now this is a bit
   of a formality.
@@ -428,8 +362,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     eng.controls = my.createControls( opts.controls, eng.camera, eng.renderer.domElement );
     return eng.controls;
   }
-
-
 
   /**
   Initialize the renderer, which can either be a WebGL renderer (the default)
@@ -469,8 +401,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     eng.renderer.domElement.style += ' position: relative;';
   }
 
-
-
   /**
   Introduce the canvas to the live DOM. Note: .getBoundingClientRect will
   return an empty (zero-size) result until this happens.
@@ -498,7 +428,20 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     }
   }
 
-
+  /**
+  Create a mesh object from a generic description. Currently only supports box
+  and plane meshes; add others as necessary.
+  @method createObject
+  */
+  my.createObject = function( desc ) {
+    my.LOGGING && _log.msg('Creating object: %o', desc);
+    var mesh = my.provider.createObject( desc );
+    eng.scene.add( mesh );
+    eng.objects.push( mesh );
+    mesh.updateMatrix();
+    mesh.updateMatrixWorld();
+    return mesh;
+  };
 
   /**
   Create a mouse/keyboard control type from a generic description. Extrovert
@@ -513,37 +456,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     return null;
   };
 
-
-
-  /**
-  Create a camera from a generic options object.
-  @method createCamera
-  */
-  my.createCamera = function( copts ) {
-
-    if( copts.type === 'orthographic' ) {
-      copts.left = copts.left || eng.width / - 2;
-      copts.right = copts.right || eng.width / 2;
-      copts.top = copts.top || eng.height / 2;
-      copts.bottom = copts.bottom || eng.height / - 2;
-    }
-
-    var cam = copts.type != 'orthographic' ?
-      new THREE.PerspectiveCamera( copts.fov, eng.width / eng.height, copts.near, copts.far ) :
-      new THREE.OrthographicCamera( copts.left, copts.right, copts.top, copts.bottom, copts.near, copts.far );
-    eng.camera = cam;
-    copts.position && cam.position.set( copts.position[0], copts.position[1], copts.position[2] );
-    if( copts.up ) cam.up.set( copts.up[0], copts.up[1], copts.up[2] );
-    if( copts.lookat ) cam.lookAt( new THREE.Vector3( copts.lookat[0], copts.lookat[1], copts.lookat[2] ) );
-    cam.updateMatrix(); // TODO: Are any of these calls still necessary?
-    cam.updateMatrixWorld();
-    cam.updateProjectionMatrix();
-    my.LOGGING && _log.msg('Created camera at %o: %o', cam.position, cam);
-    return cam;
-  };
-
-
-
   /**
   Initialize the top-level Scene object. Currently this will either be a THREE.Scene
   object or, if physics is enabled, a Physijs.Scene object.
@@ -553,8 +465,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     eng.scene = scene_opts.physics.enabled ? new Physijs.Scene() : new THREE.Scene();
     return eng.scene;
   };
-
-
 
   /**
   Create predefined scene objects, meaning custom objects that are placed in the
@@ -570,118 +480,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     }
   }
 
-
-
-  /**
-  Create a material from a generic description.
-  @method createMaterial
-  */
-  my.createMaterial = function( desc ) {
-
-    var mat = new THREE.MeshLambertMaterial({ color: desc.color || 0xFFFFFF, map: desc.tex || null });
-    return (_opts.physics.enabled && !desc.noPhysics) ?
-      Physijs.createMaterial( mat, desc.friction, desc.restitution )
-      : mat;
-
-  };
-
-
-
-  /**
-  Create a texture from a canvas. Defer to THREE for now.
-  @method createMaterialFromCanvas
-  */
-  my.createMaterialFromCanvas = function( canvas, needsUpdate ) {
-    var texture = new THREE.Texture( canvas );
-    texture.needsUpdate = needsUpdate || false;
-    return { tex: texture, mat: new THREE.MeshLambertMaterial( { map: tex } ) };
-  };
-
-
-
-  /**
-  Create a texture from a canvas. Defer to THREE for now.
-  @method createTextureFromCanvas
-  */
-  my.createTextureFromCanvas = function( canvas, needsUpdate ) {
-    var texture = new THREE.Texture( canvas );
-    texture.needsUpdate = needsUpdate || false;
-    return texture;
-  };
-
-
-
-  /**
-  Create a six-sided material from an array of materials.
-  @method createCubeMaterial
-  */
-  my.createCubeMaterial = function( faceMaterials ) {
-    return new THREE.MeshFaceMaterial( faceMaterials );
-  };
-
-
-
-  /**
-  Create a mesh object from a generic description. Currently only supports box
-  and plane meshes; add others as necessary.
-  @method createObject
-  */
-  my.createObject = function( desc ) {
-    my.LOGGING && _log.msg('Creating object: %o', desc);
-    // Set up vars with reasonable defaults for color, opacity, transparency.
-    var mesh = null, geo = null, mat = null;
-    var rgb = desc.color || 0xFFFFFF;
-    var opac = desc.opacity || 1.0;
-    var trans = desc.transparent || false;
-    // Create Box-type meshes
-    if( desc.type === 'box' ) {
-      geo = new THREE.BoxGeometry( desc.dims[0], desc.dims[1], desc.dims[2] );
-      mat = desc.mat || new THREE.MeshLambertMaterial( { color: rgb, opacity: opac, transparent: trans } );
-      mesh = createMesh(geo, 'Box', mat, false, desc.mass);
-    }
-    // Create Plane-type meshes
-    else if( desc.type === 'plane' ) {
-      geo = new THREE.PlaneBufferGeometry( desc.dims[0], desc.dims[1] );
-      mat = desc.mat || new THREE.MeshBasicMaterial( { color: rgb, opacity: opac, transparent: trans } );
-      mesh = createMesh( geo, null, mat, true, desc.mass );
-    }
-    // Set object position and rotation (only if explicitly specified)
-    if( desc.pos )
-      mesh.position.set( desc.pos[0], desc.pos[1], desc.pos[2] );
-    if( desc.rot )
-      mesh.rotation.set( desc.rot[0], desc.rot[1], desc.rot[2], 'YXZ' );
-    // Set visibility flag
-    if( desc.visible === false )
-      mesh.visible = false;
-    // Turn off shadows for now.
-    mesh.castShadow = mesh.receiveShadow = false;
-
-    eng.scene.add( mesh );
-    eng.objects.push( mesh );
-    mesh.updateMatrix();
-    mesh.updateMatrixWorld();
-
-    return mesh;
-  };
-
-
-
-  /**
-  Helper function to create a specific mesh type.
-  @method createMesh
-  @param geo A THREE.XxxxGeometry object.
-  @param mesh_type Either 'Box' or 'Plane'.
-  @param mat A THREE.XxxxMaterial object.
-  @param force_simple A flag to force using a THREE.Mesh instead of a Physijs.Mesh.
-  @param mass The mass of the object, if physics is enabled.
-  */
-  function createMesh( geo, mesh_type, mat, force_simple, mass ) {
-    return _opts.physics.enabled && !force_simple ?
-      new Physijs[ mesh_type + 'Mesh' ]( geo, mat, mass ) : new THREE.Mesh(geo, mat);
-  }
-
-
-
   /**
   Initialize the physics system.
   @method initPhysics
@@ -693,8 +491,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
       eng.scene.addEventListener('update', update);
     }
   }
-
-
 
   /**
   Set up event handlers.
@@ -710,8 +506,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     window.addEventListener( 'resize', window_resize, false );
   }
 
-
-
   /**
   Initialize the scene timer. TODO: Improve simulation timing and structure.
   TODO: integrate with Three.Clock() and eng.clock.
@@ -720,8 +514,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   function initTimer() {
     eng.start_time = eng.last_time = Date.now() / 1000.0;
   }
-
-
 
   /**
   Create a physical representation of the user's identity. For now this is just
@@ -737,8 +529,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
       eng.objects.push( avatar );
     }
   }
-
-
 
   /**
   Start the simulation.
@@ -757,8 +547,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     animate();
   }
 
-
-
   /**
   Request animation of the scene. Called directly only once, at the start of the
   simulation. Thereafter, called whenever requestAnimationFrame decides.
@@ -769,8 +557,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     render();
   }
 
-
-
   /**
   Update the scene physics. Only called when physics are enabled.
   @method update
@@ -778,8 +564,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   function update() {
     eng.scene.simulate();
   }
-
-
 
   /**
   Render the scene.
@@ -809,9 +593,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     eng.css_renderer && eng.css_renderer.render( eng.css_scene, eng.camera );
     eng.renderer.render( eng.scene, eng.camera );
   }
-
-
-
 
   /**
   Create one or more lights from a generic description. Supports ambient, point,
@@ -852,8 +633,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     return lights;
   };
 
-
-
   /**
   Create a spotlight with the specified color. TODO: adjust shadowmap settings.
   @method createSpotlight
@@ -867,8 +646,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     return spotLight;
   }
 
-
-
   /**
   Calculate the position, in world coordinates, of the specified (x,y) screen
   location, at whatever point it intersects with the placement_plane.
@@ -880,8 +657,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     var intersects = eng.raycaster.intersectObject( p );
     return (intersects.length > 0) ? intersects[0].point : null;
   };
-
-
 
   /**
   Calculate the position, in world coordinates, of the specified (x,y) screen
@@ -897,8 +672,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     var pos = eng.camera.position.clone().add( dir.multiplyScalar( distance ) );
   };
 
-
-
   /**
   Apply a force to an object at a specific point. If physics is disabled, has no
   effect.
@@ -912,8 +685,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
       thing.object.applyImpulse( effect, force_offset );
     }
   }
-
-
 
   /**
   Handle the 'mousedown' event.
@@ -973,8 +744,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     }
   }
 
-
-
   /**
   Handle the 'mousemove' event. TODO: physics integration.
   @method onMouseMove
@@ -1004,8 +773,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     }
   }
 
-
-
   /**
   Handle the 'mouseup' event.
   @method onMouseUp
@@ -1034,8 +801,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     eng.selected = null;
   }
 
-
-
   /**
   Handle the 'keydown' event.
   @method onKeyDown
@@ -1043,8 +808,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   function onKeyDown( e ) {
     eng.controls && eng.controls.enabled && eng.controls.keydown( e );
   }
-
-
 
   /**
   Handle the 'keyup' event.
@@ -1054,8 +817,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     eng.controls && eng.controls.enabled && eng.controls.keyup( e );
   }
 
-
-
   /**
   Handle the 'mousewheel' event.
   @method onMouseWheel
@@ -1063,8 +824,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   function onMouseWheel( e ) {
     eng.controls && eng.controls.enabled && eng.controls.mousewheel( e );
   }
-
-
 
   /**
   Retrieve 3D position info for a specific HTML DOM element.
@@ -1110,8 +869,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     };
   };
 
-
-
   /**
   Create an invisible placement plane. TODO: No need to create geometry to place objects;
   replace this technique with unproject at specified Z.
@@ -1133,8 +890,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     return eng.placement_plane;
   };
 
-
-
   /**
   Handle the window 'resize' event.
   @method window_resize
@@ -1148,8 +903,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     eng.renderer.setSize( eng.width, eng.height );
   }
 
-
-
   /**
   Load an image as a texture. Defers to THREE for now.
   @method loadTexture
@@ -1157,8 +910,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   my.loadTexture = function( src ) {
     return THREE.ImageUtils.loadTexture( src );
   };
-
-
 
   /**
   Convert the specified screen coordinates to normalized device coordinates
@@ -1171,8 +922,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     coords.z = posZ;
     return coords;
   };
-
-
 
   /**
   Module return.

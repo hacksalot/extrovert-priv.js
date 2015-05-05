@@ -8,7 +8,7 @@ module.exports = function(grunt) {
   var opts = {
 
     pkg: grunt.file.readJSON('package.json'),
-    
+
     clean: {
       dist: ['dist'],
       temp: ['.tmp']
@@ -41,12 +41,12 @@ module.exports = function(grunt) {
       },
       dist: {
         sources: {
-          extro: ['dist/extrovert.js', 'bower_components/in.scribe/in.scribe.js', 'src/**/*.js', '!src/extrovert.annotated.js' ],
+          extro: ['src/extro-core.js', 'bower_components/in.scribe/in.scribe.js', 'src/**/*.js' ],
           deps: ['bower_components/threejs/build/three.js', 'bower_components/physijs/physi.js'],
           merged: null /* filled at runtime */
         },
         files: {
-          'dist/<%= pkg.name %>.js': '<%= concat.dist.sources.extro %>',
+          'dist/<%= pkg.name %>.annotated.js': '<%= concat.dist.sources.extro %>',
           'dist/<%= pkg.name %>.all.js': '<%= concat.dist.sources.merged %>',
           'dist/<%= pkg.name %>.deps.js': '<%= concat.dist.sources.deps %>'
         }
@@ -55,13 +55,14 @@ module.exports = function(grunt) {
 
 
     copy: {
+      // Make a copy of extrovert.annotated.js called extrovert.js
       pre: {
-        files: [{ 
+        files: [{
           expand: true, flatten: true,
-          src: ['src/extrovert*.annotated.js'],
-          dest: 'src',
+          src: ['dist/extrovert.annotated.js'],
+          dest: 'dist',
           rename: function( dest, src ) {
-            return "src/" + src.replace('.annotated', '');
+            return "dist/" + src.replace('.annotated.js', '.js');
           }
         }]
       },
@@ -88,18 +89,18 @@ module.exports = function(grunt) {
       },
     },
 
-    
+
     comments: {
       main: {
-        // Target-specific file lists and/or options go here. 
+        // Target-specific file lists and/or options go here.
         options: {
           singleline: true,
           multiline: true
         },
-        src: [ 'src/extrovert.js'] // files to remove comments from 
+        src: [ 'dist/<%= pkg.name %>.js' ] // files to remove comments from
       }
     },
-    
+
 
     uglify: {
       options: {
@@ -141,7 +142,7 @@ module.exports = function(grunt) {
 
 
     // Create gzipped versions of JS sources.
-    
+
     // This configuration, straight from the docs
     // (https://github.com/gruntjs/grunt-contrib-compress)
     // doesn't really work.
@@ -153,8 +154,8 @@ module.exports = function(grunt) {
         // ]
       // }
     // }
-    
-    // This configuration, also from the docs, works, 
+
+    // This configuration, also from the docs, works,
     // but doesn't specify the file extension
     // gzip assets 1-to-1 for production
     compress: {
@@ -185,16 +186,15 @@ module.exports = function(grunt) {
 
   // Fill in the .merged prop (see concat {} settings above) at runtime
   opts.concat.dist.sources.merged = opts.concat.dist.sources.deps.concat( opts.concat.dist.sources.extro );
-  
+
   var cfgs = {
-    debug: ['clean', 'jshint', 'copy:pre', 'comments', 'concat', 'copy:physijs', 'clean:temp'],
-    release: ['clean', 'jshint', 'copy:pre', 'comments', 'concat', 'copy:physijs', 'uglify:dist', 'compress:main', 'copy:rename', 'clean:temp'],
+    debug: ['clean', 'jshint', 'concat', 'copy:pre', 'comments', 'copy:physijs', 'clean:temp'],
+    release: ['clean', 'jshint', 'concat', 'copy:pre', 'comments', 'copy:physijs', 'uglify:dist', 'compress:main', 'copy:rename', 'clean:temp'],
     quick: ['clean','jshint','concat','copy:physijs','uglify:dist','clean:temp'],
     test: ['default', 'connect:auto', 'qunit'],
     testmanual: ['default', 'connect:manual']
   };
-  
-  
+
   // Usage: 'grunt [action]:[configuration]:[quick]'
   //
   // [action] can be either 'build' or 'serve'.
@@ -208,6 +208,7 @@ module.exports = function(grunt) {
   // To package and serve a quick debug build, use:
   //
   //        grunt serve:debug:quick
+  //
 
   grunt.registerTask('build', 'Build the Extrovert library.', function( config, quick ) {
     config = config || 'release';

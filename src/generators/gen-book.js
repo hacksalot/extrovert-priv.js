@@ -1,5 +1,5 @@
 /**
-A "book" generator for Extrovert.js.
+The built-in "book" generator for Extrovert.js.
 @module gen-book.js
 @copyright Copyright (c) 2015 by James M. Devlin
 @author James M. Devlin | james@indevious.com
@@ -55,7 +55,10 @@ A "book" generator for Extrovert.js.
         dims: [512, 814, 2], // Std paperback = 4.25 x 6.75 = 512x814
         pagify: true,
         cover: null,
-        doubleSided: true
+        doubleSided: true,
+        camera: {
+          position: [0,0,400]
+        }
       },
 
 
@@ -64,7 +67,7 @@ A "book" generator for Extrovert.js.
         _opts = genOpts;
         _eng = eng;
         extro.createPlacementPlane( [0,0,200] );
-        _side = extro.createMaterial( genOpts.material );
+        _side = extro.provider.createMaterial( genOpts.material );
       },
 
 
@@ -75,11 +78,11 @@ A "book" generator for Extrovert.js.
         _noun = noun;
 
         if( noun.cover ) {
-          var coverMat = extro.createMaterial({ tex: extro.loadTexture( noun.cover ), friction: 0.2, resitution: 1.0 });
+          var coverMat = extro.provider.createMaterial({ tex: extro.loadTexture( noun.cover ), friction: 0.2, resitution: 1.0 });
           var coverMesh = extro.createObject({ type: 'box', pos: [0,0,0], dims: _opts.dims, mat: coverMat, mass: 1000 });
         }
 
-        function _createMat( t ) { return extro.createMaterial({ tex: t, friction: 0.2, restitution: 1.0 }); }
+        function _createMat( t ) { return extro.provider.createMaterial({ tex: t, friction: 0.2, restitution: 1.0 }); }
         function _isEven( val, index ) { return (index % 2) === 0; }
         function _isOdd( val, index ) { return !_isEven(val, index); }
 
@@ -116,7 +119,7 @@ A "book" generator for Extrovert.js.
 
               var tilePos = [0, 0, -(tt * _opts.dims[2]) - _opts.dims[2] ];
               var matArray = [ _side, _side, _side, _side, front[ tt ], tt < back.length ? back[ tt ] : _side ];
-              var meshMat = extro.createCubeMaterial( matArray );
+              var meshMat = extro.provider.createCubeMaterial( matArray );
               var mesh = extro.createObject({ type: 'box', pos: tilePos, dims: _opts.dims, mat: meshMat, mass: 1000 });
               mapTextures( mesh.geometry );
               extro.LOGGING && _eng.log.msg('Generating page %o at position %f, %f, %f', mesh, tilePos[0], tilePos[1], tilePos[2]);

@@ -66,7 +66,7 @@ A simple Extrovert HTML rasterizer.
 
         _utils.wrapText( context, massaged_content, 10, 20 + (num_lines * title_line_height) + line_height, canvas.width - 20, line_height, false );
 
-        return extro.createMaterialFromCanvas( canvas, true );
+        return extro.provider.createMaterialFromCanvas( canvas, true );
       }
     };
   };
