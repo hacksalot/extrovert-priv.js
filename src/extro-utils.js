@@ -465,6 +465,25 @@ extrovert.Utils = (function (window, THREE) {
     ctx.lineTo( x + radius, y );
     ctx.quadraticCurveTo( x, y, x, y + radius );
   }
+  
+  /**
+  Register an Extrovert event.
+  https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events
+  */
+  my.registerEvent = function( eventName ) {
+    var classic = true; // older IE-compat method
+    my.events = my.events || { };
+    my.events[ eventName ] = classic ? document.createEvent( 'Event' ) : new Event( eventName );
+    classic && my.events[ eventName ].initEvent( eventName, true, true );
+    return my.events[ eventName ];
+  };
+  
+  /**
+  Fire an Extrovert event.
+  */  
+  my.fireEvent = function( eventName ) {
+    document.dispatchEvent( my.events[ eventName ] );
+  };
 
   /**
   Module return.

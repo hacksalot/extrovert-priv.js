@@ -493,10 +493,14 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   }
 
   /**
-  Set up event handlers.
+  Set up event handlers and emitters.
   @method initEvents
   */
   function initEvents() {
+    // Register Extrovert-specific events
+    _utils.registerEvent('extro.objectClick');
+
+    // Subscribe to standard events
     eng.renderer.domElement.addEventListener( 'mousedown', onMouseDown, false );
     eng.renderer.domElement.addEventListener( 'mouseup', onMouseUp, false );
     eng.renderer.domElement.addEventListener( 'mousemove', onMouseMove, false );
@@ -649,9 +653,9 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   /**
   Calculate the position, in world coordinates, of the specified (x,y) screen
   location, at whatever point it intersects with the placement_plane.
-  @method calcPosition
+  @method screenToWorld
   */
-  my.calcPosition = function( posX, posY, placement_plane ) {
+  my.screenToWorld = function( posX, posY, placement_plane ) {
     eng.raycaster.setFromCamera( extrovert.toNDC( posX, posY, 0.5, new THREE.Vector2() ), eng.camera );
     var p = placement_plane || eng.placement_plane;
     var intersects = eng.raycaster.intersectObject( p );
@@ -661,16 +665,16 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   /**
   Calculate the position, in world coordinates, of the specified (x,y) screen
   location, at the specified Z. Currently broken.
-  @method calcPosition2
+  @method screenToWorld2
   */
-  my.calcPosition2 = function( posX, posY, unused ) {
-    var vector = new THREE.Vector3();
-    vector = extrovert.toNDC( posX, posY, 0.5, vector );
-    vector.unproject( eng.camera );
-    var dir = vector.sub( eng.camera.position ).normalize();
-    var distance = -eng.camera.position.z / dir.z;
-    var pos = eng.camera.position.clone().add( dir.multiplyScalar( distance ) );
-  };
+  // my.screenToWorld2 = function( posX, posY, unused ) {
+    // var vector = new THREE.Vector3();
+    // vector = extrovert.toNDC( posX, posY, 0.5, vector );
+    // vector.unproject( eng.camera );
+    // var dir = vector.sub( eng.camera.position ).normalize();
+    // var distance = -eng.camera.position.z / dir.z;
+    // var pos = eng.camera.position.clone().add( dir.multiplyScalar( distance ) );
+  // };
 
   /**
   Apply a force to an object at a specific point. If physics is disabled, has no
@@ -717,6 +721,12 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     // Cast a ray to see what objects were clicked.
     var intersects = eng.raycaster.intersectObjects( eng.objects );
     if( intersects.length !== 0 ) {
+
+      // Fire the 'objectClicked' event/callback if an actual object was clicked
+      // and short circuit processing if the handler returns false.
+      if( _opts.objectClicked && false === _opts.objectClicked( e, intersects ))
+        return;
+
       if( e.ctrlKey ) {
         eng.selected = intersects[ 0 ].object;
         eng.selected.has_been_touched = true;
@@ -734,11 +744,13 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
         }
       }
       else {
-         applyForce( intersects[0] ); // [4]
+        applyForce( intersects[0] ); // [4]
       }
-      _opts.clicked && _opts.clicked( e, eng.selected );
     }
 
+    _opts.clicked && _opts.clicked( e, eng.selected );
+
+    // Pass the click to the controller
     if( eng.controls && eng.controls.enabled ) {
       eng.controls.mousedown( e );
     }
@@ -844,8 +856,8 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 
     // Get the position of the element's left-top and right-bottom corners in
     // WORLD coords, based on where the camera is.
-    var topLeft = extrovert.calcPosition( pos.left, pos.top, eng.placement_plane );
-    var botRight = extrovert.calcPosition( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
+    var topLeft = extrovert.screenToWorld( pos.left, pos.top, eng.placement_plane );
+    var botRight = extrovert.screenToWorld( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
     // Calculate dimensions of the element (in world units)
     var block_width = Math.abs( botRight.x - topLeft.x );
     var block_height = Math.abs( topLeft.y - botRight.y );
