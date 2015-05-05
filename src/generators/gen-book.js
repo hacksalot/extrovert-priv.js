@@ -105,8 +105,8 @@ A "book" generator for Extrovert.js.
                 height: _opts.texHeight || 1024,
                 bkColor: _opts.bkColor, textColor: _opts.textColor
               },
-              textures = rast.paint(obj, rastOpts, info ),
-              matArray = [ _side, _side, _side, _side, null, null ];
+              textures = rast.paint(obj, rastOpts, info );
+              //matArray = [ _side, _side, _side, _side, null, null ];
 
             var mats = textures.map( _createMat );
             var front = mats.filter( _isEven );
@@ -115,8 +115,7 @@ A "book" generator for Extrovert.js.
             for( var tt = 0; tt < front.length; tt++ ) {
 
               var tilePos = [0, 0, -(tt * _opts.dims[2]) - _opts.dims[2] ];
-              matArray[4] = front[ tt ];
-              matArray[5] = tt < back.length ? back[ tt ] : _side;
+              var matArray = [ _side, _side, _side, _side, front[ tt ], tt < back.length ? back[ tt ] : _side ];
               var meshMat = extro.createCubeMaterial( matArray );
               var mesh = extro.createObject({ type: 'box', pos: tilePos, dims: _opts.dims, mat: meshMat, mass: 1000 });
               mapTextures( mesh.geometry );
