@@ -6,7 +6,6 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 @version 1.0
 */
 
-
 // Define the Extrovert module. Support AMD, CommonJS, and global formats using
 // this pattern:
 //
@@ -170,7 +169,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   A global flag that controls whether log statements are executed, ignored, or
   stripped from the source output.
   */
-  var LOGGING = true;
+  my.LOGGING = true;
 
 
 
@@ -186,8 +185,8 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     _utils = extrovert.Utils;
     _log = eng.log = _utils.log;
     options = options || { };
-    LOGGING && _log.msg('Extrovert %s', my.version);
-    LOGGING && _log.msg('User options: %o', options );
+    my.LOGGING && _log.msg('Extrovert %s', my.version);
+    my.LOGGING && _log.msg('User options: %o', options );
 
     // Quick exit if the user requests a specific renderer and the browser
     // doesn't support it or if neither renderer type is supported.
@@ -454,7 +453,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     }
     var rendOpts = rendName === 'Canvas' ? undefined : { antialias: true };
 
-    LOGGING && _log.msg("Creating '%s' renderer with size %d x %d.", rendName, eng.width, eng.height);
+    my.LOGGING && _log.msg("Creating '%s' renderer with size %d x %d.", rendName, eng.width, eng.height);
 
     eng.renderer = new THREE[rendName + 'Renderer']( rendOpts );
     eng.renderer.setPixelRatio( window.devicePixelRatio );
@@ -533,7 +532,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     cam.updateMatrix(); // TODO: Are any of these calls still necessary?
     cam.updateMatrixWorld();
     cam.updateProjectionMatrix();
-    LOGGING && _log.msg('Created camera at %o: %o', cam.position, cam);
+    my.LOGGING && _log.msg('Created camera at %o: %o', cam.position, cam);
     return cam;
   };
 
@@ -584,7 +583,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 
   /**
   Create a texture from a canvas. Defer to THREE for now.
-  @method createTextureFromCanvas
+  @method createMaterialFromCanvas
   */
   my.createMaterialFromCanvas = function( canvas, needsUpdate ) {
     var texture = new THREE.Texture( canvas );
@@ -622,7 +621,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   @method createObject
   */
   my.createObject = function( desc ) {
-    LOGGING && _log.msg('Creating object: %o', desc);
+    my.LOGGING && _log.msg('Creating object: %o', desc);
     // Set up vars with reasonable defaults for color, opacity, transparency.
     var mesh = null, geo = null, mat = null;
     var rgb = desc.color || 0xFFFFFF;
@@ -1124,7 +1123,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     eng.scene.updateMatrix();
     eng.placement_plane.updateMatrix();
     eng.placement_plane.updateMatrixWorld();
-    LOGGING && _log.msg('Created placement plane at [%o]: %o', eng.placement_plane.position, eng.placement_plane);
+    my.LOGGING && _log.msg('Created placement plane at [%o]: %o', eng.placement_plane.position, eng.placement_plane);
     return eng.placement_plane;
   };
 
