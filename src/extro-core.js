@@ -163,7 +163,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     start();
 
     // Since we use a false return as a quick signal for "can't render"
-    // above, we've gotta return true here even though it's meaningless.
+    // above, return true here even though it's meaningless.
     return true;
   };
 
