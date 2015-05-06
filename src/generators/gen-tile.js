@@ -36,14 +36,11 @@ The built-in tile generator for Extrovert.js.
 
       generate: function( noun, elems ) {
         _noun = noun;
-        var extents = [0,0];
         for( var i = 0; i < elems.length; i++ ) {
           var obj = elems[ i ];
-          var row = i / _opts.cols;
+          var row = Math.floor( i / _opts.cols );
           var col = i % _opts.cols;
           var tilePos = [col * _opts.dims[0], row * _opts.dims[1], 0 ];
-          extents[0] = tilePos[0] + (_opts.dims[0] / 2);
-          extents[1] = tilePos[1] + (_opts.dims[1] / 2);
           var rast = null;
           if( noun.rasterizer ) {
             if( typeof noun.rasterizer === 'string' )
