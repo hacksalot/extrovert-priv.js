@@ -36,6 +36,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
       near: 1,
       far: 10000,
       position: [0,0,200]
+      //positionScreen: [4000,4000,200]
     },
     controls: {
       type: 'universal',
@@ -270,6 +271,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 
     extrovert.createScene( opts );
 
+    // Create the camera
     var ico = opts.init_cam_opts ? _utils.extend(true, {}, opts.camera, opts.init_cam_opts ) : opts.camera;
     if( ico.type === 'orthographic' ) {
       ico.left = ico.left || eng.width / - 2;
@@ -281,7 +283,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
       ico.aspect = eng.width / eng.height;
     }
     var cam = my.provider.createCamera( ico );
-    extrovert.LOGGING && _log.msg('Created camera at %o: %o', cam.position, cam);
+    extrovert.LOGGING && _log.msg('Created camera at [%f,%f,%f]: %o', cam.position.x, cam.position.y, cam.position.z, cam);
     eng.camera = cam;
 
     // Create an invisible plane for drag and drop
@@ -345,7 +347,33 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     // after everything's been created.
     var oc = opts.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2], 'YXZ' );
-    oc.position && eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
+
+    var camPos;
+    if( oc.positionScreen ) {
+      var srcCont = (opts.src && opts.src.container) || opts.container || document.body;
+      if( typeof srcCont === 'string' ) {
+        srcCont = _utils.$( srcCont );
+        if(srcCont.length !== undefined) srcCont = srcCont[0];
+      }
+      var parent_pos = _utils.offset( srcCont );
+      var child_pos = { left: oc.positionScreen[0], top: oc.positionScreen[1] };
+      var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };      
+      var rect = srcCont.getBoundingClientRect();
+      var extents = { width: rect.right - rect.left, height: rect.bottom - rect.top };
+      var worldPos = my.screenToWorldEx( oc.positionScreen[0], oc.positionScreen[1], null, extents );
+      oc.position[0] = worldPos.x;
+      oc.position[1] = worldPos.y;
+      //oc.position[2] = worldPos.z;
+      oc.position[2] = oc.positionScreen[2];
+    }
+    else if ( oc.positionNDC ) {
+      oc.position = my.ndcToWorld( oc.positionNDC );
+    }
+    
+    if( oc.position ) {
+      eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
+      extrovert.LOGGING && _log.msg('Camera moved to [%f,%f,%f]: %o', oc.position[0], oc.position[1], oc.position[2], cam);
+    }
 
     // Set up LIGHTING.
     // We do this after final cam positioning because the default light position,
@@ -434,7 +462,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   @method createObject
   */
   my.createObject = function( desc ) {
-    my.LOGGING && _log.msg('Creating object: %o', desc);
+    my.LOGGING && _log.msg('Creating object %o at [%f,%f,%f].', desc, desc.pos[0], desc.pos[1], desc.pos[2] );
     var mesh = my.provider.createObject( desc );
     eng.scene.add( mesh );
     eng.objects.push( mesh );
@@ -664,6 +692,33 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 
   /**
   Calculate the position, in world coordinates, of the specified (x,y) screen
+  location, at whatever point it intersects with the placement_plane.
+  @method screenToWorldEx
+  */
+  my.screenToWorldEx = function( posX, posY, placement_plane, extents ) {
+    eng.raycaster.setFromCamera( extrovert.toNDCEx( [posX, posY, 0.5], new THREE.Vector2(), extents ), eng.camera );
+    var p = placement_plane || eng.placement_plane;
+    var intersects = eng.raycaster.intersectObject( p );
+    return (intersects.length > 0) ? intersects[0].point : null;
+  };
+
+  /**
+  Calculate the position, in world coordinates, of the specified (x,y) screen
+  location, at whatever point it intersects with the placement_plane.
+  @method ndcToWorld
+  */
+  my.ndcToWorld = function( pos, placement_plane ) {
+    var temp = new THREE.Vector3(pos[0], pos[1], pos[2]);
+    eng.raycaster.setFromCamera( temp, eng.camera );
+    var p = placement_plane || eng.placement_plane;
+    var intersects = eng.raycaster.intersectObject( p );
+    return (intersects.length > 0) ?
+      [ intersects[0].point.x, intersects[0].point.y, intersects[0].point.z ] 
+      : null;
+  };  
+  
+  /**
+  Calculate the position, in world coordinates, of the specified (x,y) screen
   location, at the specified Z. Currently broken.
   @method screenToWorld2
   */
@@ -882,6 +937,48 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
   };
 
   /**
+  Retrieve 3D position info for a specific HTML DOM element.
+  @method getPositionDirect
+  @param val Any DOM element.
+  @param container A DOM element or CSS selector for the container element.
+  @param zDepth The depth of the HTML element in world units.
+  */
+  my.getPositionDirect = function( val, container, zDepth, forceZ ) {
+
+    // Safely get the position of the HTML element [1] relative to its parent
+    var src_cont = (typeof container === 'string') ?
+      _utils.$( container ) : container;
+    if(src_cont.length !== undefined) src_cont = src_cont[0];
+    var parent_pos = _utils.offset( src_cont );
+    var child_pos = _utils.offset( val );
+    var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
+
+    // Get the position of the element's left-top and right-bottom corners
+    var topLeft = { x: pos.left, y: pos.top, z: forceZ || 0.0 };
+    var botRight = { x: pos.left + val.offsetWidth, y: pos.top + val.offsetHeight, z: forceZ || 0.0 };
+    // Calculate dimensions of the element (in world units)
+    var block_width = Math.abs( botRight.x - topLeft.x );
+    var block_height = Math.abs( topLeft.y - botRight.y );
+    // Adjust depth based on options
+    if(zDepth === 'width')
+      zDepth = block_width;
+    else if (zDepth === 'height')
+      zDepth = block_height;
+    var block_depth = zDepth || Math.abs( topLeft.z - botRight.z ) || 1.0;
+
+    // Offset by the half-height/width so the corners line up
+    return {
+      pos:
+        [topLeft.x + (block_width / 2),
+        topLeft.y - (block_height / 2),
+        topLeft.z - (block_depth / 2)],
+      width: block_width,
+      height: block_height,
+      depth: block_depth
+    };
+  };  
+  
+  /**
   Create an invisible placement plane. TODO: No need to create geometry to place objects;
   replace this technique with unproject at specified Z.
   @method createPlacementPlane
@@ -932,6 +1029,18 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
     coords.x = ( posX / eng.width ) * 2 - 1;
     coords.y = - ( posY / eng.height ) * 2 + 1;
     coords.z = posZ;
+    return coords;
+  };
+
+  /**
+  Convert the specified screen coordinates to normalized device coordinates
+  (NDC) ranging from -1.0 to 1.0 along each axis.
+  @method toNDCEx
+  */
+  my.toNDCEx = function( pos, coords, extents ) {
+    coords.x = ( pos[0] / (extents.width || eng.width) ) * 2 - 1;
+    coords.y = - ( pos[1] / (extents.height || eng.height) ) * 2 + 1;
+    coords.z = pos[2];
     return coords;
   };
 
