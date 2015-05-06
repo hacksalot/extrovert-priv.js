@@ -18,8 +18,8 @@ The built-in "book" generator for Extrovert.js.
 
     /**
     Adjust page textures mapping. Necessary because the page geometry is paper-
-    back size (or user specified), but the page texture should be power-of-2 in
-    both dimensions.
+    back size or user-specified, but the page texture should be power-of-2 in
+    both dimensions (ideally).
     @method mapTextures
     */
     function mapTextures( cubeGeo ) {
@@ -43,9 +43,9 @@ The built-in "book" generator for Extrovert.js.
         material: { color: 0xCDCDCD, friction: 0.2, restitution: 1.0 },
         block: { depth: 'height' },
         clickForce: 5000,
-        rows: 10, cols: 10,
         dims: [512, 814, 2], // Std paperback = 4.25 x 6.75 = 512x814
         pagify: true,
+        title: null,
         cover: null,
         doubleSided: true,
         camera: {
