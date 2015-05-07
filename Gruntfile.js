@@ -14,8 +14,6 @@ module.exports = function(grunt) {
       temp: ['.tmp']
     },
 
-<<<<<<< Updated upstream
-=======
     // Concatenate individual JS modules via Require.js optimizer
     requirejs: {
       // Common options
@@ -49,7 +47,6 @@ module.exports = function(grunt) {
       // }
     },
 
->>>>>>> Stashed changes
     connect: {
       options: {
         hostname: 'localhost',
@@ -126,16 +123,16 @@ module.exports = function(grunt) {
     },
 
 
-    comments: {
-      main: {
-        // Target-specific file lists and/or options go here.
-        options: {
-          singleline: true,
-          multiline: true
-        },
-        src: [ 'dist/<%= pkg.name %>.js' ] // files to remove comments from
-      }
-    },
+    // comments: {
+      // main: {
+        // // Target-specific file lists and/or options go here.
+        // options: {
+          // singleline: true,
+          // multiline: true
+        // },
+        // src: [ 'dist/<%= pkg.name %>.js' ] // files to remove comments from
+      // }
+    // },
 
 
     uglify: {
