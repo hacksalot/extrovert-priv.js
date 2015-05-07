@@ -10,60 +10,39 @@ define(['three', 'extrovert'], function( THREE, extrovert ) {
 
   'use strict';
 
-    /**
-    Module object.
-    */
-    var my = {};
+  /**
+  Module object.
+  */
+  var my = {};
 
-    /**
-    Create a camera from a generic options object.
-    @method createCamera
-    */
-    my.createCamera = function( copts ) {
-      var cam = copts.type != 'orthographic' ?
-        new THREE.PerspectiveCamera( copts.fov, copts.aspect, copts.near, copts.far ) :
-        new THREE.OrthographicCamera( copts.left, copts.right, copts.top, copts.bottom, copts.near, copts.far );
-      copts.position && cam.position.set( copts.position[0], copts.position[1], copts.position[2] );
-      if( copts.up ) cam.up.set( copts.up[0], copts.up[1], copts.up[2] );
-      if( copts.lookat ) cam.lookAt( new THREE.Vector3( copts.lookat[0], copts.lookat[1], copts.lookat[2] ) );
-      cam.updateMatrix(); // TODO: Are any of these calls still necessary?
-      cam.updateMatrixWorld();
-      cam.updateProjectionMatrix();
-      return cam;
-    };
+  /**
+  Create a camera from a generic options object.
+  @method createCamera
+  */
+  my.createCamera = function( copts ) {
+    var cam = copts.type != 'orthographic' ?
+      new THREE.PerspectiveCamera( copts.fov, copts.aspect, copts.near, copts.far ) :
+      new THREE.OrthographicCamera( copts.left, copts.right, copts.top, copts.bottom, copts.near, copts.far );
+    copts.position && cam.position.set( copts.position[0], copts.position[1], copts.position[2] );
+    if( copts.up ) cam.up.set( copts.up[0], copts.up[1], copts.up[2] );
+    if( copts.lookat ) cam.lookAt( new THREE.Vector3( copts.lookat[0], copts.lookat[1], copts.lookat[2] ) );
+    cam.updateMatrix(); // TODO: Are any of these calls still necessary?
+    cam.updateMatrixWorld();
+    cam.updateProjectionMatrix();
+    return cam;
+  };
 
-    /**
-    Create a material from a generic description.
-    @method createMaterial
-    */
-    my.createMaterial = function( desc ) {
+  /**
+  Create a material from a generic description.
+  @method createMaterial
+  */
+  my.createMaterial = function( desc ) {
 
-      var mat = new THREE.MeshLambertMaterial({ color: desc.color || 0xFFFFFF, map: desc.tex || null });
-      return (extrovert.options.physics.enabled && !desc.noPhysics) ?
-        Physijs.createMaterial( mat, desc.friction, desc.restitution )
-        : mat;
+    var mat = new THREE.MeshLambertMaterial({ color: desc.color || 0xFFFFFF, map: desc.tex || null });
+    return (extrovert.options.physics.enabled && !desc.noPhysics) ?
+      Physijs.createMaterial( mat, desc.friction, desc.restitution )
+      : mat;
 
-    };
-
-    /**
-    Create a texture from a canvas. Defer to THREE for now.
-    @method createMaterialFromCanvas
-    */
-    my.createMaterialFromCanvas = function( canvas, needsUpdate ) {
-      var texture = new THREE.Texture( canvas );
-      texture.needsUpdate = needsUpdate || false;
-      return { tex: texture, mat: new THREE.MeshLambertMaterial( { map: tex } ) };
-    };
-
-    /**
-    Create a texture from a canvas. Defer to THREE for now.
-    @method createTextureFromCanvas
-    */
-    my.createTextureFromCanvas = function( canvas, needsUpdate ) {
-      var texture = new THREE.Texture( canvas );
-      texture.needsUpdate = needsUpdate || false;
-      return texture;
-    };
   };
 
   /**
@@ -75,6 +54,17 @@ define(['three', 'extrovert'], function( THREE, extrovert ) {
     texture.needsUpdate = needsUpdate || false;
     return { tex: texture, mat: new THREE.MeshLambertMaterial( { map: tex } ) };
   };
+
+  /**
+  Create a texture from a canvas. Defer to THREE for now.
+  @method createTextureFromCanvas
+  */
+  my.createTextureFromCanvas = function( canvas, needsUpdate ) {
+    var texture = new THREE.Texture( canvas );
+    texture.needsUpdate = needsUpdate || false;
+    return texture;
+  };
+
 
   /**
   Helper function to create a specific mesh type.
@@ -134,20 +124,6 @@ define(['three', 'extrovert'], function( THREE, extrovert ) {
     mesh.castShadow = mesh.receiveShadow = false;
     return mesh;
   };
-
-  /**
-  Helper function to create a specific mesh type.
-  @method createMesh
-  @param geo A THREE.XxxxGeometry object.
-  @param mesh_type Either 'Box' or 'Plane'.
-  @param mat A THREE.XxxxMaterial object.
-  @param force_simple A flag to force using a THREE.Mesh instead of a Physijs.Mesh.
-  @param mass The mass of the object, if physics is enabled.
-  */
-  function createMesh( geo, mesh_type, mat, force_simple, mass ) {
-    return extrovert.options.physics.enabled && !force_simple ?
-      new Physijs[ mesh_type + 'Mesh' ]( geo, mat, mass ) : new THREE.Mesh(geo, mat);
-  }  
 
   /**
   Module return.

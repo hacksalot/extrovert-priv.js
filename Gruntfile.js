@@ -68,37 +68,8 @@ module.exports = function(grunt) {
 
     },
 
-    concat: {
-      options: {
-        separator: ';'
-      },
-      dist: {
-        sources: {
-          extro: ['src/extro-core.js', 'bower_components/in.scribe/in.scribe.js', 'src/**/*.js' ],
-          deps: ['bower_components/threejs/build/three.js', 'bower_components/physijs/physi.js'],
-          merged: null /* filled at runtime */
-        },
-        files: {
-          'dist/<%= pkg.name %>.annotated.js': '<%= concat.dist.sources.extro %>',
-          'dist/<%= pkg.name %>.all.js': '<%= concat.dist.sources.merged %>',
-          'dist/<%= pkg.name %>.deps.js': '<%= concat.dist.sources.deps %>'
-        }
-      }
-    },
-
-
     copy: {
       // Make a copy of extrovert.annotated.js called extrovert.js
-      pre: {
-        files: [{
-          expand: true, flatten: true,
-          src: ['dist/extrovert.annotated.js'],
-          dest: 'dist',
-          rename: function( dest, src ) {
-            return "dist/" + src.replace('.annotated.js', '.js');
-          }
-        }]
-      },
       physijs: {
         files: [
         {
@@ -169,7 +140,8 @@ module.exports = function(grunt) {
           module: true,
           document: true
         },
-        expr: true
+        expr: true,
+        newcap: false
       }
     },
 
@@ -212,17 +184,14 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-compress');
-  grunt.loadNpmTasks('grunt-stripcomments');
+  grunt.loadNpmTasks('grunt-contrib-requirejs');  
 
-  // Fill in the .merged prop (see concat {} settings above) at runtime
-  opts.concat.dist.sources.merged = opts.concat.dist.sources.deps.concat( opts.concat.dist.sources.extro );
 
   var cfgs = {
-    debug: ['clean', 'jshint', 'concat', 'copy:pre', 'comments', 'copy:physijs', 'clean:temp'],
-    release: ['clean', 'jshint', 'concat', 'copy:pre', 'comments', 'copy:physijs', 'uglify:dist', 'compress:main', 'copy:rename', 'clean:temp'],
+    debug: ['clean', 'jshint', 'requirejs', 'copy:physijs', 'clean:temp'],
+    release: ['clean', 'jshint', 'requirejs', 'copy:physijs', 'uglify:dist', 'compress:main', 'copy:rename', 'clean:temp'],
     quick: ['clean','jshint','concat','copy:physijs','uglify:dist','clean:temp'],
     test: ['default', 'connect:auto', 'qunit'],
     testmanual: ['default', 'connect:manual']
