@@ -14,6 +14,42 @@ module.exports = function(grunt) {
       temp: ['.tmp']
     },
 
+<<<<<<< Updated upstream
+=======
+    // Concatenate individual JS modules via Require.js optimizer
+    requirejs: {
+      // Common options
+      options: {
+        baseUrl: "src",
+        include: [ 'core' ],
+        paths: {
+          three: '../bower_components/threejs/build/three' // AMD version of Three.js
+        },
+        wrap: {
+          startFile: 'src/start.frag',
+          endFile: 'src/end.frag'
+        },
+        // shim: {
+          // three: { exports: 'THREE' }
+        // },
+        name: '../bower_components/almond/almond'
+      },
+
+      annotated: {
+        options: {
+          optimize: 'none',
+          out: 'dist/extrovert.js'
+        }
+      }
+
+      // minified: {
+        // options: {
+          // out: 'dist/extrovert.min.js'
+        // }
+      // }
+    },
+
+>>>>>>> Stashed changes
     connect: {
       options: {
         hostname: 'localhost',

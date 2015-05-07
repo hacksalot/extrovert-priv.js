@@ -4,6 +4,7 @@ A hybrid control module for Extrovert.js scenes.
 @author James Devlin (james@indevious.com)
 */
 
+<<<<<<< Updated upstream
 extrovert.UniversalControls = function ( object, domElement, options ) {
 
   this.object = object;
@@ -43,6 +44,13 @@ extrovert.UniversalControls = function ( object, domElement, options ) {
         this.object.position.y = options.yFloor;
     }
   };
+=======
+define(['three', 'core'], function( THREE, extrovert ) {
+
+  'use strict';
+  
+  return function ( object, domElement, options ) {
+>>>>>>> Stashed changes
 
   this.mousedown = function( e ) {
     var posX = e.offsetX === undefined ? e.layerX : e.offsetX;
@@ -53,10 +61,37 @@ extrovert.UniversalControls = function ( object, domElement, options ) {
     _posChanged = false;
   };
 
+<<<<<<< Updated upstream
   this.mouseup = function( e ) {
     _isTracking = false;
     _posChanged = false;
   };
+=======
+    this.update = function( delta ) {
+      if( _moveState.lookAt ) {
+        (this.object.parent || this.object).lookAt( new THREE.Vector3(0,500,0) );
+      }
+      else if( _isTracking && _posChanged ) {
+        var temp = _mouseDeltaNDC.x;
+        _mouseDeltaNDC.x = -_mouseDeltaNDC.y;
+        _mouseDeltaNDC.y = temp;
+        var vRot = this.object.rotation.toVector3().add( _mouseDeltaNDC.multiplyScalar(0.65) );
+        this.object.rotation.setFromVector3( vRot, 'YXZ' );
+        _posChanged = false;
+      }
+      if( _moveState.zdir )
+        this.object.translateZ( (this.movementSpeed * delta) * _moveState.zdir * this.turboMultiplier );
+      if( _moveState.xdir )
+        this.object.translateX( (this.movementSpeed * delta) * _moveState.xdir * this.turboMultiplier );
+      if( _moveState.ydir )
+        this.object.translateY( (this.movementSpeed * delta) * _moveState.ydir * this.turboMultiplier );
+
+      if( options.yFloor ) {
+        if( this.object.position.y < options.yFloor )
+          this.object.position.y = options.yFloor;
+      }
+    };
+>>>>>>> Stashed changes
 
   this.mousemove = function( e ) {
     if( _isTracking ) {
@@ -112,4 +147,22 @@ extrovert.UniversalControls = function ( object, domElement, options ) {
 		}
 	};
 
+<<<<<<< Updated upstream
 };
+=======
+    this.keyup = function( e ) {
+      switch ( e.keyCode ) {
+        case 87: _moveState.zdir = 0; break; // W
+        case 83: _moveState.zdir = 0; break; // S
+        case 65: _moveState.xdir = 0; break; // A
+        case 68: _moveState.xdir = 0; break; // D
+        case 82: _moveState.ydir = 0; break; // R
+        case 70: _moveState.ydir = 0; break; // F
+        case 32: _moveState.lookAt = 0; break; // Space
+        case 16: this.turboMultiplier = 1; break; // Shift
+      }
+    };
+  };
+
+});
+>>>>>>> Stashed changes

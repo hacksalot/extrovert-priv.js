@@ -6,14 +6,14 @@ A simple Extrovert image rasterizer.
 @version 1.0
 */
 
-(function (window, extro) {
+define(['extrovert'], function( extrovert ) {
 
-  extro.paint_img = function () {
-    return {
-      paint: function( obj ) {
-        return extro.loadTexture( typeof obj === 'string' ? obj : obj.src );
-      }
-    };
+  'use strict';
+
+  return {
+    paint: function( obj ) {
+      return extro.loadTexture( typeof obj === 'string' ? obj : obj.src );
+    }
   };
 
-}(window, extrovert));
+});

@@ -6,30 +6,31 @@ A simple Extrovert HTML rasterizer.
 @version 1.0
 */
 
-(function (window, extro) {
+define(['extrovert', 'utils'], function( extrovert, Utils ) {
 
-  extro.paint_element = function () {
-    return {
-      paint: function( val, opts ) {
-        var _utils = extro.Utils;
+  'use strict';
 
-        // Create a canvas element. TODO: Reuse a single canvas.
-        var canvas = document.createElement('canvas');
-        var context = canvas.getContext('2d');
-        canvas.width = val.offsetWidth;
-        canvas.height = val.offsetHeight;
+  return {
+    paint: function( val, opts ) {
+      var _utils = Utils;
 
-        // Fill the canvas with the background color
-        var bkColor = _utils.getComputedStyle(val, 'background-color');
-        if(bkColor === 'rgba(0, 0, 0, 0)')
-          bkColor = 'rgb(0,0,0)';
-        context.fillStyle = bkColor;
-        context.fillRect(0, 0, canvas.width, canvas.height);
+      // Create a canvas element. TODO: Reuse a single canvas.
+      var canvas = document.createElement('canvas');
+      var context = canvas.getContext('2d');
+      canvas.width = val.offsetWidth;
+      canvas.height = val.offsetHeight;
 
-        // Create a texture from the canvas
-        return extro.provider.createTextureFromCanvas( canvas, true );
-      }
-    };
+      // Fill the canvas with the background color
+      var bkColor = _utils.getComputedStyle(val, 'background-color');
+      if(bkColor === 'rgba(0, 0, 0, 0)')
+        bkColor = 'rgb(0,0,0)';
+      context.fillStyle = bkColor;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Create a texture from the canvas
+      return extrovert.provider.createTextureFromCanvas( canvas, true );
+    }
   };
 
-}(window, extrovert));
+});
+

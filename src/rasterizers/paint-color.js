@@ -6,15 +6,16 @@ A simple Extrovert HTML rasterizer.
 @version 1.0
 */
 
-(function (window, extro) {
+define(['extrovert'], function( extrovert ) {
 
-  extro.paint_color = function () {
-    return {
-      paint: function( val, opts ) {
-        // Create a texture from the canvas
-        return extro.provider.createTextureFromCanvas( canvas );
-      }
-    };
+  'use strict';
+
+  return {
+    paint: function( val, opts ) {
+      // Create a texture from the canvas
+      return extrovert.provider.createTextureFromCanvas( canvas );
+    }
   };
 
-}(window, extrovert));
+
+});
