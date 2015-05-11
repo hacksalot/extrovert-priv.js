@@ -7,10 +7,10 @@ The built-in "book" generator for Extrovert.js.
 @version 1.0
 */
 
-define(['extrovert'], function( extrovert ) {
+define(['require', '../core'], function( require, extro ) {
 
   'use strict';
-
+  
   var _opts = null;
   var _eng = null;
   var _side = null;
@@ -36,79 +36,87 @@ define(['extrovert'], function( extrovert ) {
     cubeGeo.uvsNeedUpdate = true;
   }
 
-  return {
+  var BookGenerator = function( ) {
+    
+    var extrovert = require('../core');    
 
-    options: {
-      name: 'book',
-      material: { color: 0xCDCDCD, friction: 0.2, restitution: 1.0 },
-      block: { depth: 'height' },
-      clickForce: 5000,
-      dims: [512, 814, 2], // Std paperback = 4.25 x 6.75 = 512x814
-      pagify: true,
-      title: null,
-      cover: null,
-      doubleSided: true,
-      camera: {
-        position: [0,0,400]
-      }
-    },
+    return {
 
-    init: function( genOpts, eng ) {
-      _opts = genOpts;
-      _eng = eng;
-      extrovert.createPlacementPlane( [0,0,200] );
-      _side = extrovert.provider.createMaterial( genOpts.material );
-    },
+      options: {
+        name: 'book',
+        material: { color: 0xCDCDCD, friction: 0.2, restitution: 1.0 },
+        block: { depth: 'height' },
+        clickForce: 5000,
+        dims: [512, 814, 2], // Std paperback = 4.25 x 6.75 = 512x814
+        pagify: true,
+        title: null,
+        cover: null,
+        doubleSided: true,
+        camera: {
+          position: [0,0,400]
+        }
+      },
 
-    generate: function( noun, elems ) {
-      extrovert.LOGGING && _eng.log.msg('book.generate( %o, %o )', noun, elems);
-      _noun = noun;
+      init: function( genOpts, eng ) {
+        _opts = genOpts;
+        _eng = eng;
+        extrovert.createPlacementPlane( [0,0,200] );
+        _side = extrovert.provider.createMaterial( genOpts.material );
+      },
 
-      if( noun.cover ) {
-        var coverMat = extrovert.provider.createMaterial({ tex: extrovert.loadTexture( noun.cover ), friction: 0.2, resitution: 1.0 });
-        var coverMesh = extrovert.createObject({ type: 'box', pos: [0,0,0], dims: _opts.dims, mat: coverMat, mass: 1000 });
-      }
+      generate: function( noun, elems ) {
+        extrovert.LOGGING && _eng.log.msg('book.generate( %o, %o )', noun, elems);
+        _noun = noun;
 
-      function _createMat( t ) { return extrovert.provider.createMaterial({ tex: t, friction: 0.2, restitution: 1.0 }); }
-      function _isEven( val, index ) { return (index % 2) === 0; }
-      function _isOdd( val, index ) { return !_isEven(val, index); }
-
-      for( var i = 0; i < elems.length; i++ ) {
-        var obj = (noun.adapt && noun.adapt( elems[ i ] )) || elems[ i ];
-        var rast = null;
-        if( noun.rasterizer ) {
-          rast = ( typeof noun.rasterizer === 'string' ) ?
-            new extrovert['paint_' + noun.rasterizer]() : noun.rasterizer;
-        } else {
-          rast = new extrovert.paint_plain_text_stream();
-          //rast = extrovert.getRasterizer( obj );
+        if( noun.cover ) {
+          var coverMat = extrovert.provider.createMaterial({ tex: extrovert.loadTexture( noun.cover ), friction: 0.2, resitution: 1.0 });
+          var coverMesh = extrovert.createObject({ type: 'box', pos: [0,0,0], dims: _opts.dims, mat: coverMat, mass: 1000 });
         }
 
-        if( _opts.pagify ) {
-          var done = false,
-            info = { },
-            rastOpts = {
-              width: _opts.texWidth || 512, // Force power-of-2 textures
-              height: _opts.texHeight || 1024,
-              bkColor: _opts.bkColor, textColor: _opts.textColor
-            },
-            textures = rast.paint(obj, rastOpts, info );
-            //matArray = [ _side, _side, _side, _side, null, null ];
+        function _createMat( t ) { return extrovert.provider.createMaterial({ tex: t, friction: 0.2, restitution: 1.0 }); }
+        function _isEven( val, index ) { return (index % 2) === 0; }
+        function _isOdd( val, index ) { return !_isEven(val, index); }
 
-          var mats = textures.map( _createMat );
-          var front = mats.filter( _isEven );
-          var back = mats.filter( _isOdd );
+        for( var i = 0; i < elems.length; i++ ) {
+          var obj = (noun.adapt && noun.adapt( elems[ i ] )) || elems[ i ];
+          var rast = null;
+          if( noun.rasterizer ) {
+            rast = ( typeof noun.rasterizer === 'string' ) ?
+              new extrovert['paint_' + noun.rasterizer]() : noun.rasterizer;
+          } else {
+            rast = new extrovert.paint_plain_text_stream();
+            //rast = extrovert.getRasterizer( obj );
+          }
 
-          for( var tt = 0; tt < front.length; tt++ ) {
-            var tilePos = [0, 0, -(tt * _opts.dims[2]) - _opts.dims[2] ];
-            var matArray = [ _side, _side, _side, _side, front[ tt ], tt < back.length ? back[ tt ] : _side ];
-            var meshMat = extrovert.provider.createCubeMaterial( matArray );
-            var mesh = extrovert.createObject({ type: 'box', pos: tilePos, dims: _opts.dims, mat: meshMat, mass: 1000 });
-            mapTextures( mesh.geometry );
-            extrovert.LOGGING && _eng.log.msg('Generating page %o at position %f, %f, %f', mesh, tilePos[0], tilePos[1], tilePos[2]);
+          if( _opts.pagify ) {
+            var done = false,
+              info = { },
+              rastOpts = {
+                width: _opts.texWidth || 512, // Force power-of-2 textures
+                height: _opts.texHeight || 1024,
+                bkColor: _opts.bkColor, textColor: _opts.textColor
+              },
+              textures = rast.paint(obj, rastOpts, info );
+              //matArray = [ _side, _side, _side, _side, null, null ];
+
+            var mats = textures.map( _createMat );
+            var front = mats.filter( _isEven );
+            var back = mats.filter( _isOdd );
+
+            for( var tt = 0; tt < front.length; tt++ ) {
+              var tilePos = [0, 0, -(tt * _opts.dims[2]) - _opts.dims[2] ];
+              var matArray = [ _side, _side, _side, _side, front[ tt ], tt < back.length ? back[ tt ] : _side ];
+              var meshMat = extrovert.provider.createCubeMaterial( matArray );
+              var mesh = extrovert.createObject({ type: 'box', pos: tilePos, dims: _opts.dims, mat: meshMat, mass: 1000 });
+              mapTextures( mesh.geometry );
+              extrovert.LOGGING && _eng.log.msg('Generating page %o at position %f, %f, %f', mesh, tilePos[0], tilePos[1], tilePos[2]);
+            }
           }
         }
       }
-    }
+
+    };
   };
+  
+  return BookGenerator;
 });

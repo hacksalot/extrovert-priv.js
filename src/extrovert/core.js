@@ -5,53 +5,44 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 @module extro-core
 */
 
-define(['app/utils'], function( utils ) {
+define(
+
+[
+  'extrovert/defaults',
+  'extrovert/utils',
+  'physijs',
+  'extrovert/providers/three/provider-three',
+  'extrovert/rasterizers/paint-img',
+  'extrovert/rasterizers/paint-element',
+  'extrovert/rasterizers/paint-plain-text',
+  'extrovert/generators/gen-book',
+  'extrovert/generators/gen-box',
+  'extrovert/generators/gen-direct',
+  'extrovert/generators/gen-extrude',
+  'extrovert/generators/gen-tile'
+],
+
+function
+(
+  defaults,
+  Utils,
+  Physijs,
+  provider,
+  paint_img,
+  paint_element,
+  paint_plain_text,
+  gen_book,
+  gen_box,
+  gen_direct,
+  gen_extrude,
+  gen_tile
+){
   
   /**
   Define the module object and set the version number.
   */
   var my = { version: '0.1.0' };
   
-  /**
-  Default engine options. These are overridden by user options.
-  */
-  var defaults = {
-    renderer: 'Any',
-    gravity: [0,0,0],
-    camera: {
-      fov: 35,
-      near: 1,
-      far: 10000,
-      position: [0,0,200]
-      //positionScreen: [4000,4000,200]
-    },
-    controls: {
-      type: 'universal',
-      enabled: true,
-      allow_drag: false
-    },
-    physics: {
-      enabled: true,
-      physijs: {
-        worker: '/js/pjsworker.js',
-        ammo: 'ammo.js'
-      }
-    },
-    block: { depth: 1 },
-    move_with_physics: true,
-    clickForce: 900000,
-    onload: null,
-    onerror: null,
-    created: null,
-    clicked: null,
-    lights: [
-      { type: 'ambient', color: 0xffffff }
-    ]//,
-    // transforms: [
-      // { type: 'extrude', src: 'img' }
-    // ]
-  };
-
   /**
   Internal engine settings, not to be confused with options. Represents the run-
   time state of the Extrovert engine. We group them into an 'eng' object for no
@@ -115,7 +106,7 @@ define(['app/utils'], function( utils ) {
     _utils = Utils;
     _log = eng.log = _utils.log;
     options = options || { };
-    my.provider = my.threeJsProvider;
+    my.provider = provider;
     my.LOGGING && _log.msg('Extrovert %s', my.version);
     my.LOGGING && _log.msg('User options: %o', options );
 
@@ -189,10 +180,19 @@ define(['app/utils'], function( utils ) {
     }
 
     // Preload rasterizers
+    // TODO: legacy holdover; remove/fix
     eng.rasterizers = {
-      img: new my.paint_img(),
-      element: new my.paint_element(),
-      plain_text: new my.paint_plain_text()
+      img: paint_img,
+      element: paint_element,
+      plain_text: paint_plain_text
+    };
+    
+    eng.generators = {
+      extrude: gen_extrude,
+      tile: gen_tile,
+      book: gen_book,
+      direct: gen_direct,
+      box: gen_box
     };
 
     // Return the combined, ultrafied options object.
@@ -233,11 +233,11 @@ define(['app/utils'], function( utils ) {
     // object with a .name field specifying any valid generator, or undefined.
     var gen = null;
     if( !transformOptions.type )
-      gen = new my.extrude();
+      gen = new gen_extrude();
     else if (typeof transformOptions === 'string')
-      gen = new extrovert[ transformOptions ]();
+      gen = new eng.generators[ transformOptions ]();
     else
-      gen = new extrovert[ transformOptions.type ]();
+      gen = new eng.generators[ transformOptions.type ]();
 
     // Initialize the generator with merged options
     var mergedOptions = _utils.extend(true, { }, defaults, gen.options );

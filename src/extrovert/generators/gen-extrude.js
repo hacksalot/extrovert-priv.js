@@ -7,7 +7,7 @@ The built-in extrusion generator for Extrovert.js.
 @version 1.0
 */
 
-define(['extrovert'], function( extrovert ) {
+define(['extrovert/core'], function( extrovert ) {
 
   'use strict';
 

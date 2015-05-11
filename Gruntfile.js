@@ -53,10 +53,12 @@ module.exports = function(grunt) {
           baseUrl: 'src',
           paths: {
             'extrovert': './extrovert',
-            'three': '../bower_components/threejs/build/three'
+            'three': '../bower_components/threejs/build/three',
+            'physijs': '../bower_components/physijs/physi'
           },
           shim: {
-            'three': { exports: 'THREE' }
+            'three': { exports: 'THREE' },
+            'physijs': { exports: 'Physijs' }
           },
           include: ['../bower_components/almond/almond', 'extrovert'],
           exclude: ['three'],

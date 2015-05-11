@@ -6,7 +6,7 @@ A simple Extrovert HTML rasterizer.
 @version 1.0
 */
 
-define(['extrovert', 'utils'], function( extrovert, Utils ) {
+define(['extrovert/core', 'extrovert/utils'], function( extrovert, Utils ) {
 
   'use strict';
 
