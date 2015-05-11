@@ -7,7 +7,7 @@ Utilities for Extrovert.js.
 @version 1.0
 */
 
-define(['three'], function( THREE ) {
+define([], function( )  {
 
   'use strict';
 

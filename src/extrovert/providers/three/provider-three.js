@@ -6,7 +6,7 @@ THREE.js subsystem provider for Extrovert.js.
 @version 1.0
 */
 
-define(['three', 'extrovert'], function( THREE, extrovert ) {
+define(['extrovert'], function( extrovert ) {
 
   'use strict';
 

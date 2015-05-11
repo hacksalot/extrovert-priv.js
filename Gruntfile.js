@@ -14,37 +14,59 @@ module.exports = function(grunt) {
       temp: ['.tmp']
     },
 
-    // Concatenate individual JS modules via Require.js optimizer
-    requirejs: {
-      // Common options
-      options: {
-        baseUrl: "src",
-        include: [ 'core' ],
-        paths: {
-          three: '../bower_components/threejs/build/three' // AMD version of Three.js
-        },
-        wrap: {
-          startFile: 'src/start.frag',
-          endFile: 'src/end.frag'
-        },
-        // shim: {
-          // three: { exports: 'THREE' }
+    
+    // Concatenate all Extrovert modules into a single file containing the
+    // Almond.js shim (so clients don't have to have require.js to use the
+    // library) and a custom prefix and suffix.
+    
+    // requirejs-almond: {
+      // // Common options
+      // options: {
+        // baseUrl: "src",
+        // include: [ 'core' ],
+        // paths: {
+          // 'three': '../.tmp/three:',
+          // 'physijs': '../.tmp/physi'
         // },
-        name: '../bower_components/almond/almond'
-      },
-
-      annotated: {
-        options: {
-          optimize: 'none',
-          out: 'dist/extrovert.js'
-        }
-      }
-
-      // minified: {
+         // wrap: {
+          // startFile: 'src/start.frag',
+          // endFile: 'src/end.frag'
+        // },
+        // name: '../bower_components/almond/almond',
+        // // Option 1: Load the normal non-AMD THREE.js build and set cjsTranslate to true here.
+        // // Option 2: Load the AMD version of THREE.js and omit cjsTranslate.
+        // // THREE.js does not need to be shim'd in either configuration.
+        // cjsTranslate: true,
+      // },    
+      // annotated: {
         // options: {
-          // out: 'dist/extrovert.min.js'
+          // optimize: 'none',
+          // out: 'dist/extrovert.js'
         // }
       // }
+    // },
+    
+    requirejs: {
+      annotated: {
+        options: {
+          out: 'dist/extrovert.js',
+          baseUrl: 'src',
+          paths: {
+            'extrovert': './extrovert',
+            'three': '../bower_components/threejs/build/three'
+          },
+          shim: {
+            'three': { exports: 'THREE' }
+          },
+          include: ['../bower_components/almond/almond', 'extrovert'],
+          exclude: ['three'],
+          wrap: {
+            startFile: 'src/extrovert/start.frag',
+            endFile: 'src/extrovert/end.frag'
+          },
+          optimize: 'none'
+        }
+      }
     },
 
     connect: {
@@ -69,16 +91,23 @@ module.exports = function(grunt) {
     },
 
     copy: {
-      // Make a copy of extrovert.annotated.js called extrovert.js
+      // Copy third-party JS to a temp folder prior to Require.js processing
+      thirdparty: {
+        files: [{
+          expand: true, flatten: true,
+          src: ['bower_components/threejs/build/three.js',
+                'bower_components/physijs/physi.js',
+                'bower_components/ammo.js/builds/ammo.js'],
+          dest: '.tmp'
+        }]
+      },
       physijs: {
-        files: [
-        {
-           expand: true,
-           flatten: true,
-           src: ['bower_components/physijs/physijs_worker.js', 'bower_components/ammo.js/builds/ammo.js'],
-           dest: 'dist'
-        },
-        ]
+        files: [{
+          expand: true,
+          flatten: true,
+          src: ['bower_components/physijs/physijs_worker.js', 'bower_components/ammo.js/builds/ammo.js'],
+          dest: 'dist'
+        }]
       },
       rename: {
         files: [{
@@ -186,12 +215,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-compress');
-  grunt.loadNpmTasks('grunt-contrib-requirejs');  
+  grunt.loadNpmTasks('grunt-contrib-requirejs');
 
 
   var cfgs = {
-    debug: ['clean', 'jshint', 'requirejs', 'copy:physijs', 'clean:temp'],
-    release: ['clean', 'jshint', 'requirejs', 'copy:physijs', 'uglify:dist', 'compress:main', 'copy:rename', 'clean:temp'],
+    debug: ['clean', 'jshint', 'copy:thirdparty', 'requirejs', 'copy:physijs', 'clean:temp'],
+    release: ['clean', 'jshint', 'copy:thirdparty', 'requirejs', 'copy:physijs', 'uglify:dist', 'compress:main', 'copy:rename', 'clean:temp'],
     quick: ['clean','jshint','concat','copy:physijs','uglify:dist','clean:temp'],
     test: ['default', 'connect:auto', 'qunit'],
     testmanual: ['default', 'connect:manual']

@@ -5,13 +5,13 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 @module extro-core
 */
 
-define(['three', 'utils'], function( THREE, Utils ) {
-
+define(['app/utils'], function( utils ) {
+  
   /**
   Define the module object and set the version number.
   */
   var my = { version: '0.1.0' };
-
+  
   /**
   Default engine options. These are overridden by user options.
   */
@@ -96,6 +96,7 @@ define(['three', 'utils'], function( THREE, Utils ) {
   An alias to our logging facilities.
   */
   var _log = null;
+  //var Physijs = null;
 
   /**
   A global flag that controls whether log statements are executed, ignored, or
@@ -182,15 +183,16 @@ define(['three', 'utils'], function( THREE, Utils ) {
     // If physics are enabled, pass through the locations of necessary scripts.
     // These are required by the physics library; nothing to do with Extrovert.
     if( _opts.physics.enabled ) {
+      //Physijs = require('physijs');
       Physijs.scripts.worker = _opts.physics.physijs.worker;
       Physijs.scripts.ammo = _opts.physics.physijs.ammo;
     }
 
     // Preload rasterizers
     eng.rasterizers = {
-      img: new extrovert.paint_img(),
-      element: new extrovert.paint_element(),
-      plain_text: new extrovert.paint_plain_text()
+      img: new my.paint_img(),
+      element: new my.paint_element(),
+      plain_text: new my.paint_plain_text()
     };
 
     // Return the combined, ultrafied options object.
@@ -207,7 +209,7 @@ define(['three', 'utils'], function( THREE, Utils ) {
       r = eng.rasterizers.img;
     else if (obj.nodeType !== undefined )
       r = eng.rasterizers.elem;
-    else if (extrovert.Utils.isPlainObject( obj ) )
+    else if (my.Utils.isPlainObject( obj ) )
       r = eng.rasterizers.plain_text;
     return r;
   };
@@ -231,7 +233,7 @@ define(['three', 'utils'], function( THREE, Utils ) {
     // object with a .name field specifying any valid generator, or undefined.
     var gen = null;
     if( !transformOptions.type )
-      gen = new extrovert.extrude();
+      gen = new my.extrude();
     else if (typeof transformOptions === 'string')
       gen = new extrovert[ transformOptions ]();
     else
@@ -256,7 +258,7 @@ define(['three', 'utils'], function( THREE, Utils ) {
     //THREE.ImageUtils.crossOrigin = '*';
     //THREE.Loader.prototype.crossOrigin = '*';
 
-    extrovert.createScene( opts );
+    my.createScene( opts );
 
     // Create the camera
     var ico = opts.init_cam_opts ? _utils.extend(true, {}, opts.camera, opts.init_cam_opts ) : opts.camera;
@@ -270,14 +272,14 @@ define(['three', 'utils'], function( THREE, Utils ) {
       ico.aspect = eng.width / eng.height;
     }
     var cam = my.provider.createCamera( ico );
-    extrovert.LOGGING && _log.msg('Created camera at [%f,%f,%f]: %o', cam.position.x, cam.position.y, cam.position.z, cam);
+    my.LOGGING && _log.msg('Created camera at [%f,%f,%f]: %o', cam.position.x, cam.position.y, cam.position.z, cam);
     eng.camera = cam;
 
     // Create an invisible plane for drag and drop
     // TODO: Only create this if drag-drop controls are enabled
     // This should be up to the XxxxxControls object.
     if( opts.controls.allow_drag ) {
-      eng.drag_plane = extrovert.createObject( {
+      eng.drag_plane = my.createObject( {
         type: 'plane',
         dims: [2000,2000,8],
         visible: false,
@@ -348,13 +350,13 @@ define(['three', 'utils'], function( THREE, Utils ) {
 
     if( oc.position ) {
       eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
-      extrovert.LOGGING && _log.msg('Camera moved to [%f,%f,%f]: %o', oc.position[0], oc.position[1], oc.position[2], cam);
+      my.LOGGING && _log.msg('Camera moved to [%f,%f,%f]: %o', oc.position[0], oc.position[1], oc.position[2], cam);
     }
 
     // Set up LIGHTING.
     // We do this after final cam positioning because the default light position,
     // if the user doesn't specify one, is wherever the camera is located.
-    extrovert.fiatLux( opts.lights );
+    my.fiatLux( opts.lights );
   }
 
   /**
@@ -455,7 +457,7 @@ define(['three', 'utils'], function( THREE, Utils ) {
   */
   my.createControls = function( control_opts, camera, domElement ) {
     if( control_opts.type === 'universal' ) {
-      return new extrovert.UniversalControls( camera, undefined, control_opts );
+      return new my.UniversalControls( camera, undefined, control_opts );
     }
     return null;
   };
@@ -660,7 +662,7 @@ define(['three', 'utils'], function( THREE, Utils ) {
   @method screenToWorld
   */
   my.screenToWorld = function( posX, posY, placement_plane ) {
-    eng.raycaster.setFromCamera( extrovert.toNDC( posX, posY, 0.5, new THREE.Vector2() ), eng.camera );
+    eng.raycaster.setFromCamera( my.toNDC( posX, posY, 0.5, new THREE.Vector2() ), eng.camera );
     var p = placement_plane || eng.placement_plane;
     var intersects = eng.raycaster.intersectObject( p );
     return (intersects.length > 0) ? intersects[0].point : null;
@@ -672,7 +674,7 @@ define(['three', 'utils'], function( THREE, Utils ) {
   @method screenToWorldEx
   */
   my.screenToWorldEx = function( posX, posY, placement_plane, extents ) {
-    eng.raycaster.setFromCamera( extrovert.toNDCEx( [posX, posY, 0.5], new THREE.Vector2(), extents ), eng.camera );
+    eng.raycaster.setFromCamera( my.toNDCEx( [posX, posY, 0.5], new THREE.Vector2(), extents ), eng.camera );
     var p = placement_plane || eng.placement_plane;
     var intersects = eng.raycaster.intersectObject( p );
     return (intersects.length > 0) ? intersects[0].point : null;
@@ -700,7 +702,7 @@ define(['three', 'utils'], function( THREE, Utils ) {
   */
   // my.screenToWorld2 = function( posX, posY, unused ) {
     // var vector = new THREE.Vector3();
-    // vector = extrovert.toNDC( posX, posY, 0.5, vector );
+    // vector = my.toNDC( posX, posY, 0.5, vector );
     // vector.unproject( eng.camera );
     // var dir = vector.sub( eng.camera.position ).normalize();
     // var distance = -eng.camera.position.z / dir.z;
@@ -734,7 +736,7 @@ define(['three', 'utils'], function( THREE, Utils ) {
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
 
     // Convert to normalized device coordinates
-    eng.mouse = extrovert.toNDC( xpos, ypos, 0.5, eng.mouse );
+    eng.mouse = my.toNDC( xpos, ypos, 0.5, eng.mouse );
 
     // Set up our ray depending on whether the camera is the child of a
     // transformed object or not.
@@ -800,7 +802,7 @@ define(['three', 'utils'], function( THREE, Utils ) {
     e.preventDefault();
     var xpos = e.offsetX === undefined ? e.layerX : e.offsetX; //[1]
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
-    eng.mouse = extrovert.toNDC( xpos, ypos, 0.5, eng.mouse );
+    eng.mouse = my.toNDC( xpos, ypos, 0.5, eng.mouse );
     if ( eng.selected ) {
       eng.raycaster.setFromCamera( eng.mouse, eng.camera );
       var intersects = eng.raycaster.intersectObject( eng.drag_plane );
@@ -887,8 +889,8 @@ define(['three', 'utils'], function( THREE, Utils ) {
 
     // Get the position of the element's left-top and right-bottom corners in
     // WORLD coords, based on where the camera is.
-    var topLeft = extrovert.screenToWorld( pos.left, pos.top, eng.placement_plane );
-    var botRight = extrovert.screenToWorld( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
+    var topLeft = my.screenToWorld( pos.left, pos.top, eng.placement_plane );
+    var botRight = my.screenToWorld( pos.left + val.offsetWidth, pos.top + val.offsetHeight, eng.placement_plane );
     // Calculate dimensions of the element (in world units)
     var block_width = Math.abs( botRight.x - topLeft.x );
     var block_height = Math.abs( topLeft.y - botRight.y );

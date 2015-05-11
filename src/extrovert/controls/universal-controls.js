@@ -4,7 +4,7 @@ A hybrid control module for Extrovert.js scenes.
 @author James Devlin (james@indevious.com)
 */
 
-define(['three', 'core'], function( THREE, extrovert ) {
+define(['core'], function(  extrovert ) {
   
   return function ( object, domElement, options ) {
 

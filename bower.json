@@ -39,6 +39,6 @@
   "homepage": "http://indevious.com/extrovert",
   "private": true,
   "resolutions": {
-    "threejs": "f73593b00e"
+    "threejs": "d49bb0e85f"
   }
 }
