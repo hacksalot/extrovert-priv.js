@@ -8,6 +8,7 @@ module.exports = function(grunt) {
   var opts = {
 
     pkg: grunt.file.readJSON('package.json'),
+    ext: '.min',
 
     clean: {
       dist: ['dist'],
@@ -21,7 +22,7 @@ module.exports = function(grunt) {
           baseUrl: 'src',
           paths: {
             'extrovert': './extrovert',
-            'three': '../bower_components/threejs/build/three',
+            'three': '../bower_components/threejs/build/three<%= ext %>',
             'physijs': '../bower_components/physijs/physi',
             'in.scribe': '../bower_components/in.scribe/in.scribe'
           },
