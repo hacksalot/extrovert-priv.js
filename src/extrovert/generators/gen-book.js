@@ -4,7 +4,7 @@ The built-in "book" generator for Extrovert.js.
 @license Copyright (c) 2015 | James M. Devlin
 */
 
-define(['require', '../core'], function( require, extro ) {
+define(['require', '../core', 'extrovert/providers/three/provider-three'], function( require, extro, provider ) {
 
   'use strict';
   
@@ -58,7 +58,7 @@ define(['require', '../core'], function( require, extro ) {
         _opts = genOpts;
         _eng = eng;
         extrovert.createPlacementPlane( [0,0,200] );
-        _side = extrovert.provider.createMaterial( genOpts.material );
+        _side = provider.createMaterial( genOpts.material );
       },
 
       generate: function( noun, elems ) {
@@ -66,11 +66,11 @@ define(['require', '../core'], function( require, extro ) {
         _noun = noun;
 
         if( noun.cover ) {
-          var coverMat = extrovert.provider.createMaterial({ tex: extrovert.loadTexture( noun.cover ), friction: 0.2, resitution: 1.0 });
+          var coverMat = provider.createMaterial({ tex: provider.loadTexture( noun.cover ), friction: 0.2, resitution: 1.0 });
           var coverMesh = extrovert.createObject({ type: 'box', pos: [0,0,0], dims: _opts.dims, mat: coverMat, mass: 1000 });
         }
 
-        function _createMat( t ) { return extrovert.provider.createMaterial({ tex: t, friction: 0.2, restitution: 1.0 }); }
+        function _createMat( t ) { return provider.createMaterial({ tex: t, friction: 0.2, restitution: 1.0 }); }
         function _isEven( val, index ) { return (index % 2) === 0; }
         function _isOdd( val, index ) { return !_isEven(val, index); }
 
@@ -103,7 +103,7 @@ define(['require', '../core'], function( require, extro ) {
             for( var tt = 0; tt < front.length; tt++ ) {
               var tilePos = [0, 0, -(tt * _opts.dims[2]) - _opts.dims[2] ];
               var matArray = [ _side, _side, _side, _side, front[ tt ], tt < back.length ? back[ tt ] : _side ];
-              var meshMat = extrovert.provider.createCubeMaterial( matArray );
+              var meshMat = provider.createCubeMaterial( matArray );
               var mesh = extrovert.createObject({ type: 'box', pos: tilePos, dims: _opts.dims, mat: meshMat, mass: 1000 });
               mapTextures( mesh.geometry );
               extrovert.LOGGING && _eng.log.msg('Generating page %o at position %f, %f, %f', mesh, tilePos[0], tilePos[1], tilePos[2]);

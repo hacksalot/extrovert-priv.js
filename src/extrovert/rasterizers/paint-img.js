@@ -4,13 +4,13 @@ A simple Extrovert image rasterizer.
 @license Copyright (c) 2015 | James M. Devlin
 */
 
-define(['extrovert/core'], function( extro ) {
+define(['extrovert/providers/three/provider-three'], function( gfx ) {
 
   'use strict';
 
   return {
     paint: function( obj ) {
-      return extro.loadTexture( typeof obj === 'string' ? obj : obj.src );
+      return gfx.loadTexture( typeof obj === 'string' ? obj : obj.src );
     }
   };
 

@@ -52,6 +52,15 @@ define(['extrovert/options', 'three', 'physijs'], function( options, THREE, Phys
     texture.needsUpdate = needsUpdate || false;
     return { tex: texture, mat: new THREE.MeshLambertMaterial( { map: tex } ) };
   };
+  
+  
+  /**
+  Load an image as a texture. Defers to THREE for now.
+  @method loadTexture
+  */
+  my.loadTexture = function( src ) {
+    return THREE.ImageUtils.loadTexture( src );
+  };   
 
   /**
   Create a texture from a canvas. Defer to THREE for now.

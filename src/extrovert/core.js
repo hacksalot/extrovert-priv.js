@@ -996,14 +996,6 @@ function
   }
 
   /**
-  Load an image as a texture. Defers to THREE for now.
-  @method loadTexture
-  */
-  my.loadTexture = function( src ) {
-    return THREE.ImageUtils.loadTexture( src );
-  };
-
-  /**
   Convert the specified screen coordinates to normalized device coordinates
   (NDC) ranging from -1.0 to 1.0 along each axis.
   @method toNDC
