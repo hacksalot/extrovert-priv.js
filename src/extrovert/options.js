@@ -1,8 +1,7 @@
 /**
 The runtime Extrovert options model.
-@author James Devlin | james@indevious.com
-@version 0.1.0
 @module defaults
+@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
 */
 
 define(['extrovert/defaults', 'extrovert/utils'], function( defaults, utils ) {

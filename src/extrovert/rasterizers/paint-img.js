@@ -1,9 +1,7 @@
 /**
 A simple Extrovert image rasterizer.
 @module paint-img.js
-@copyright Copyright (c) 2015 by James M. Devlin
-@author James M. Devlin | james@indevious.com
-@version 1.0
+@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
 */
 
 define(['extrovert/core'], function( extro ) {

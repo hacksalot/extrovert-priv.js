@@ -6,7 +6,7 @@
   "main": "Gruntfile.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/devlinjd/extrovert-future.js.git"
+    "url": "https://github.com/devlinjd/extrovert.js.git"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
@@ -27,7 +27,7 @@
     "physijs"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/devlinjd/extrovert.js",
+  "homepage": "http://extrovert3d.com",
   "bugs": {
     "url": "https://github.com/devlinjd/extrovert.js/issues"
   }

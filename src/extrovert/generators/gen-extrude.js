@@ -1,10 +1,7 @@
 /**
 The built-in extrusion generator for Extrovert.js.
 @module gen-wall.js
-@copyright Copyright (c) 2015 by James M. Devlin
-@author James M. Devlin | james@indevious.com
-@license MIT
-@version 1.0
+@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
 */
 
 define(['extrovert/core'], function( extrovert ) {

@@ -1,14 +1,14 @@
 /**
-A hybrid control module for Extrovert.js scenes.
+A hybrid control module for Extrovert.js.
 @module universal-controls.js
-@author James Devlin (james@indevious.com)
+@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
 */
 
 //define(['core'], function(  extrovert ) {
 define(['require', '../core'], function( require, extro ) {
 
   return function ( object, domElement, options ) {
-    
+
     var extrovert = require('../core');
 
     this.object = object;

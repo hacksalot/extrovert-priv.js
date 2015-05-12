@@ -1,8 +1,7 @@
 /**!
 Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
-@author James Devlin | james@indevious.com
-@version 0.1.0
 @module extro-core
+@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
 */
 
 define(
@@ -11,7 +10,6 @@ define(
   'extrovert/options',
   'extrovert/defaults',
   'extrovert/utils',
-  'physijs',
   'extrovert/providers/three/provider-three',
   'extrovert/rasterizers/paint-img',
   'extrovert/rasterizers/paint-element',
@@ -22,7 +20,8 @@ define(
   'extrovert/generators/gen-direct',
   'extrovert/generators/gen-extrude',
   'extrovert/generators/gen-tile',
-  'extrovert/controls/universal-controls'
+  'extrovert/controls/universal-controls',
+  'physijs'
 ],
 
 function
@@ -30,7 +29,6 @@ function
   options,
   defaults,
   Utils,
-  Physijs,
   provider,
   paint_img,
   paint_element,
@@ -41,7 +39,9 @@ function
   gen_direct,
   gen_extrude,
   gen_tile,
-  UniversalControls
+  UniversalControls,
+  Physijs
+  
 ){
 
   /**
