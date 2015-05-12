@@ -14,38 +14,6 @@ module.exports = function(grunt) {
       temp: ['.tmp']
     },
 
-
-    // Concatenate all Extrovert modules into a single file containing the
-    // Almond.js shim (so clients don't have to have require.js to use the
-    // library) and a custom prefix and suffix.
-
-    // requirejs-almond: {
-      // // Common options
-      // options: {
-        // baseUrl: "src",
-        // include: [ 'core' ],
-        // paths: {
-          // 'three': '../.tmp/three:',
-          // 'physijs': '../.tmp/physi'
-        // },
-         // wrap: {
-          // startFile: 'src/start.frag',
-          // endFile: 'src/end.frag'
-        // },
-        // name: '../bower_components/almond/almond',
-        // // Option 1: Load the normal non-AMD THREE.js build and set cjsTranslate to true here.
-        // // Option 2: Load the AMD version of THREE.js and omit cjsTranslate.
-        // // THREE.js does not need to be shim'd in either configuration.
-        // cjsTranslate: true,
-      // },
-      // annotated: {
-        // options: {
-          // optimize: 'none',
-          // out: 'dist/extrovert.js'
-        // }
-      // }
-    // },
-
     requirejs: {
       annotated: {
         options: {
@@ -64,8 +32,8 @@ module.exports = function(grunt) {
           include: ['../bower_components/almond/almond', 'extrovert'],
           exclude: ['three', 'physijs'],
           wrap: {
-            startFile: 'src/extrovert/start.frag',
-            endFile: 'src/extrovert/end.frag'
+            startFile: 'src/extrovert/fragments/start.frag',
+            endFile: 'src/extrovert/fragments/end.frag'
           },
           preserveLicenseComments: false,
           optimize: 'none'
@@ -75,7 +43,7 @@ module.exports = function(grunt) {
 
     concat: {
       main: {
-        src: [ 'src/extrovert/license.frag', 'dist/extrovert.js' ],
+        src: [ 'src/extrovert/fragments/license.frag', 'dist/extrovert.js' ],
         dest: 'dist/extrovert.js'
       }
     },
@@ -133,19 +101,6 @@ module.exports = function(grunt) {
       },
     },
 
-
-    // comments: {
-      // main: {
-        // // Target-specific file lists and/or options go here.
-        // options: {
-          // singleline: true,
-          // multiline: true
-        // },
-        // src: [ 'dist/<%= pkg.name %>.js' ] // files to remove comments from
-      // }
-    // },
-
-
     uglify: {
       options: {
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
@@ -160,7 +115,6 @@ module.exports = function(grunt) {
       }
     },
 
-
     qunit: {
       test1: {
         options: {
@@ -168,7 +122,6 @@ module.exports = function(grunt) {
         }
       }
     },
-
 
     jshint: {
       files: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js', '!src/**/Projector.js', '!src/**/CanvasRenderer.js'],
@@ -184,7 +137,6 @@ module.exports = function(grunt) {
         newcap: false
       }
     },
-
 
     // Create gzipped versions of JS sources.
 
@@ -229,7 +181,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
-
   var cfgs = {
     debug: ['clean', 'jshint', 'copy:thirdparty', 'requirejs', 'concat', 'copy:physijs', 'clean:temp'],
     release: ['clean', 'jshint', 'copy:thirdparty', 'requirejs', 'concat', 'copy:physijs', 'uglify:dist', 'compress:main', 'copy:rename', 'clean:temp'],
@@ -237,21 +188,6 @@ module.exports = function(grunt) {
     test: ['default', 'connect:auto', 'qunit'],
     testmanual: ['default', 'connect:manual']
   };
-
-  // Usage: 'grunt [action]:[configuration]:[quick]'
-  //
-  // [action] can be either 'build' or 'serve'.
-  // [configuration] can be either 'release' or 'debug'.
-  // [quick] can be either 'quick' or unspecified.
-  //
-  // To package a full release build, use:
-  //
-  //        grunt build:release
-  //
-  // To package and serve a quick debug build, use:
-  //
-  //        grunt serve:debug:quick
-  //
 
   grunt.registerTask('build', 'Build the Extrovert library.', function( config, quick ) {
     config = config || 'release';
@@ -261,4 +197,5 @@ module.exports = function(grunt) {
   grunt.registerTask('default', cfgs.release);
   grunt.registerTask('test', cfgs.test );
   grunt.registerTask('testmanual', cfgs.textmanual);
+
 };

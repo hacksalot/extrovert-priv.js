@@ -1,7 +1,7 @@
 /**
 The built-in "book" generator for Extrovert.js.
 @module gen-book.js
-@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
+@license Copyright (c) 2015 | James M. Devlin
 */
 
 define(['require', '../core'], function( require, extro ) {

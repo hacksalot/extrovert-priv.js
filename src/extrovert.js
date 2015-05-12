@@ -1,18 +1,19 @@
-/*global define */
-
 /**
- * The main module that defines the public interface for Extrovert.
- */
+Top-level module for Extrovert.js. Define the public interface.
+@module extrovert.js
+@license Copyright (c) 2015 | James M. Devlin
+*/
+
 define(function (require) {
-    'use strict';
+  
+  'use strict';
+  var THREE = require('three');
+  var Physijs = require('physijs');
+  var core = require('extrovert/core');
 
-    var THREE = require('three');
-    var Physijs = require('physijs');
-    var core = require('extrovert/core');
+  return {
+      version: '0.1.0',
+      init: core.init
+  };
 
-    //Return the module value.
-    return {
-        version: '0.1.0',
-        init: core.init
-    };
 });

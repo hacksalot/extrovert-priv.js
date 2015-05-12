@@ -1,7 +1,7 @@
 /**
 A simple Extrovert HTML rasterizer.
-@module paint-simple-html.js
-@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
+@module paint-element.js
+@license Copyright (c) 2015 | James M. Devlin
 */
 
 define(['extrovert/providers/three/provider-three', 'extrovert/utils'], function( provider, utils ) {

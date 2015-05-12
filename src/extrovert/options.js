@@ -1,7 +1,7 @@
 /**
-The runtime Extrovert options model.
-@module defaults
-@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
+The Extrovert options model.
+@module options.js
+@license Copyright (c) 2015 | James M. Devlin
 */
 
 define(['extrovert/defaults', 'extrovert/utils'], function( defaults, utils ) {

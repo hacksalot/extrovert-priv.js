@@ -1,7 +1,7 @@
-/**!
-Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
-@module extro-core
-@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
+/**
+Core module for the Extrovert engine.
+@module core.js
+@license Copyright (c) 2015 | James M. Devlin
 */
 
 define(
@@ -41,7 +41,7 @@ function
   gen_tile,
   UniversalControls,
   Physijs
-  
+
 ){
 
   /**

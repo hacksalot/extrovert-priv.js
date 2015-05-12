@@ -1,7 +1,7 @@
 /**
 Default Extrovert options.
-@module defaults
-@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
+@module defaults.js
+@license Copyright (c) 2015 | James M. Devlin
 */
 
 define({
