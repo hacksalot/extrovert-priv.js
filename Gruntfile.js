@@ -54,7 +54,8 @@ module.exports = function(grunt) {
           paths: {
             'extrovert': './extrovert',
             'three': '../bower_components/threejs/build/three',
-            'physijs': '../bower_components/physijs/physi'
+            'physijs': '../bower_components/physijs/physi',
+            'in.scribe': '../bower_components/in.scribe/in.scribe'
           },
           shim: {
             'three': { exports: 'THREE' },

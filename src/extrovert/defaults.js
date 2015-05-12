@@ -1,15 +1,11 @@
-/**!
-Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
+/**
+Default Extrovert options.
 @author James Devlin | james@indevious.com
 @version 0.1.0
-@module extro-options
+@module defaults
 */
 
 define({
-  /**
-  Default engine options. These are overridden by user options.
-  */
-  return {
     renderer: 'Any',
     gravity: [0,0,0],
     camera: {
@@ -40,10 +36,5 @@ define({
     clicked: null,
     lights: [
       { type: 'ambient', color: 0xffffff }
-    ]//,
-    // transforms: [
-      // { type: 'extrude', src: 'img' }
-    // ]
-  };
-
+    ]
 });

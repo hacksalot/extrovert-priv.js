@@ -23,7 +23,7 @@ define(['require', '../core'], function( require, extro ) {
   @method mapTextures
   */
   function mapTextures( cubeGeo ) {
-    for (i = 0; i < cubeGeo.faces.length ; i++) {
+    for (var i = 0; i < cubeGeo.faces.length ; i++) {
       var fvu = cubeGeo.faceVertexUvs[0][i];
       if( Math.abs( cubeGeo.faces[ i ].normal.z ) > 0.9) {
         for( var fv = 0; fv < 3; fv++ ) {
@@ -82,9 +82,9 @@ define(['require', '../core'], function( require, extro ) {
           var rast = null;
           if( noun.rasterizer ) {
             rast = ( typeof noun.rasterizer === 'string' ) ?
-              new extrovert['paint_' + noun.rasterizer]() : noun.rasterizer;
+              _eng.rasterizers[ noun.rasterizer ] : noun.rasterizer;
           } else {
-            rast = new extrovert.paint_plain_text_stream();
+            rast = _eng.rasterizers.paint_plain_text_stream;
             //rast = extrovert.getRasterizer( obj );
           }
 

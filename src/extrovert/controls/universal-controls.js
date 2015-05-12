@@ -4,9 +4,12 @@ A hybrid control module for Extrovert.js scenes.
 @author James Devlin (james@indevious.com)
 */
 
-define(['core'], function(  extrovert ) {
-  
+//define(['core'], function(  extrovert ) {
+define(['require', '../core'], function( require, extro ) {
+
   return function ( object, domElement, options ) {
+    
+    var extrovert = require('../core');
 
     this.object = object;
     this.domElement = domElement || document;
@@ -39,7 +42,7 @@ define(['core'], function(  extrovert ) {
         this.object.translateX( (this.movementSpeed * delta) * _moveState.xdir * this.turboMultiplier );
       if( _moveState.ydir )
         this.object.translateY( (this.movementSpeed * delta) * _moveState.ydir * this.turboMultiplier );
-      
+
       if( options.yFloor ) {
         if( this.object.position.y < options.yFloor )
           this.object.position.y = options.yFloor;
@@ -115,6 +118,5 @@ define(['core'], function(  extrovert ) {
       }
     };
   };
-  
-});
 
+});

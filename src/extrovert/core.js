@@ -8,6 +8,7 @@ Extrovert.js is a 3D front-end for websites, blogs, and web-based apps.
 define(
 
 [
+  'extrovert/options',
   'extrovert/defaults',
   'extrovert/utils',
   'physijs',
@@ -15,15 +16,18 @@ define(
   'extrovert/rasterizers/paint-img',
   'extrovert/rasterizers/paint-element',
   'extrovert/rasterizers/paint-plain-text',
+  'extrovert/rasterizers/paint-plain-text-stream',
   'extrovert/generators/gen-book',
   'extrovert/generators/gen-box',
   'extrovert/generators/gen-direct',
   'extrovert/generators/gen-extrude',
-  'extrovert/generators/gen-tile'
+  'extrovert/generators/gen-tile',
+  'extrovert/controls/universal-controls'
 ],
 
 function
 (
+  options,
   defaults,
   Utils,
   Physijs,
@@ -31,18 +35,20 @@ function
   paint_img,
   paint_element,
   paint_plain_text,
+  paint_plain_text_stream,
   gen_book,
   gen_box,
   gen_direct,
   gen_extrude,
-  gen_tile
+  gen_tile,
+  UniversalControls
 ){
-  
+
   /**
   Define the module object and set the version number.
   */
   var my = { version: '0.1.0' };
-  
+
   /**
   Internal engine settings, not to be confused with options. Represents the run-
   time state of the Extrovert engine. We group them into an 'eng' object for no
@@ -101,22 +107,22 @@ function
   @param target Target selector, DOM node, or DOM collection.
   @param options Transformation options.
   */
-  my.init = function( target, options ) {
+  my.init = function( target, opts ) {
 
     _utils = Utils;
     _log = eng.log = _utils.log;
-    options = options || { };
+    opts = opts || { };
     my.provider = provider;
     my.LOGGING && _log.msg('Extrovert %s', my.version);
-    my.LOGGING && _log.msg('User options: %o', options );
+    my.LOGGING && _log.msg('User options: %o', opts );
 
     // Quick exit if the user requests a specific renderer and the browser
     // doesn't support it or if neither renderer type is supported.
     eng.supportsWebGL = _utils.detectWebGL();
     eng.supportsCanvas = _utils.detectCanvas();
     if( ( !eng.supportsWebGL && !eng.supportsCanvas ) ||
-        ( options.renderer === 'WebGL' && !eng.supportsWebGL ) ||
-        ( options.renderer === 'Canvas' && !eng.supportsCanvas ))
+        ( opts.renderer === 'WebGL' && !eng.supportsWebGL ) ||
+        ( opts.renderer === 'Canvas' && !eng.supportsCanvas ))
       return false;
 
     // Remove some troublesome stuff from the shader on IE. Needs work.
@@ -130,7 +136,7 @@ function
     }
 
     // Initialize all the things
-    initOptions( target, options );
+    initOptions( target, opts );
     initRenderer( _opts );
     initWorld( _opts, eng );
     initCanvas( _opts );
@@ -167,9 +173,7 @@ function
 
     eng.target = target;
     eng.userOpts = user_opts;
-
-    // Merge USER options onto DEFAULT options without modifying either.
-    _opts = eng.opts = my.options = _utils.extend(true, { }, defaults, user_opts );
+    _opts = eng.opts = my.options = options.init( user_opts );
 
     // If physics are enabled, pass through the locations of necessary scripts.
     // These are required by the physics library; nothing to do with Extrovert.
@@ -184,9 +188,10 @@ function
     eng.rasterizers = {
       img: paint_img,
       element: paint_element,
-      plain_text: paint_plain_text
+      plain_text: paint_plain_text,
+      plain_text_stream: paint_plain_text_stream
     };
-    
+
     eng.generators = {
       extrude: gen_extrude,
       tile: gen_tile,
@@ -457,7 +462,7 @@ function
   */
   my.createControls = function( control_opts, camera, domElement ) {
     if( control_opts.type === 'universal' ) {
-      return new my.UniversalControls( camera, undefined, control_opts );
+      return new UniversalControls( camera, undefined, control_opts );
     }
     return null;
   };

@@ -6,7 +6,7 @@ THREE.js subsystem provider for Extrovert.js.
 @version 1.0
 */
 
-define(['three', 'physijs', 'extrovert/core'], function( THREE, Physijs, extrovert ) {
+define(['three', 'physijs', 'extrovert/options'], function( THREE, Physijs, options ) {
 
   'use strict';
 
@@ -39,7 +39,7 @@ define(['three', 'physijs', 'extrovert/core'], function( THREE, Physijs, extrove
   my.createMaterial = function( desc ) {
 
     var mat = new THREE.MeshLambertMaterial({ color: desc.color || 0xFFFFFF, map: desc.tex || null });
-    return (extrovert.options.physics.enabled && !desc.noPhysics) ?
+    return (options.merged.physics.enabled && !desc.noPhysics) ?
       Physijs.createMaterial( mat, desc.friction, desc.restitution )
       : mat;
 
@@ -76,7 +76,7 @@ define(['three', 'physijs', 'extrovert/core'], function( THREE, Physijs, extrove
   @param mass The mass of the object, if physics is enabled.
   */
   function createMesh( geo, mesh_type, mat, force_simple, mass ) {
-    return extrovert.options.physics.enabled && !force_simple ?
+    return options.merged.physics.enabled && !force_simple ?
       new Physijs[ mesh_type + 'Mesh' ]( geo, mat, mass ) : new THREE.Mesh(geo, mat);
   }
 
