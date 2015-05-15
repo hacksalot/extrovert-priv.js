@@ -20,8 +20,9 @@ define({
       allow_drag: false
     },
     physics: {
+      provider: 'physijs',
       enabled: true,
-      physijs: {
+      options: {
         worker: '/js/pjsworker.js',
         ammo: 'ammo.js'
       }

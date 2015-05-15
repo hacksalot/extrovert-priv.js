@@ -177,10 +177,10 @@ function
 
     // If physics are enabled, pass through the locations of necessary scripts.
     // These are required by the physics library; nothing to do with Extrovert.
-    if( _opts.physics.enabled ) {
+    if( _opts.physics.enabled && _opts.physics.provider === 'physijs' ) {
       //Physijs = require('physijs');
-      Physijs.scripts.worker = _opts.physics.physijs.worker;
-      Physijs.scripts.ammo = _opts.physics.physijs.ammo;
+      Physijs.scripts.worker = _opts.physics.options.worker;
+      Physijs.scripts.ammo = _opts.physics.options.ammo;
     }
 
     // Preload rasterizers
