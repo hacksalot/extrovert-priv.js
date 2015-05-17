@@ -38,7 +38,7 @@ define(['extrovert/options', 'three', 'physijs'], function( options, THREE, Phys
 
     var mat = new THREE.MeshLambertMaterial({ color: desc.color || 0xFFFFFF, map: desc.tex || null });
     return (options.merged.physics.enabled && !desc.noPhysics) ?
-      Physijs.createMaterial( mat, desc.friction, desc.restitution )
+      Physijs.createMaterial( mat, desc.friction || 0.2, desc.restitution || 1.0 )
       : mat;
 
   };
