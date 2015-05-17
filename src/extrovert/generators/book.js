@@ -91,7 +91,7 @@ define(['require', '../core', 'extrovert/providers/three/provider-three'], funct
               rastOpts = {
                 width: _opts.texWidth || 512, // Force power-of-2 textures
                 height: _opts.texHeight || 1024,
-                bkColor: _opts.bkColor, textColor: _opts.textColor
+                bkColor: _opts.pageColor, textColor: _opts.textColor
               },
               textures = rast.paint(obj, rastOpts, info );
               //matArray = [ _side, _side, _side, _side, null, null ];

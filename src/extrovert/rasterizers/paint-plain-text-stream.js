@@ -57,7 +57,7 @@ define(['extrovert/utils', 'extrovert/providers/three/provider-three', 'in.scrib
 
             // Paint the text
             newContext.font = utils.getComputedStyle( document.body, 'font' );
-            newContext.fillStyle = opts.bkColor || 'rgb(0,0,0)';
+            newContext.fillStyle = opts.textColor || 'rgb(0,0,0)';
 
             return newContext;
           }
