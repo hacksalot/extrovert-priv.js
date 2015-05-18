@@ -355,7 +355,9 @@ function
     // Set up LIGHTING.
     // We do this after final cam positioning because the default light position,
     // if the user doesn't specify one, is wherever the camera is located.
-    my.fiatLux( opts.lights );
+    provider.fiatLux( opts.lights ).forEach(function(val) {
+      eng.scene.add(val);
+    });
   }
 
   /**
@@ -602,45 +604,6 @@ function
     eng.css_renderer && eng.css_renderer.render( eng.css_scene, eng.camera );
     eng.renderer.render( eng.scene, eng.camera );
   }
-
-  /**
-  Create one or more lights from a generic description. Supports ambient, point,
-  spotlight, and hemisphere lighting. Add additional types as necessary.
-  @method fiatLux
-  @param light_opts A valid object representing a light.
-  */
-  my.fiatLux = function( light_opts ) {
-
-    if( !light_opts || light_opts.length === 0 )
-      return;
-
-    var lights = [];
-    var new_light = null;
-
-    for( var idx = 0; idx < light_opts.length; idx++ ) {
-      var val = light_opts[ idx ];
-      if( val.type === 'ambient' )
-        new_light = new THREE.AmbientLight( val.color );
-      else if (val.type === 'point')
-        new_light = new THREE.PointLight( val.color, val.intensity, val.distance );
-      else if (val.type === 'spotlight')
-        new_light = createSpotlight( val );
-      else if (val.type === 'hemisphere')
-        new_light = new THREE.HemisphereLight( val.color, val.groundColor, val.intensity );
-      else
-        return;
-
-      if( val.type !== 'ambient' && val.type !== 'hemisphere' ) {
-        if( val.pos )
-          new_light.position.set( val.pos[0], val.pos[1], val.pos[2] );
-        else
-          new_light.position.copy( eng.camera.position );
-      }
-      eng.scene.add( new_light );
-      lights.push( new_light );
-    }
-    return lights;
-  };
 
   /**
   Create a spotlight with the specified color. TODO: adjust shadowmap settings.
