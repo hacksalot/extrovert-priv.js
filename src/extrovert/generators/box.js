@@ -1,6 +1,6 @@
 /**
-The built-in box generator for Extrovert.js.
-@module gen-box.js
+The built-in 'box' generator for Extrovert.js.
+@module box.js
 @license Copyright (c) 2015 | James M. Devlin
 */
 
@@ -9,7 +9,7 @@ define(['extrovert/core'], function( extrovert ) {
   'use strict';
 
   var _opts, _eng, _side_mat, _noun;
-  
+
   /**
   Adjust textures for simple mode to allow continuation of the texture around
   the sides of the cube/object.
@@ -34,7 +34,7 @@ define(['extrovert/core'], function( extrovert ) {
        }
     }
     cubeGeo.uvsNeedUpdate = true;
-  }    
+  }
 
   return {
 
@@ -74,7 +74,7 @@ define(['extrovert/core'], function( extrovert ) {
         while( sides.length !== 6 )
           sides.push( _side_mat );
       }
-      
+
       var mat_info = extrovert.createCubeMaterial( sides );
       extrovert.createObject({ type: 'box', pos: [0,0,0], dims: [_opts.block.width,_opts.block.height,_opts.block.depth], mat: mat_info, mass: 1000 });
     },

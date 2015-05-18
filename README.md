@@ -6,11 +6,11 @@
 
 ## License ##
 
-Extrovert is permissively licensed under the MIT License. See [license.md](LICENSE.md) for details.
+Extrovert.js 0.1.0 is permissively licensed under the MIT License. See [license.md](LICENSE.md) for details.
 
 ## Features ##
 
-Extrovert is actively developed and maintained from our underground jungle laboratory, midst vines of kudzu as thick as your forearm.
+Extrovert is actively developed and maintained from our underground jungle laboratory.
 
 - **3Dify your HTML markup** using Extrovert's built-in extrusion generator.
 - **3Dify arbitrary data** using Extrovert's system of customizable generators and rasterizers. XML, JSON, RSS, or any other format.
@@ -24,9 +24,9 @@ Extrovert is actively developed and maintained from our underground jungle labor
 - **Automated tests** through QUnit and Mocha.
 - **No jQuery dependency**. Extrovert is jQuery-compatible, but doesn't require jQuery.
 
-See the Development Roadmap for information on the future of Extrovert.
-
 ## Quick Start ##
+
+The quickest way to get started with Extrovert is to link to the sources directly. Extrovert also supports AMD and CommonJS setups.
 
 1. Download the Extrovert sources manually or via Bower or NPM:
 

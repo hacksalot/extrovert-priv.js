@@ -1,6 +1,6 @@
 /**
-The built-in passthrough generator for Extrovert.js.
-@module gen-direct.js
+The built-in 'direct' generator for Extrovert.js.
+@module direct.js
 @license Copyright (c) 2015 | James M. Devlin
 */
 

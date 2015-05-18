@@ -1,6 +1,6 @@
 /**
-The built-in tile generator for Extrovert.js.
-@module gen-tile.js
+The built-in 'tile' generator for Extrovert.js.
+@module tile.js
 @license Copyright (c) 2015 | James M. Devlin
 */
 
@@ -53,7 +53,7 @@ define(['require', 'extrovert/core', 'extrovert/providers/three/provider-three']
           var texOpts = { width: _opts.dims[0], height: _opts.dims[1], bkColor: _opts.bkColor, textColor: _opts.textColor };
           var tileTexture = rast.paint( safeObj, texOpts, { } );
           var tileMat = provider.createMaterial({ tex: tileTexture, friction: 0.2, restitution: 1.0 });
-          extrovert.createObject({ type: 'box', pos: tilePos, dims: this.options.dims, mat: tileMat, mass: 1000 });
+          extrovert.createObject({ type: 'box', pos: tilePos, dims: _opts.dims, mat: tileMat, mass: 1000 });
         }
       }
 

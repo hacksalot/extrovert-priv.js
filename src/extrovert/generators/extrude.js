@@ -1,6 +1,6 @@
 /**
-The built-in extrusion generator for Extrovert.js.
-@module gen-wall.js
+The built-in 'extrude' generator for Extrovert.js.
+@module extrude.js
 @license Copyright (c) 2015 | James M. Devlin
 */
 
