@@ -28,7 +28,7 @@ function
 (
   options,
   defaults,
-  Utils,
+  utils,
   provider,
   paint_img,
   paint_element,
@@ -85,11 +85,6 @@ function
   var _opts = null;
 
   /**
-  An alias to extrovert.Utils.
-  */
-  var _utils = null;
-
-  /**
   An alias to our logging facilities.
   */
   var _log = null;
@@ -109,8 +104,7 @@ function
   */
   my.init = function( target, opts ) {
 
-    _utils = Utils;
-    _log = eng.log = _utils.log;
+    _log = eng.log = utils.log;
     opts = opts || { };
     my.provider = provider;
     my.LOGGING && _log.msg('Extrovert %s', my.version);
@@ -118,8 +112,8 @@ function
 
     // Quick exit if the user requests a specific renderer and the browser
     // doesn't support it or if neither renderer type is supported.
-    eng.supportsWebGL = _utils.detectWebGL();
-    eng.supportsCanvas = _utils.detectCanvas();
+    eng.supportsWebGL = utils.detectWebGL();
+    eng.supportsCanvas = utils.detectCanvas();
     if( ( !eng.supportsWebGL && !eng.supportsCanvas ) ||
         ( opts.renderer === 'WebGL' && !eng.supportsWebGL ) ||
         ( opts.renderer === 'Canvas' && !eng.supportsCanvas ))
@@ -245,9 +239,9 @@ function
       gen = new eng.generators[ transformOptions.type ]();
 
     // Initialize the generator with merged options
-    var mergedOptions = _utils.extend(true, { }, defaults, gen.options );
-    mergedOptions = _utils.extend(true, { }, mergedOptions, eng.userOpts );
-    mergedOptions = _utils.extend(true, { }, mergedOptions, transformOptions );
+    var mergedOptions = utils.extend(true, { }, defaults, gen.options );
+    mergedOptions = utils.extend(true, { }, mergedOptions, eng.userOpts );
+    mergedOptions = utils.extend(true, { }, mergedOptions, transformOptions );
     gen.init && gen.init( mergedOptions, eng );
 
     return gen;
@@ -266,7 +260,7 @@ function
     my.createScene( opts );
 
     // Create the camera
-    var ico = opts.init_cam_opts ? _utils.extend(true, {}, opts.camera, opts.init_cam_opts ) : opts.camera;
+    var ico = opts.init_cam_opts ? utils.extend(true, {}, opts.camera, opts.init_cam_opts ) : opts.camera;
     if( ico.type === 'orthographic' ) {
       ico.left = ico.left || eng.width / - 2;
       ico.right = ico.right || eng.width / 2;
@@ -304,14 +298,14 @@ function
     // Massage the transformations.
     var tforms = (opts.transform || opts.transforms) || // Either spelling
       [{ type: 'extrude', src: 'img'/*, container: 'body'*/}]; // Default if missing
-    tforms = ( !_utils.isArray( tforms ) ) ? [ tforms ] : tforms; // Force array
+    tforms = ( !utils.isArray( tforms ) ) ? [ tforms ] : tforms; // Force array
 
     // Transform!
     tforms.reduce( function( obj, trans, idx ) {
       var src = trans.src || '*';
       var cont = trans.container || (opts.src && opts.src.container) || opts.container || document.body;
       if( typeof cont === 'string' ) {
-        cont = _utils.$( cont );
+        cont = utils.$( cont );
         if(cont.length !== undefined) cont = cont[0];
       }
       var elems = ( typeof src === 'string' ) ?
@@ -335,10 +329,10 @@ function
     if( oc.positionScreen ) {
       var srcCont = (opts.src && opts.src.container) || opts.container || document.body;
       if( typeof srcCont === 'string' ) {
-        srcCont = _utils.$( srcCont );
+        srcCont = utils.$( srcCont );
         if(srcCont.length !== undefined) srcCont = srcCont[0];
       }
-      var parent_pos = _utils.offset( srcCont );
+      var parent_pos = utils.offset( srcCont );
       var child_pos = { left: oc.positionScreen[0], top: oc.positionScreen[1] };
       var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
       var rect = srcCont.getBoundingClientRect();
@@ -383,7 +377,7 @@ function
 
     if( eng.target ) {
       var cont = (typeof eng.target === 'string') ?
-        _utils.$( eng.target ): eng.target;
+        utils.$( eng.target ): eng.target;
       if( cont.length !== undefined )
         cont = cont[0];
       var rect = cont.getBoundingClientRect();
@@ -421,7 +415,7 @@ function
     if( eng.target ) {
       var action = opts.action || 'append';
       var target_container = (typeof eng.target === 'string') ?
-        _utils.$( eng.target ) : eng.target;
+        utils.$( eng.target ) : eng.target;
       if( target_container.length !== undefined ) target_container = target_container[0];
 
       if( action === 'replace' ) {
@@ -509,7 +503,7 @@ function
   */
   function initEvents() {
     // Register Extrovert-specific events
-    _utils.registerEvent('extro.objectClick');
+    utils.registerEvent('extro.objectClick');
 
     // Subscribe to standard events
     eng.renderer.domElement.addEventListener( 'mousedown', onMouseDown, false );
@@ -771,10 +765,10 @@ function
         eng.drag_plane.position.copy( eng.selected.position );
         eng.offset.copy( intersects[ 0 ].point ).sub( eng.selected.position );
         if( _opts.physics.enabled ) {
-          eng.selected.setAngularFactor( _utils.VZERO );
-          eng.selected.setLinearFactor( _utils.VZERO );
-          eng.selected.setAngularVelocity( _utils.VZERO );
-          eng.selected.setLinearVelocity( _utils.VZERO );
+          eng.selected.setAngularFactor( utils.VZERO );
+          eng.selected.setLinearFactor( utils.VZERO );
+          eng.selected.setAngularVelocity( utils.VZERO );
+          eng.selected.setLinearVelocity( utils.VZERO );
         }
         else {
           eng.selected.temp_velocity = eng.selected.velocity.clone();
@@ -886,10 +880,10 @@ function
 
     // Safely get the position of the HTML element [1] relative to its parent
     var src_cont = (typeof container === 'string') ?
-      _utils.$( container ) : container;
+      utils.$( container ) : container;
     if(src_cont.length !== undefined) src_cont = src_cont[0];
-    var parent_pos = _utils.offset( src_cont );
-    var child_pos = _utils.offset( val );
+    var parent_pos = utils.offset( src_cont );
+    var child_pos = utils.offset( val );
     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
     // Get the position of the element's left-top and right-bottom corners in
@@ -930,10 +924,10 @@ function
 
     // Safely get the position of the HTML element [1] relative to its parent
     var src_cont = (typeof container === 'string') ?
-      _utils.$( container ) : container;
+      utils.$( container ) : container;
     if(src_cont.length !== undefined) src_cont = src_cont[0];
-    var parent_pos = _utils.offset( src_cont );
-    var child_pos = _utils.offset( val );
+    var parent_pos = utils.offset( src_cont );
+    var child_pos = utils.offset( val );
     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
     // Get the position of the element's left-top and right-bottom corners
