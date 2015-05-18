@@ -6,7 +6,7 @@
 
 ## License ##
 
-Extrovert is permissively licensed under the MIT License. See [license.md](license.md) for details.
+Extrovert is permissively licensed under the MIT License. See [license.md](LICENSE.md) for details.
 
 ## Features ##
 
