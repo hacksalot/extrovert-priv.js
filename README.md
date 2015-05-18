@@ -4,7 +4,9 @@
 
 **Extrovert.js transforms your data into textured 3D geometry**. It supports physics, animations, cross-browser rendering, mouse and keyboard controls, and a five-minute install. It's intended for 3Dification of anything from on-page HTML to JSON responses fetched over AJAX to custom data formats specific to you or your project.
 
-Extrovert.js is open-source software and free for all non-commercial or indie use. A [commercial license][1] is available for commercial projects.
+## License ##
+
+Extrovert is permissively licensed under the MIT License. See [license.md](license.md) for details.
 
 ## Features ##
 
@@ -61,7 +63,7 @@ You can mix and match multiple generators within a single Extrovert scene. For e
 
 ```javascript
 extro.init({
-  objects: [
+  transforms: [
     { type: 'extrude' src: 'img' },
     { type: 'box' src: '#background' }
   ]
