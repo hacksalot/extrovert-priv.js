@@ -335,7 +335,7 @@ function
       var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
       var rect = srcCont.getBoundingClientRect();
       var extents = { width: rect.right - rect.left, height: rect.bottom - rect.top };
-      var worldPos = my.screenToWorldEx( oc.positionScreen[0], oc.positionScreen[1], null, extents );
+      var worldPos = my.screenToWorld( oc.positionScreen[0], oc.positionScreen[1], null, extents );
       oc.position[0] = worldPos.x;
       oc.position[1] = worldPos.y;
       //oc.position[2] = worldPos.z;
@@ -621,20 +621,8 @@ function
   location, at whatever point it intersects the placement_plane.
   @method screenToWorld
   */
-  my.screenToWorld = function( posX, posY, placement_plane ) {
-    eng.raycaster.setFromCamera( my.toNDC( posX, posY, 0.5, new THREE.Vector2() ), eng.camera );
-    var p = placement_plane || eng.placement_plane;
-    var intersects = eng.raycaster.intersectObject( p );
-    return (intersects.length > 0) ? intersects[0].point : null;
-  };
-
-  /**
-  Calculate the position, in world coordinates, of the specified (x,y) screen
-  location, at whatever point it intersects with the placement_plane.
-  @method screenToWorldEx
-  */
-  my.screenToWorldEx = function( posX, posY, placement_plane, extents ) {
-    eng.raycaster.setFromCamera( my.toNDCEx( [posX, posY, 0.5], new THREE.Vector2(), extents ), eng.camera );
+  my.screenToWorld = function( posX, posY, placement_plane, extents ) {
+    eng.raycaster.setFromCamera( my.toNDC( posX, posY, 0.5, new THREE.Vector2(), extents ), eng.camera );
     var p = placement_plane || eng.placement_plane;
     var intersects = eng.raycaster.intersectObject( p );
     return (intersects.length > 0) ? intersects[0].point : null;
@@ -955,22 +943,13 @@ function
   (NDC) ranging from -1.0 to 1.0 along each axis.
   @method toNDC
   */
-  my.toNDC = function( posX, posY, posZ, coords ) {
-    coords.x = ( posX / eng.width ) * 2 - 1;
-    coords.y = - ( posY / eng.height ) * 2 + 1;
+  my.toNDC = function( posX, posY, posZ, coords, extents ) {
+    var width = (extents || eng).width;
+    var height = (extents || eng).height;
+    coords.x = ( posX / width ) * 2 - 1;
+    coords.y = - ( posY / height ) * 2 + 1;
+    // TODO: Sometimes coords will be a Vector2 and not have a .z component
     coords.z = posZ;
-    return coords;
-  };
-
-  /**
-  Convert the specified screen coordinates to normalized device coordinates
-  (NDC) ranging from -1.0 to 1.0 along each axis.
-  @method toNDCEx
-  */
-  my.toNDCEx = function( pos, coords, extents ) {
-    coords.x = ( pos[0] / (extents.width || eng.width) ) * 2 - 1;
-    coords.y = - ( pos[1] / (extents.height || eng.height) ) * 2 + 1;
-    coords.z = pos[2];
     return coords;
   };
 
