@@ -323,25 +323,7 @@ function
     var oc = opts.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2], 'YXZ' );
 
-    var camPos;
-    if( oc.positionScreen ) {
-      var srcCont = (opts.src && opts.src.container) || opts.container || document.body;
-      if( typeof srcCont === 'string' ) {
-        srcCont = utils.$( srcCont );
-        if(srcCont.length !== undefined) srcCont = srcCont[0];
-      }
-      var parent_pos = utils.offset( srcCont );
-      var child_pos = { left: oc.positionScreen[0], top: oc.positionScreen[1] };
-      var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
-      var rect = srcCont.getBoundingClientRect();
-      var extents = { width: rect.right - rect.left, height: rect.bottom - rect.top };
-      var worldPos = my.screenToWorld( oc.positionScreen[0], oc.positionScreen[1], null, extents );
-      oc.position[0] = worldPos.x;
-      oc.position[1] = worldPos.y;
-      //oc.position[2] = worldPos.z;
-      oc.position[2] = oc.positionScreen[2];
-    }
-    else if ( oc.positionNDC ) {
+    if ( oc.positionNDC ) {
       oc.position = my.ndcToWorld( oc.positionNDC );
     }
 
@@ -642,20 +624,6 @@ function
       [ intersects[0].point.x, intersects[0].point.y, intersects[0].point.z ]
       : null;
   };
-
-  /**
-  Calculate the position, in world coordinates, of the specified (x,y) screen
-  location, at the specified Z. Currently broken.
-  @method screenToWorld2
-  */
-  // my.screenToWorld2 = function( posX, posY, unused ) {
-    // var vector = new THREE.Vector3();
-    // vector = my.toNDC( posX, posY, 0.5, vector );
-    // vector.unproject( eng.camera );
-    // var dir = vector.sub( eng.camera.position ).normalize();
-    // var distance = -eng.camera.position.z / dir.z;
-    // var pos = eng.camera.position.clone().add( dir.multiplyScalar( distance ) );
-  // };
 
   /**
   Apply a force to an object at a specific point. If physics is disabled, has no
