@@ -4,7 +4,7 @@ THREE.js subsystem provider for Extrovert.js.
 @license Copyright (c) 2015 | James M. Devlin
 */
 
-define(['extrovert/options', 'three', 'physijs'], function( options, THREE, Physijs ) {
+define(['extrovert/options/options', 'three', 'physijs'], function( options, THREE, Physijs ) {
 
   'use strict';
 

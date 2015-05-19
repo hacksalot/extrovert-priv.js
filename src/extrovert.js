@@ -10,7 +10,7 @@ define(function (require) {
   // var THREE = require('three');
   // var Physijs = require('physijs');
   var core = require('extrovert/core');
-  var utils = require('extrovert/utils');
+  var utils = require('extrovert/utilities/utils');
 
   return {
       version: '0.1.0',

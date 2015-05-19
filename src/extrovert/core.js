@@ -7,9 +7,9 @@ Core module for the Extrovert engine.
 define(
 
 [
-  'extrovert/options',
-  'extrovert/defaults',
-  'extrovert/utils',
+  'extrovert/options/options',
+  'extrovert/options/defaults',
+  'extrovert/utilities/utils',
   'extrovert/providers/three/provider-three',
   'extrovert/rasterizers/paint-img',
   'extrovert/rasterizers/paint-element',

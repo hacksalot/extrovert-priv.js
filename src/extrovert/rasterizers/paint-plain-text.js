@@ -4,7 +4,7 @@ A simple Extrovert HTML rasterizer.
 @license Copyright (c) 2015 by James M. Devlin. All rights reserved.
 */
 
-define(['extrovert/utils', 'extrovert/providers/three/provider-three'], function( utils, gfx ) {
+define(['extrovert/utilities/utils', 'extrovert/providers/three/provider-three'], function( utils, gfx ) {
 
   'use strict';
 

@@ -4,7 +4,7 @@ A streaming plain text rasterizer for Extrovert.js.
 @license Copyright (c) 2015 by James M. Devlin. All rights reserved.
 */
 
-define(['extrovert/utils', 'extrovert/providers/three/provider-three', 'in.scribe'], function( utils, gfx, inscribe ) {
+define(['extrovert/utilities/utils', 'extrovert/providers/three/provider-three', 'in.scribe'], function( utils, gfx, inscribe ) {
 
   'use strict';
 

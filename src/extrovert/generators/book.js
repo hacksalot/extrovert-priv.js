@@ -36,7 +36,7 @@ define(['require', '../core', 'extrovert/providers/three/provider-three'], funct
   var BookGenerator = function( ) {
     
     var extrovert = require('../core');   
-    var utils = require('../utils');
+    var utils = require('../utilities/utils');
 
     return {
 
