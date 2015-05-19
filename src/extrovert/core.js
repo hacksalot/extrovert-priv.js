@@ -51,8 +51,7 @@ function
 
   /**
   Internal engine settings, not to be confused with options. Represents the run-
-  time state of the Extrovert engine. We group them into an 'eng' object for no
-  reason other than to avoid having a lot of private variables scattered about.
+  time state of the Extrovert engine.
   */
   var eng = {
     camera: null,
@@ -88,7 +87,6 @@ function
   An alias to our logging facilities.
   */
   var _log = null;
-  //var Physijs = null;
 
   /**
   A global flag that controls whether log statements are executed, ignored, or
@@ -620,7 +618,7 @@ function
 
   /**
   Calculate the position, in world coordinates, of the specified (x,y) screen
-  location, at whatever point it intersects with the placement_plane.
+  location, at whatever point it intersects the placement_plane.
   @method screenToWorld
   */
   my.screenToWorld = function( posX, posY, placement_plane ) {
