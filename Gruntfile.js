@@ -131,8 +131,8 @@ module.exports = function(grunt) {
 
   var cmn = ['clean', 'jshint', 'copy:thirdparty', 'requirejs', 'concat', 'copy:physijs'];
   var cfgs = {
-    debug: ['clean:temp'],
-    release: ['uglify:dist', 'clean:temp'],
+    debug: [],
+    release: ['uglify:dist'],
     test: ['default', 'connect:auto', 'qunit'],
     testmanual: ['default', 'connect:manual']
   };
