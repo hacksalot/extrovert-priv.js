@@ -7,6 +7,7 @@ Core module for the Extrovert engine.
 define(
 
 [
+  './options/version',
   './options/options',
   './options/defaults',
   './utilities/utils',
@@ -15,6 +16,7 @@ define(
   './utilities/is',
   './utilities/log',
   './utilities/offset',
+  './utilities/detect',
   './providers/three/provider-three',
   './rasterizers/paint-img',
   './rasterizers/paint-element',
@@ -31,6 +33,7 @@ define(
 
 function
 (
+  version,
   options,
   defaults,
   utils,
@@ -39,6 +42,7 @@ function
   is,
   log,
   offset,
+  detect,
   provider,
   paint_img,
   paint_element,
@@ -57,7 +61,7 @@ function
   /**
   Define the module object and set the version number.
   */
-  var my = { version: '0.1.0' };
+  var my = { version: version.str };
 
   /**
   Internal engine settings, not to be confused with options. Represents the run-
@@ -109,13 +113,13 @@ function
 
     opts = opts || { };
     my.provider = provider;
-    my.LOGGING && log.msg('Extrovert %s', my.version);
+    my.LOGGING && log.msg('Extrovert %s', version.str);
     my.LOGGING && log.msg('User options: %o', opts );
 
     // Quick exit if the user requests a specific renderer and the browser
     // doesn't support it or if neither renderer type is supported.
-    eng.supportsWebGL = utils.detectWebGL();
-    eng.supportsCanvas = utils.detectCanvas();
+    eng.supportsWebGL = detect.supportsWebGL();
+    eng.supportsCanvas = detect.supportsCanvas();
     if( ( !eng.supportsWebGL && !eng.supportsCanvas ) ||
         ( opts.renderer === 'WebGL' && !eng.supportsWebGL ) ||
         ( opts.renderer === 'Canvas' && !eng.supportsCanvas ))

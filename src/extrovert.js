@@ -5,17 +5,12 @@ Top-level module for Extrovert.js. Define the library's public interface.
 */
 
 define(function (require) {
-  
-  'use strict';
-  // var THREE = require('three');
-  // var Physijs = require('physijs');
-  var core = require('extrovert/core');
-  var utils = require('extrovert/utilities/utils');
 
+  'use strict';
   return {
-      version: '0.1.0',
-      init: core.init,
-      utils: utils
+    version: require('extrovert/options/version').str,
+    init: require('extrovert/core').init,
+    utils: require('extrovert/utilities/utils')
   };
 
 });
