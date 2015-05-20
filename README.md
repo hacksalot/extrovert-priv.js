@@ -1,7 +1,5 @@
 # Extrovert.js #
 
-*Because JavaScript be all like, "yo, where my 3D at??"*
-
 **Extrovert.js transforms your data into textured 3D geometry**. It supports physics, animations, cross-browser rendering, mouse and keyboard controls, and a five-minute install. It's intended for 3Dification of anything from on-page HTML to JSON responses fetched over AJAX to custom data formats specific to you or your project.
 
 ![](../gh-pages/extrovert_famous_photos.jpg)
@@ -25,15 +23,14 @@ Extrovert is actively developed and maintained from our underground jungle labor
 - **Perspective and orthographic camera** support.
 - **Cross-browser compatible** with Chrome, Firefox, Internet Explorer, Safari, and other WebGL-capable browsers.
 - **Multiple loader formats** including AMD, CommonJS, and browser-global.
-- **Annotated sources** for custom Extrovert development.
 - **Automated tests** through QUnit and Mocha.
 - **No jQuery dependency**. Extrovert is jQuery-compatible, but doesn't require jQuery.
 
 ## Quick Start ##
 
-The quickest way to get started with Extrovert is to link to the sources directly. Extrovert also supports AMD and CommonJS setups.
+The quickest way to get started with Extrovert is to link to the sources directly. Extrovert also supports AMD/CommonJS script loaders like Require.js or Browserify.
 
-1. Download the Extrovert sources manually or via Bower or NPM:
+1. Download the Extrovert sources manually or via Bower:
 
     ```bash
     bower install extrovert
@@ -48,14 +45,20 @@ The quickest way to get started with Extrovert is to link to the sources directl
 3. Initialize the Extrovert library:
 
     ```javascript
-    extro.init({ /* options */ });
+    extrovert.init('#target', { /* options */ });
+    ```
+
+    If you're using jQuery, you can access Extrovert like this:
+
+    ```javascript
+    $('#target').extrovert({ /* options */ });
     ```
 
 4. Voila. Insta-3D.
 
 ## Generators ##
 
-Extrovert.js is built around the concept of generators. A *generator* is a piece of self-contained JavaScript code that generates 3D geometry according to a creative scheme or blueprint. Extrovert exposes the following built-in generators and you can build your own with just a few lines of code:
+Extrovert.js is built around the concept of generators. A *generator* is a piece of self-contained JavaScript code that generates 3D geometry according to a creative scheme or blueprint. Extrovert exposes the following built-in generators (and you can build your own):
 
 - **extrude**. A generator that positions 3D objects based on their 2D screen positions.
 - **tile**. A generator that tiles 3D objects in space (like a brick wall).
@@ -67,7 +70,7 @@ Extrovert.js is built around the concept of generators. A *generator* is a piece
 You can mix and match multiple generators within a single Extrovert scene. For example, here we're using the `extrude` generator to extrude any on-page images, and a `box` generator to turn a background div into a flat plane.
 
 ```javascript
-extro.init({
+extrovert.init('#target', {
   transforms: [
     { type: 'extrude' src: 'img' },
     { type: 'box' src: '#background' }
@@ -85,10 +88,8 @@ As with generators, Extrovert ships with multiple built-in rasterizers, and you 
 
 - **img**. A rasterizer specifically for image resources.
 - **elem**. A rasterizer for arbitrary HTML elements (`<div>`, `<span>`, `<p>`, whatever).
-- **plain text**. A rasterizer for plain unadorned text.
+- **plain-text**. A rasterizer for plain unadorned text.
 - **html**. A full-fledged HTML rasterizer. Experimental.
 - **custom**. You can define new rasterizers with just a few lines of code.
 
 Short of writing a full-fledged rasterizer, you can also provide a rendering callback function that will allow you to perform the rasterization through simple canvas-style paint calls.
-
-[1]: http://google.com
