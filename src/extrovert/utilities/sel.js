@@ -1,7 +1,7 @@
 /**
-The Extrovert options model.
-@module options.js
-@license Copyright (c) 2015 | James M. Devlin
+Simple selector replacement. TODO: remove.
+@module offset.js
+@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
 */
 
 define(function() {

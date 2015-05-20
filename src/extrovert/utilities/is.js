@@ -1,15 +1,18 @@
-define(function() {
+/**
+JavaScript type-testing methods.
+@module is.js
+@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
+*/
+
+define( function() {
 
   return {
-
     array: function( obj ) {
       return Object.prototype.toString.call( obj ) === '[object Array]';
     },
-
     string: function( obj ) {
       return typeof object === 'string';
     },
-
     plainObject: function( obj ) {
       if ((typeof obj !== "object") || obj.nodeType || (obj !== null && obj === obj.window)) {
         return false;
@@ -19,6 +22,6 @@ define(function() {
       }
       return true;
     }
-
   };
+
 });

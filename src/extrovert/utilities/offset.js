@@ -1,4 +1,10 @@
-define(['./is'], function( is ) {
+/**
+Plain JavaScript implementation of jQuery .offset().
+@module offset.js
+@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
+*/
+
+define( function() {
   return function( elem ) {
     var docElem, win;//, elem = this[0];
     var box = {
