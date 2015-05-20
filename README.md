@@ -9,22 +9,22 @@
 
 ## License ##
 
-Extrovert.js 0.1.0 is permissively licensed under the MIT License. See [license.md](LICENSE.md) for details.
+Extrovert.js 0.1.0 is permissively licensed under MIT. See [license.md](LICENSE.md) for details.
 
 ## Features ##
 
-Extrovert is actively developed and maintained from our underground jungle laboratory.
-
 - **Create complex, data-driven 3D scenes** using Extrovert's system of customizable generators, rasterizers, adapters, and left-handed spin-widgets.
-- **Extrude on-page HTML/DOM content into three dimensions**, optionally preserving the on-screen location of 3Dified elements.
+- **Extrude HTML/DOM content into three dimensions**, optionally preserving the on-screen location of 3Dified elements.
 - **3Dify arbitrary data including XML, JSON, RSS**, or any other format. If you can access it with JavaScript, you can render it with Extrovert.
-- **Physics support** with collisions, gravity, constraints, etc.
-- **Mouse and keyboard controls** mappable to translation or rotation around the major axes.
+- **Smash your data into other data with pluggable physics support** with collisions, gravity, constraints, etc.
+- **Let your users navigate the scene with optional mouse and keyboard controls** mappable to translation or rotation around the major axes.
+- **Only crashes in certain browsers!** with degradable WebGL, Canvas, and CSS3 rendering.
 - **Perspective and orthographic camera** support.
-- **Cross-browser compatible** with Chrome, Firefox, Internet Explorer, Safari, and other WebGL-capable browsers.
-- **Multiple loader formats** including AMD, CommonJS, and browser-global.
-- **Automated tests** through QUnit and Mocha.
+- **Multiple script loader formats** including AMD, CommonJS, and browser-global.
+- **Automated tests** through QUnit and Mocha are forthcoming!
 - **No jQuery dependency**. Extrovert is jQuery-compatible, but doesn't require jQuery.
+
+Extrovert is actively developed and maintained from our underground jungle laboratory. [Contributions are welcome!](CONTRIBUTE.md).
 
 ## Quick Start ##
 
@@ -86,7 +86,7 @@ If a particular generator doesn't have the functionality you need, you can wire 
 
 A rasterizer is a self-contained piece of JavaScript code that renders arbitrary data to a 2D texture. Where generators create the 3D geometry that fills your scene, rasterizers create the textures, colors, and patterns that 3D geometry is decorated with.
 
-As with generators, Extrovert ships with multiple built-in rasterizers, and you can write your own. As of v1.0 the predefined rasterizers include:
+As with generators, Extrovert ships with multiple built-in rasterizers, and as with generators, you can write your own. As of v1.0 the predefined rasterizers include:
 
 - **img**. A rasterizer specifically for image resources.
 - **elem**. A rasterizer for arbitrary HTML elements (`<div>`, `<span>`, `<p>`, whatever).
