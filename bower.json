@@ -1,13 +1,11 @@
 {
-  "name": "extrovert",
+  "name": "extrovert.js",
   "authors": [
     "James Devlin <james@indevious.com>"
   ],
   "description": "3Dify your websites, blogs, RSS feeds, and image galleries.",
   "main": [
-    "dist/extrovert.js",
-    "dist/extrovert.deps.js",
-    "dist/extrovert.all.js"
+    "dist/extrovert.js"
   ],
   "dependencies": {
     "threejs": "*",
@@ -36,7 +34,7 @@
     "physijs"
   ],
   "license": "MIT",
-  "homepage": "http://indevious.com/extrovert",
+  "homepage": "http://extrovert3d.com",
   "private": true,
   "resolutions": {
     "threejs": "d49bb0e85f"
