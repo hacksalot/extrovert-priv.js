@@ -1,6 +1,6 @@
 # Extrovert.js #
 
-**Extrovert.js transforms your data into textured 3D geometry**. It supports physics, animations, cross-browser rendering, mouse and keyboard controls, and a five-minute install. It's intended for 3Dification of anything from on-page HTML to JSON responses fetched over AJAX to custom data formats specific to you or your project.
+**Extrovert.js transforms your data into textured 3D geometry**. It supports physics, animations, cross-browser rendering, mouse and keyboard controls, and a five-minute install. It's intended for 3Dification of anything from on-page HTML to JSON responses fetched over AJAX to custom data formats specific to you or your project. [Visit the official project website](http://extrovert3d.com).
 
 ![](../gh-pages/extrovert_famous_photos.jpg)
 ![](../gh-pages/extrovert_art_of_war.jpg)
@@ -20,8 +20,8 @@ Extrovert.js 0.1.0 is permissively licensed under MIT. See [license.md](LICENSE.
 - **Let your users navigate the scene with optional mouse and keyboard controls** mappable to translation or rotation around the major axes.
 - **Only crashes in certain browsers!** with degradable WebGL, Canvas, and CSS3 rendering.
 - **Perspective and orthographic camera** support.
-- **Multiple script loader formats** including AMD, CommonJS, and browser-global.
-- **Automated tests** through QUnit and Mocha are forthcoming!
+- **Multiple script loader formats for maximum confusion** including AMD, CommonJS, and browser-global, or collectively UMD.
+- **Automated tests** through QUnit and Mocha...are forthcoming!
 - **No jQuery dependency**. Extrovert is jQuery-compatible, but doesn't require jQuery.
 
 Extrovert is actively developed and maintained from our underground jungle laboratory. [Contributions are welcome!](CONTRIBUTE.md).
