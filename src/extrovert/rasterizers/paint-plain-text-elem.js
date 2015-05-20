@@ -4,14 +4,12 @@ A simple Extrovert HTML rasterizer.
 @license Copyright (c) 2015 | James M. Devlin
 */
 
-define(['extrovert/core'], function( extrovert ) {
+define(['extrovert/utilities/sel', 'extrovert/utilities/utils'], function( sel, _utils ) {
 
   'use strict';
 
   return {
     paint: function( val, opts ) {
-
-      var _utils = extrovert.Utils;
 
       // Get the element content
       var title_elem = val.querySelector( opts.src.title );
@@ -26,7 +24,6 @@ define(['extrovert/core'], function( extrovert ) {
       canvas.height = val.offsetHeight;
 
       // Fill the canvas with the background color
-      //var bkColor = $val.css('background-color');
       var bkColor = _utils.getComputedStyle(val, 'background-color');
       if(bkColor === 'rgba(0, 0, 0, 0)')
         bkColor = 'rgb(0,0,0)';
@@ -53,10 +50,10 @@ define(['extrovert/core'], function( extrovert ) {
       context.font = _utils.getComputedStyle( content_elem, 'font');
 
       var shim = '<div id="_fetchSize" style="display: none;">Sample text</div>';
-      _utils.$( opts.src.container ).insertAdjacentHTML('beforeend', shim);
+      sel( opts.src.container ).insertAdjacentHTML('beforeend', shim);
       //$( opts.src.container ).append( shim );
       //line_height = shim.text("x").height();
-      shim = extro.Utils.$('#_fetchSize');
+      shim = sel('#_fetchSize');
       shim.innerHTML = 'x';
       var line_height = shim.offsetHeight;
 

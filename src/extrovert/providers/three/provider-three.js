@@ -170,6 +170,19 @@ define(['extrovert/options/options', 'three', 'physijs'], function( options, THR
 
     return lights;
   };
+  
+  /**
+  Create a spotlight with the specified color. TODO: adjust shadowmap settings.
+  @method createSpotlight
+  */
+  function createSpotlight( light ) {
+    // var spotLight = new THREE.SpotLight(
+    // light.color, light.intensity || 0.5, light.distance || 1000,
+    // light.angle || 35 );
+    var spotLight = new THREE.SpotLight( light.color );
+    spotLight.shadowCameraVisible = false;
+    return spotLight;
+  }  
 
   /**
   Module return.

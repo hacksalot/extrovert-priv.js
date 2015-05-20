@@ -20,7 +20,6 @@ define(['extrovert/utilities/utils', 'extrovert/providers/three/provider-three']
       canvas.height = opts.height;
 
       // Fill the canvas with the background color
-      //var bkColor = $val.css('background-color');
       var bkColor = opts.bkColor || 'rgb(255,255,255)';
       context.fillStyle = bkColor;
       context.fillRect(0, 0, canvas.width, canvas.height);

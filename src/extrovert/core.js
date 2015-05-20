@@ -10,6 +10,10 @@ define(
   'extrovert/options/options',
   'extrovert/options/defaults',
   'extrovert/utilities/utils',
+  'extrovert/utilities/extend',
+  'extrovert/utilities/sel',
+  'extrovert/utilities/is',
+  'extrovert/utilities/offset',
   'extrovert/providers/three/provider-three',
   'extrovert/rasterizers/paint-img',
   'extrovert/rasterizers/paint-element',
@@ -29,6 +33,10 @@ function
   options,
   defaults,
   utils,
+  extend,
+  sel,
+  is,
+  offset,
   provider,
   paint_img,
   paint_element,
@@ -237,9 +245,9 @@ function
       gen = new eng.generators[ transformOptions.type ]();
 
     // Initialize the generator with merged options
-    var mergedOptions = utils.extend(true, { }, defaults, gen.options );
-    mergedOptions = utils.extend(true, { }, mergedOptions, eng.userOpts );
-    mergedOptions = utils.extend(true, { }, mergedOptions, transformOptions );
+    var mergedOptions = extend(true, { }, defaults, gen.options );
+    mergedOptions = extend(true, { }, mergedOptions, eng.userOpts );
+    mergedOptions = extend(true, { }, mergedOptions, transformOptions );
     gen.init && gen.init( mergedOptions, eng );
 
     return gen;
@@ -258,7 +266,7 @@ function
     my.createScene( opts );
 
     // Create the camera
-    var ico = opts.init_cam_opts ? utils.extend(true, {}, opts.camera, opts.init_cam_opts ) : opts.camera;
+    var ico = opts.init_cam_opts ? extend(true, {}, opts.camera, opts.init_cam_opts ) : opts.camera;
     if( ico.type === 'orthographic' ) {
       ico.left = ico.left || eng.width / - 2;
       ico.right = ico.right || eng.width / 2;
@@ -296,14 +304,14 @@ function
     // Massage the transformations.
     var tforms = (opts.transform || opts.transforms) || // Either spelling
       [{ type: 'extrude', src: 'img'/*, container: 'body'*/}]; // Default if missing
-    tforms = ( !utils.isArray( tforms ) ) ? [ tforms ] : tforms; // Force array
+    tforms = ( !is.array( tforms ) ) ? [ tforms ] : tforms; // Force array
 
     // Transform!
     tforms.reduce( function( obj, trans, idx ) {
       var src = trans.src || '*';
       var cont = trans.container || (opts.src && opts.src.container) || opts.container || document.body;
       if( typeof cont === 'string' ) {
-        cont = utils.$( cont );
+        cont = sel( cont );
         if(cont.length !== undefined) cont = cont[0];
       }
       var elems = ( typeof src === 'string' ) ?
@@ -359,7 +367,7 @@ function
 
     if( eng.target ) {
       var cont = (typeof eng.target === 'string') ?
-        utils.$( eng.target ): eng.target;
+        sel( eng.target ): eng.target;
       if( cont.length !== undefined )
         cont = cont[0];
       var rect = cont.getBoundingClientRect();
@@ -397,7 +405,7 @@ function
     if( eng.target ) {
       var action = opts.action || 'append';
       var target_container = (typeof eng.target === 'string') ?
-        utils.$( eng.target ) : eng.target;
+        sel( eng.target ) : eng.target;
       if( target_container.length !== undefined ) target_container = target_container[0];
 
       if( action === 'replace' ) {
@@ -586,19 +594,6 @@ function
   }
 
   /**
-  Create a spotlight with the specified color. TODO: adjust shadowmap settings.
-  @method createSpotlight
-  */
-  function createSpotlight( light ) {
-    // var spotLight = new THREE.SpotLight(
-    // light.color, light.intensity || 0.5, light.distance || 1000,
-    // light.angle || 35 );
-    var spotLight = new THREE.SpotLight( light.color );
-    spotLight.shadowCameraVisible = false;
-    return spotLight;
-  }
-
-  /**
   Calculate the position, in world coordinates, of the specified (x,y) screen
   location, at whatever point it intersects the placement_plane.
   @method screenToWorld
@@ -626,8 +621,7 @@ function
   };
 
   /**
-  Apply a force to an object at a specific point. If physics is disabled, has no
-  effect.
+  Apply a force to an object at a specific point.
   @method applyForce
   */
   function applyForce( thing ) {
@@ -640,7 +634,7 @@ function
   }
 
   /**
-  Handle the 'mousedown' event.
+  Handle the 'mousedown' event. TODO: refactor.
   @method onMouseDown
   */
   function onMouseDown( e ) {
@@ -797,10 +791,10 @@ function
 
     // Safely get the position of the HTML element [1] relative to its parent
     var src_cont = (typeof container === 'string') ?
-      utils.$( container ) : container;
+      sel( container ) : container;
     if(src_cont.length !== undefined) src_cont = src_cont[0];
-    var parent_pos = utils.offset( src_cont );
-    var child_pos = utils.offset( val );
+    var parent_pos = offset( src_cont );
+    var child_pos = offset( val );
     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
     // Get the position of the element's left-top and right-bottom corners in
@@ -841,10 +835,10 @@ function
 
     // Safely get the position of the HTML element [1] relative to its parent
     var src_cont = (typeof container === 'string') ?
-      utils.$( container ) : container;
+      sel( container ) : container;
     if(src_cont.length !== undefined) src_cont = src_cont[0];
-    var parent_pos = utils.offset( src_cont );
-    var child_pos = utils.offset( val );
+    var parent_pos = offset( src_cont );
+    var child_pos = offset( val );
     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
     // Get the position of the element's left-top and right-bottom corners

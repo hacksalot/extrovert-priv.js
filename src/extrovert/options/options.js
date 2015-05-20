@@ -4,7 +4,7 @@ The Extrovert options model.
 @license Copyright (c) 2015 | James M. Devlin
 */
 
-define(['./defaults', '../utilities/utils'], function( defaults, utils ) {
+define(['./defaults', '../utilities/extend'], function( defaults, extend ) {
 
   var ret = {
     init: _init,
@@ -15,7 +15,7 @@ define(['./defaults', '../utilities/utils'], function( defaults, utils ) {
 
   function _init( userOpts ) {
     ret.user = userOpts;
-    ret.merged = utils.extend(true, { }, defaults, userOpts );
+    ret.merged = extend(true, { }, defaults, userOpts );
     return ret.merged;
   }
 
