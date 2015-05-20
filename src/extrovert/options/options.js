@@ -4,7 +4,7 @@ The Extrovert options model.
 @license Copyright (c) 2015 | James M. Devlin
 */
 
-define(['defaults', '../utilities/utils'], function( defaults, utils ) {
+define(['./defaults', '../utilities/utils'], function( defaults, utils ) {
 
   var ret = {
     init: _init,
