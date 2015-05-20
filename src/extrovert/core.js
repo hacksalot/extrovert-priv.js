@@ -59,9 +59,9 @@ function
 ){
 
   /**
-  Define the module object and set the version number.
+  Define the module object.
   */
-  var my = { version: version.str };
+  var my = { };
 
   /**
   Internal engine settings, not to be confused with options. Represents the run-
