@@ -20,7 +20,7 @@ Extrovert.js 0.1.0 is permissively licensed under MIT. See [license.md](LICENSE.
 - **Let your users navigate the scene with optional mouse and keyboard controls** mappable to translation or rotation around the major axes.
 - **Only crashes in certain browsers!** with degradable WebGL, Canvas, and CSS3 rendering.
 - **Perspective and orthographic camera** support.
-- **Multiple script loader formats for maximum confusion** including AMD, CommonJS, and browser-global, or collectively UMD.
+- **Multiple script loader formats for maximum possible compatibility/confusion** with modern script loaders including Require.js and Browserify.
 - **Automated tests** through QUnit and Mocha...are forthcoming!
 - **No jQuery dependency**. Extrovert is jQuery-compatible, but doesn't require jQuery.
 
@@ -54,7 +54,7 @@ The quickest way to get started with Extrovert is to link to the sources directl
     $('#target').extrovert({ /* options */ });
     ```
 
-4. Voila. Insta-3D.
+4. Voila. Insta-3D. Go forth, and annoy thy users.
 
 ## Generators ##
 
