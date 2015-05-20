@@ -4,7 +4,7 @@ The built-in "book" generator for Extrovert.js.
 @license Copyright (c) 2015 | James M. Devlin
 */
 
-define(['require', '../core', 'extrovert/providers/three/provider-three'], function( require, extro, provider ) {
+define(['require', '../core', '../utilities/log', 'extrovert/providers/three/provider-three'], function( require, extro, log, provider ) {
 
   'use strict';
   
@@ -63,7 +63,7 @@ define(['require', '../core', 'extrovert/providers/three/provider-three'], funct
       },
 
       generate: function( noun, elems ) {
-        extrovert.LOGGING && _eng.log.msg('book.generate( %o, %o )', noun, elems);
+        extrovert.LOGGING && log.msg('book.generate( %o, %o )', noun, elems);
         _noun = noun;
 
         if( noun.cover ) {
@@ -108,7 +108,7 @@ define(['require', '../core', 'extrovert/providers/three/provider-three'], funct
               var meshMat = provider.createCubeMaterial( matArray );
               var mesh = extrovert.createObject({ type: 'box', pos: tilePos, dims: _opts.dims, mat: meshMat, mass: 1000 });
               mapTextures( mesh.geometry );
-              extrovert.LOGGING && _eng.log.msg('Generating page %o at position %f, %f, %f', mesh, tilePos[0], tilePos[1], tilePos[2]);
+              extrovert.LOGGING && log.msg('Generating page %o at position %f, %f, %f', mesh, tilePos[0], tilePos[1], tilePos[2]);
             }
           }
         }

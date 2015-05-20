@@ -7,24 +7,25 @@ Core module for the Extrovert engine.
 define(
 
 [
-  'extrovert/options/options',
-  'extrovert/options/defaults',
-  'extrovert/utilities/utils',
-  'extrovert/utilities/extend',
-  'extrovert/utilities/sel',
-  'extrovert/utilities/is',
-  'extrovert/utilities/offset',
-  'extrovert/providers/three/provider-three',
-  'extrovert/rasterizers/paint-img',
-  'extrovert/rasterizers/paint-element',
-  'extrovert/rasterizers/paint-plain-text',
-  'extrovert/rasterizers/paint-plain-text-stream',
-  'extrovert/generators/book',
-  'extrovert/generators/box',
-  'extrovert/generators/direct',
-  'extrovert/generators/extrude',
-  'extrovert/generators/tile',
-  'extrovert/controls/universal-controls',
+  './options/options',
+  './options/defaults',
+  './utilities/utils',
+  './utilities/extend',
+  './utilities/sel',
+  './utilities/is',
+  './utilities/log',
+  './utilities/offset',
+  './providers/three/provider-three',
+  './rasterizers/paint-img',
+  './rasterizers/paint-element',
+  './rasterizers/paint-plain-text',
+  './rasterizers/paint-plain-text-stream',
+  './generators/book',
+  './generators/box',
+  './generators/direct',
+  './generators/extrude',
+  './generators/tile',
+  './controls/universal-controls',
   'physijs'
 ],
 
@@ -36,6 +37,7 @@ function
   extend,
   sel,
   is,
+  log,
   offset,
   provider,
   paint_img,
@@ -92,11 +94,6 @@ function
   var _opts = null;
 
   /**
-  An alias to our logging facilities.
-  */
-  var _log = null;
-
-  /**
   A global flag that controls whether log statements are executed, ignored, or
   stripped from the source output.
   */
@@ -110,11 +107,10 @@ function
   */
   my.init = function( target, opts ) {
 
-    _log = eng.log = utils.log;
     opts = opts || { };
     my.provider = provider;
-    my.LOGGING && _log.msg('Extrovert %s', my.version);
-    my.LOGGING && _log.msg('User options: %o', opts );
+    my.LOGGING && log.msg('Extrovert %s', my.version);
+    my.LOGGING && log.msg('User options: %o', opts );
 
     // Quick exit if the user requests a specific renderer and the browser
     // doesn't support it or if neither renderer type is supported.
@@ -277,7 +273,7 @@ function
       ico.aspect = eng.width / eng.height;
     }
     var cam = my.provider.createCamera( ico );
-    my.LOGGING && _log.msg('Created camera at [%f,%f,%f]: %o', cam.position.x, cam.position.y, cam.position.z, cam);
+    my.LOGGING && log.msg('Created camera at [%f,%f,%f]: %o', cam.position.x, cam.position.y, cam.position.z, cam);
     eng.camera = cam;
 
     // Create an invisible plane for drag and drop
@@ -337,7 +333,7 @@ function
 
     if( oc.position ) {
       eng.camera.position.set( oc.position[0], oc.position[1], oc.position[2] );
-      my.LOGGING && _log.msg('Camera moved to [%f,%f,%f]: %o', oc.position[0], oc.position[1], oc.position[2], cam);
+      my.LOGGING && log.msg('Camera moved to [%f,%f,%f]: %o', oc.position[0], oc.position[1], oc.position[2], cam);
     }
 
     // Set up LIGHTING.
@@ -386,7 +382,7 @@ function
     }
     var rendOpts = rendName === 'Canvas' ? undefined : { antialias: true };
 
-    my.LOGGING && _log.msg("Creating '%s' renderer with size %d x %d.", rendName, eng.width, eng.height);
+    my.LOGGING && log.msg("Creating '%s' renderer with size %d x %d.", rendName, eng.width, eng.height);
 
     eng.renderer = new THREE[rendName + 'Renderer']( rendOpts );
     eng.renderer.setPixelRatio( window.devicePixelRatio );
@@ -429,7 +425,7 @@ function
   @method createObject
   */
   my.createObject = function( desc ) {
-    my.LOGGING && _log.msg('Creating object %o at [%f,%f,%f].', desc, desc.pos[0], desc.pos[1], desc.pos[2] );
+    my.LOGGING && log.msg('Creating object %o at [%f,%f,%f].', desc, desc.pos[0], desc.pos[1], desc.pos[2] );
     var mesh = my.provider.createObject( desc );
     eng.scene.add( mesh );
     eng.objects.push( mesh );
@@ -883,7 +879,7 @@ function
     eng.scene.updateMatrix();
     eng.placement_plane.updateMatrix();
     eng.placement_plane.updateMatrixWorld();
-    my.LOGGING && _log.msg('Created placement plane at [%o]: %o', eng.placement_plane.position, eng.placement_plane);
+    my.LOGGING && log.msg('Created placement plane at [%o]: %o', eng.placement_plane.position, eng.placement_plane);
     return eng.placement_plane;
   };
 
