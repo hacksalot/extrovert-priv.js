@@ -1,5 +1,5 @@
 /**
-Gruntfile for the extrovert.js project.
+Gruntfile for the Extrovert.js library.
 @module Gruntfile.js
 */
 
@@ -8,6 +8,7 @@ module.exports = function(grunt) {
   var opts = {
 
     pkg: grunt.file.readJSON('package.json'),
+
     ext: '.min',
 
     clean: {
@@ -71,7 +72,7 @@ module.exports = function(grunt) {
     },
 
     copy: {
-      // Copy third-party JS to a temp folder prior to Require.js processing
+      // Copy 3rd-party JS to a temp folder prior to Require.js processing
       thirdparty: {
         files: [{
           expand: true, flatten: true,
@@ -88,18 +89,7 @@ module.exports = function(grunt) {
           src: ['bower_components/physijs/physijs_worker.js', 'bower_components/ammo.js/builds/ammo.js'],
           dest: 'dist'
         }]
-      },
-      rename: {
-        files: [{
-          expand: true,
-          flatten: true,
-          src: ['.tmp/gz/*.js'],
-          dest: 'dist',
-          rename: function( dest, src ) {
-            return "dist/" + src.replace('.js', '.gz.js');
-          }
-        }]
-      },
+      }
     },
 
     uglify: {
@@ -135,38 +125,16 @@ module.exports = function(grunt) {
         expr: true,
         newcap: false
       }
-    },
-
-    // Create gzipped versions of JS sources.
-
-    // This configuration, straight from the docs
-    // (https://github.com/gruntjs/grunt-contrib-compress)
-    // doesn't really work.
-    // compress: {
-      // main: {
-        // options: { mode: 'gzip' },
-        // files: [
-          // { expand: true, src: ['dist/*.js'], dest: 'public/', ext: '.gz.js' }
-        // ]
-      // }
-    // }
-
-    // This configuration, also from the docs, works,
-    // but doesn't specify the file extension
-    // gzip assets 1-to-1 for production
-    compress: {
-      main: {
-        options: {
-          mode: 'gzip'
-        },
-        expand: true,
-        cwd: 'dist/',
-        src: ['**/*'],
-        dest: '.tmp/gz/'
-      }
     }
 
+  };
 
+  var cmn = ['clean', 'jshint', 'copy:thirdparty', 'requirejs', 'concat', 'copy:physijs'];
+  var cfgs = {
+    debug: ['clean:temp'],
+    release: ['uglify:dist', 'clean:temp'],
+    test: ['default', 'connect:auto', 'qunit'],
+    testmanual: ['default', 'connect:manual']
   };
 
   grunt.initConfig( opts );
@@ -176,25 +144,20 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-connect');
-  grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
-  var cfgs = {
-    debug: ['clean', 'jshint', 'copy:thirdparty', 'requirejs', 'concat', 'copy:physijs', 'clean:temp'],
-    release: ['clean', 'jshint', 'copy:thirdparty', 'requirejs', 'concat', 'copy:physijs', 'uglify:dist', 'compress:main', 'copy:rename', 'clean:temp'],
-    quick: ['clean','jshint','concat','copy:physijs','uglify:dist','clean:temp'],
-    test: ['default', 'connect:auto', 'qunit'],
-    testmanual: ['default', 'connect:manual']
-  };
-
-  grunt.registerTask('build', 'Build the Extrovert library.', function( config, quick ) {
+  grunt.registerTask( 'build', 'Build the Extrovert library.', function( config, quick ) {
     config = config || 'release';
+    grunt.task.run( cmn );
     grunt.task.run( cfgs[config] );
   });
 
-  grunt.registerTask('default', cfgs.release);
-  grunt.registerTask('test', cfgs.test );
-  grunt.registerTask('testmanual', cfgs.textmanual);
+  grunt.registerTask( 'default', 'Build Extrovert for release.', function( config, quick ) {
+    grunt.task.run( 'build:release' );
+  });
+
+  grunt.registerTask( 'test', cfgs.test );
+  grunt.registerTask( 'testmanual', cfgs.textmanual );
 
 };
