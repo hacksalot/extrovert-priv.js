@@ -4,7 +4,7 @@ A simple Extrovert HTML rasterizer.
 @license Copyright (c) 2015 by James M. Devlin. All rights reserved.
 */
 
-define(['extrovert/utilities/utils', 'extrovert/providers/three/provider-three'], function( utils, gfx ) {
+define(['../utilities/utils', '../providers/three/provider-three', '../utilities/blend'], function( utils, gfx, shadeBlend ) {
 
   'use strict';
 
@@ -31,7 +31,7 @@ define(['extrovert/utilities/utils', 'extrovert/providers/three/provider-three']
       var numLines = utils.wrapText( context, val.title, 10, 10 + title_line_height, canvas.width - 20, title_line_height, true );
 
       // Paint the title's background panel
-      context.fillStyle = utils.shadeBlend( -0.25, bkColor );
+      context.fillStyle = shadeBlend( -0.25, bkColor );
       context.fillRect(0,0, canvas.width, 20 + numLines * title_line_height);
 
       // Paint the title text

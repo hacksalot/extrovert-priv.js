@@ -4,7 +4,7 @@ A simple Extrovert HTML rasterizer.
 @license Copyright (c) 2015 | James M. Devlin
 */
 
-define(['extrovert/utilities/sel', 'extrovert/utilities/utils'], function( sel, _utils ) {
+define(['../utilities/sel', '../utilities/utils', '../utilities/blend'], function( sel, _utils, shadeBlend ) {
 
   'use strict';
 
@@ -39,7 +39,7 @@ define(['extrovert/utilities/sel', 'extrovert/utilities/utils'], function( sel, 
       var num_lines = _utils.wrapText( context, title, 10, 10 + title_line_height, canvas.width - 20, title_line_height, true );
 
       // Paint the title's background panel
-      context.fillStyle = _utils.shadeBlend( -0.25, bkColor );
+      context.fillStyle = shadeBlend( -0.25, bkColor );
       context.fillRect(0,0, canvas.width, 20 + num_lines * title_line_height);
 
       // Paint the title text
