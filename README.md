@@ -15,9 +15,9 @@ Extrovert.js 0.1.0 is permissively licensed under the MIT License. See [license.
 
 Extrovert is actively developed and maintained from our underground jungle laboratory.
 
-- **3Dify your HTML markup** using Extrovert's built-in extrusion generator.
-- **3Dify arbitrary data** using Extrovert's system of customizable generators and rasterizers. XML, JSON, RSS, or any other format.
-- **Create virtually any 3D scene** using our built-in generators&mdash;or build your own.
+- **Create complex, data-driven 3D scenes** using Extrovert's system of customizable generators, rasterizers, adapters, and left-handed spin-widgets.
+- **Extrude on-page HTML/DOM content into three dimensions**, optionally preserving the on-screen location of 3Dified elements.
+- **3Dify arbitrary data including XML, JSON, RSS**, or any other format. If you can access it with JavaScript, you can render it with Extrovert.
 - **Physics support** with collisions, gravity, constraints, etc.
 - **Mouse and keyboard controls** mappable to translation or rotation around the major axes.
 - **Perspective and orthographic camera** support.
@@ -61,6 +61,8 @@ The quickest way to get started with Extrovert is to link to the sources directl
 Extrovert.js is built around the concept of generators. A *generator* is a piece of self-contained JavaScript code that generates 3D geometry according to a creative scheme or blueprint. Extrovert exposes the following built-in generators (and you can build your own):
 
 - **extrude**. A generator that positions 3D objects based on their 2D screen positions.
+- **direct**. A generator that positions 3D objects based on their 2D screen positions.
+- **book**. A generator that creates "pamphlet" or "book" geometry from longform text content.
 - **tile**. A generator that tiles 3D objects in space (like a brick wall).
 - **stack**. A generator that stacks 3D objects in space (like a deck of cards).
 - **box**. A generator that renders its data to the six sides of a cube.
@@ -89,6 +91,7 @@ As with generators, Extrovert ships with multiple built-in rasterizers, and you 
 - **img**. A rasterizer specifically for image resources.
 - **elem**. A rasterizer for arbitrary HTML elements (`<div>`, `<span>`, `<p>`, whatever).
 - **plain-text**. A rasterizer for plain unadorned text.
+- **plain-text-stream**. A *streaming* rasterizer for longform text of arbitrary length.
 - **html**. A full-fledged HTML rasterizer. Experimental.
 - **custom**. You can define new rasterizers with just a few lines of code.
 
