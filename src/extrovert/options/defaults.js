@@ -12,7 +12,6 @@ define({
       near: 1,
       far: 10000,
       position: [0,0,200]
-      //positionScreen: [4000,4000,200]
     },
     controls: {
       type: 'universal',
