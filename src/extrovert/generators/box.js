@@ -10,17 +10,12 @@ define(['extrovert/core'], function( extrovert ) {
 
   var _opts, _eng, _side_mat, _noun;
 
-  /**
-  Adjust textures for simple mode to allow continuation of the texture around
-  the sides of the cube/object.
-  @method patch_textures
-  */
   function patchTextures( cubeGeo ) {
     for (i = 0; i < cubeGeo.faces.length ; i++) {
        var face = cubeGeo.faces[ i ];
        var fvu = cubeGeo.faceVertexUvs[0][i];
        // Quick kludge for textures on non-front faces. Replace with correct
-       // mapping, wrapping, or dedicated textures.
+       // mapping, wrapping, or dedicated textures. TODO
        if(face.normal.y > 0.9) {
           fvu[0].x = fvu[0].y = fvu[1].x = fvu[1].y = fvu[2].x = fvu[2].y = 0.99;
        }

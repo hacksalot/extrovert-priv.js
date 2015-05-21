@@ -5,15 +5,10 @@ A simple Extrovert HTML rasterizer.
 */
 
 define(['extrovert/core'], function( extrovert ) {
-
   'use strict';
-
   return {
     paint: function( val, opts ) {
-      // Create a texture from the canvas
       return extrovert.provider.createTextureFromCanvas( canvas );
     }
   };
-
-
 });

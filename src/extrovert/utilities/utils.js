@@ -13,19 +13,10 @@ define(['require', 'three'], function( require, THREE )  {
   my.VZERO = new THREE.Vector3(0, 0, 0);
   
   my.shadeBlend = require('./blend');
-
-  /**
-  Improved wrap text drawing helper for canvas. See:
-  - http://stackoverflow.com/a/11361958
-  - http: //www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
-  @method wrap_text
-  @param A Canvas context.
-  @param x Text origin.
-  @param y Text origin.
-  @param maxWidth Width to break lines at.
-  @param lineHeight Height of each line.
-  @param measureOnly If true, measure the text without drawing it.
-  */
+  
+  // Improved wrap text drawing helper for canvas. See:
+  // - http://stackoverflow.com/a/11361958
+  // - http://www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
   my.wrapText = function( context, text, x, y, maxWidth, lineHeight, measureOnly ) {
 
     var numLines = 1;
@@ -34,46 +25,27 @@ define(['require', 'three'], function( require, THREE )  {
     var try_line = '';
     var extents = [0,0];
 
-    // Split the input text on linebreaks
     var lines = text.split('\n');
 
-    // Iterate over each "hard" line
     for (var line_no = 0; line_no < lines.length; line_no++) {
 
-      // Get the words in the line
       var words = lines[ line_no ].split(' ');
       start_of_line = true;
       line_partial = '';
 
-      // Iterate over the words in the line
       for( var w = 0; w < words.length; w++ ) {
 
-        // Establish a candidate line based on any existing text, plus the next word
         try_line = line_partial + (start_of_line ? "" : " ") + words[ w ];
-
-        // Measure the candidate line
         var metrics = context.measureText( try_line );
-
-        // If the candidate line length is less than the maxWidth, append this
-        // word to the candidate line and continue.
         if( metrics.width <= maxWidth ) {
           start_of_line = false;
           line_partial = try_line;
         }
-
-        // If the candidate line length is greater than the maxWidth, paint the
-        // previous incarnation of the line (without the last word) and reset.
         else {
-
-          // Measure the to-be-painted line and update extents, in case we're measuring
           metrics = context.measureText( line_partial );
           if( metrics.width > extents[0] )
             extents[0] = metrics.width;
-
-          // Paint the text here (as long as we're not measuring)
           measureOnly || context.fillText( line_partial, x, y);
-
-          // Reset the line, preloaded with the text that didn't fit.
           start_of_line = true;
           y += lineHeight;
           extents[1] = y;
@@ -84,7 +56,7 @@ define(['require', 'three'], function( require, THREE )  {
             start_of_line = false;
           }
           else {
-            // A single word that is wider than our max allowed width; need to break at the letter
+            // A single word that is wider than max allowed width; TODO: letter-break
           }
         }
       }
@@ -101,10 +73,7 @@ define(['require', 'three'], function( require, THREE )  {
     };
   };
 
-  /**
-  Retrieve the computed CSS style for a given property. Taken from somewhere.
-  @method getComputedStyle
-  */
+  // via SO
   my.getComputedStyle = function( el, styleProp ) {
     var value, defaultView = el.ownerDocument.defaultView;
     // W3C standard way:
@@ -134,12 +103,6 @@ define(['require', 'three'], function( require, THREE )  {
     }
   };
 
-  /**
-  Retrieve the value of the specified cookie.
-  This is for internal use but we expose it as part of the extro interface for
-  the benefit of samples and demos and such.
-  @method getCookie
-  */
   my.getCookie = function(sName)
   {
     sName = sName.toLowerCase();
@@ -155,12 +118,6 @@ define(['require', 'three'], function( require, THREE )  {
     return '';
   };
 
-  /**
-  Sets a cookie.
-  This is for internal use but we expose it as part of the extro interface for
-  the benefit of samples and demos and such.
-  @method setCookie
-  */
   my.setCookie = function(sName,sValue)
   {
     var oDate = new Date();
@@ -169,21 +126,12 @@ define(['require', 'three'], function( require, THREE )  {
     document.cookie = sCookie;
   };
 
-  /**
-  Clear a cookie.
-  This is for internal use but we expose it as part of the extro interface for
-  the benefit of samples and demos and such.
-  @method clearCookie
-  */
   my.clearCookie = function(sName)
   {
     my.setCookie(sName,'');
   };
 
-  /**
-  Utility function for drawing a rounded rect (2D). Currently unused.
-  @method roundedRect
-  */
+  // TODO: unused
   function roundedRect( ctx, x, y, width, height, radius ){
     ctx.moveTo( x, y + radius );
     ctx.lineTo( x, y + height - radius );
@@ -196,10 +144,7 @@ define(['require', 'three'], function( require, THREE )  {
     ctx.quadraticCurveTo( x, y, x, y + radius );
   }
 
-  /**
-  Register an Extrovert event.
-  https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events
-  */
+  // https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events
   my.registerEvent = function( eventName ) {
     var classic = true; // older IE-compat method
     my.events = my.events || { };
@@ -208,16 +153,10 @@ define(['require', 'three'], function( require, THREE )  {
     return my.events[ eventName ];
   };
 
-  /**
-  Fire an Extrovert event.
-  */
   my.fireEvent = function( eventName ) {
     document.dispatchEvent( my.events[ eventName ] );
   };
 
-  /**
-  Module return.
-  */
   return my;
 
 });

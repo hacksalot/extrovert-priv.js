@@ -5,13 +5,10 @@ A simple Extrovert image rasterizer.
 */
 
 define(['extrovert/providers/three/provider-three'], function( gfx ) {
-
   'use strict';
-
   return {
     paint: function( obj ) {
       return gfx.loadTexture( typeof obj === 'string' ? obj : obj.src );
     }
   };
-
 });

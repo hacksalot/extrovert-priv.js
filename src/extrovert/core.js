@@ -58,15 +58,8 @@ function
 
 ){
 
-  /**
-  Define the module object.
-  */
   var my = { };
 
-  /**
-  Internal engine settings, not to be confused with options. Represents the run-
-  time state of the Extrovert engine.
-  */
   var eng = {
     camera: null,
     scene: null,
@@ -90,25 +83,10 @@ function
     target: 'body'
   };
 
-  /**
-  The one and only ultrafied combined options object. Once initOptions has been
-  called, this will contain the final, authoritative, combined set of engine +
-  generator + user options.
-  */
   var _opts = null;
 
-  /**
-  A global flag that controls whether log statements are executed, ignored, or
-  stripped from the source output.
-  */
   my.LOGGING = true;
 
-  /**
-  Initialize the Extrovert library and get some 3D up in that grill.
-  @method init
-  @param target Target selector, DOM node, or DOM collection.
-  @param options Transformation options.
-  */
   my.init = function( target, opts ) {
 
     opts = opts || { };
@@ -116,8 +94,6 @@ function
     my.LOGGING && log.msg('Extrovert %s', version.str);
     my.LOGGING && log.msg('User options: %o', opts );
 
-    // Quick exit if the user requests a specific renderer and the browser
-    // doesn't support it or if neither renderer type is supported.
     eng.supportsWebGL = detect.supportsWebGL();
     eng.supportsCanvas = detect.supportsCanvas();
     if( ( !eng.supportsWebGL && !eng.supportsCanvas ) ||
@@ -135,7 +111,6 @@ function
       });
     }
 
-    // Initialize all the things
     initOptions( target, opts );
     initRenderer( _opts );
     initWorld( _opts, eng );
@@ -143,18 +118,11 @@ function
     initPhysics( _opts );
     initControls( _opts, eng );
     initEvents();
-    //initTimer();
     initAvatar( _opts.avatar );
     start();
-
-    // Since we use a false return as a quick signal for "can't render"
-    // above, return true here even though it's meaningless.
     return true;
   };
 
-  /**
-  Simple jQuery plugin support (if jQuery is present).
-  */
   var $ = window.jQuery;
   if( $ ) {
     $.fn.extrovert = function( opts ) {
@@ -164,26 +132,17 @@ function
     };
   }
 
-  /**
-  Initialize engine options. Merge user, generator, and engine options into a
-  new combined options object and carry across other important settings.
-  @method initOptions
-  */
   function initOptions( target, user_opts ) {
 
     eng.target = target;
     eng.userOpts = user_opts;
     _opts = eng.opts = my.options = options.init( user_opts );
 
-    // If physics are enabled, pass through the locations of necessary scripts.
-    // These are required by the physics library; nothing to do with Extrovert.
     if( _opts.physics.enabled && _opts.physics.provider === 'physijs' ) {
-      //Physijs = require('physijs');
       Physijs.scripts.worker = _opts.physics.options.worker;
       Physijs.scripts.ammo = _opts.physics.options.ammo;
     }
 
-    // Preload rasterizers
     // TODO: legacy holdover; remove/fix
     eng.rasterizers = {
       img: paint_img,
@@ -200,14 +159,9 @@ function
       box: gen_box
     };
 
-    // Return the combined, ultrafied options object.
     return _opts;
   }
 
-  /**
-  Return an appropriate rasterizer for the given object.
-  @method getRasterizer
-  */
   my.getRasterizer = function( obj ) {
     var r = null;
     if( obj instanceof HTMLImageElement )
@@ -219,23 +173,8 @@ function
     return r;
   };
 
-  /**
-  Initialize a generator from a transformation description.
-  @method initGenerator
-  @param transformOptions A single transformation description from the
-  `transforms` array passed in by the user, if any.
-
-      {
-        type: 'extrude',
-        rasterizer: 'element',
-        etc: "..."
-      }
-
-  */
   function initGenerator( transformOptions ) {
-    // Create the generator object
-    // options.generator can be the name of any valid generator, or an options
-    // object with a .name field specifying any valid generator, or undefined.
+
     var gen = null;
     if( !transformOptions.type )
       gen = new gen_extrude();
@@ -244,7 +183,6 @@ function
     else
       gen = new eng.generators[ transformOptions.type ]();
 
-    // Initialize the generator with merged options
     var mergedOptions = extend(true, { }, defaults, gen.options );
     mergedOptions = extend(true, { }, mergedOptions, eng.userOpts );
     mergedOptions = extend(true, { }, mergedOptions, transformOptions );
@@ -253,19 +191,14 @@ function
     return gen;
   }
 
-  /**
-  Generate the "world".
-  @method initWorld
-  */
   function initWorld( opts, eng ) {
 
-    // TODO: CORS stuff.
+    // TODO: CORS
     //THREE.ImageUtils.crossOrigin = '*';
     //THREE.Loader.prototype.crossOrigin = '*';
 
     my.createScene( opts );
 
-    // Create the camera
     var ico = opts.init_cam_opts ? extend(true, {}, opts.camera, opts.init_cam_opts ) : opts.camera;
     if( ico.type === 'orthographic' ) {
       ico.left = ico.left || eng.width / - 2;
@@ -280,9 +213,7 @@ function
     my.LOGGING && log.msg('Created camera at [%f,%f,%f]: %o', cam.position.x, cam.position.y, cam.position.z, cam);
     eng.camera = cam;
 
-    // Create an invisible plane for drag and drop
-    // TODO: Only create this if drag-drop controls are enabled
-    // This should be up to the XxxxxControls object.
+    // TODO: Remove/refactor
     if( opts.controls.allow_drag ) {
       eng.drag_plane = my.createObject( {
         type: 'plane',
@@ -293,20 +224,15 @@ function
         transparent: true } );
     }
 
-    // Create any predefined scene objects. These are objects added to the
-    // scene via JSON opts etc.
     createScenePrimitives( eng.scene, opts );
 
-    // We have to do an explicit update here because auto updates won't happen
-    // until the scene starts rendering, which it ain't, yet. TODO: still necessary?
+    // TODO: still necessary?
     eng.scene.updateMatrix();
 
-    // Massage the transformations.
     var tforms = (opts.transform || opts.transforms) || // Either spelling
       [{ type: 'extrude', src: 'img'/*, container: 'body'*/}]; // Default if missing
     tforms = ( !is.array( tforms ) ) ? [ tforms ] : tforms; // Force array
 
-    // Transform!
     tforms.reduce( function( obj, trans, idx ) {
       var src = trans.src || '*';
       var cont = trans.container || (opts.src && opts.src.container) || opts.container || document.body;
@@ -317,17 +243,11 @@ function
       var elems = ( typeof src === 'string' ) ?
         cont.querySelectorAll( src ) : src;
 
-      // Create a generator and run the transform
       var gen = initGenerator( trans );
       gen.generate( trans, elems );
 
-      // opts.creating && opts.creating( elem, mesh );
-      // opts.created && opts.created( elem, mesh );
     }, { });
 
-    // Set final camera position and orientation. Some generators depend on a
-    // particular cam position for layouting, so we don't mess with it until
-    // after everything's been created.
     var oc = opts.camera;
     oc.rotation && eng.camera.rotation.set( oc.rotation[0], oc.rotation[1], oc.rotation[2], 'YXZ' );
 
@@ -340,29 +260,16 @@ function
       my.LOGGING && log.msg('Camera moved to [%f,%f,%f]: %o', oc.position[0], oc.position[1], oc.position[2], cam);
     }
 
-    // Set up LIGHTING.
-    // We do this after final cam positioning because the default light position,
-    // if the user doesn't specify one, is wherever the camera is located.
     provider.fiatLux( opts.lights ).forEach(function(val) {
       eng.scene.add(val);
     });
   }
 
-  /**
-  Initialize keyboard and mouse controls for the scene. Right now this is a bit
-  of a formality.
-  @method initControls
-  */
   function initControls( opts, eng ) {
     eng.controls = my.createControls( opts.controls, eng.camera, eng.renderer.domElement );
     return eng.controls;
   }
 
-  /**
-  Initialize the renderer, which can either be a WebGL renderer (the default)
-  or a Canvas renderer (good for fallbacks).
-  @method initRenderer
-  */
   function initRenderer( opts ) {
 
     if( eng.target ) {
@@ -396,11 +303,6 @@ function
     eng.renderer.domElement.style += ' position: relative;';
   }
 
-  /**
-  Introduce the canvas to the live DOM. Note: .getBoundingClientRect will
-  return an empty (zero-size) result until this happens.
-  @method initCanvas
-  */
   function initCanvas( opts ) {
     if( eng.target ) {
       var action = opts.action || 'append';
@@ -423,11 +325,6 @@ function
     }
   }
 
-  /**
-  Create a mesh object from a generic description. Currently only supports box
-  and plane meshes; add others as necessary.
-  @method createObject
-  */
   my.createObject = function( desc ) {
     my.LOGGING && log.msg('Creating object %o at [%f,%f,%f].', desc, desc.pos[0], desc.pos[1], desc.pos[2] );
     var mesh = my.provider.createObject( desc );
@@ -438,12 +335,6 @@ function
     return mesh;
   };
 
-  /**
-  Create a mouse/keyboard control type from a generic description. Extrovert
-  supports several control schemes, some of which are loosely based on control
-  examples from THREE.js.
-  @method createControls
-  */
   my.createControls = function( control_opts, camera, domElement ) {
     if( control_opts.type === 'universal' ) {
       return new UniversalControls( camera, undefined, control_opts );
@@ -451,21 +342,11 @@ function
     return null;
   };
 
-  /**
-  Initialize the top-level Scene object. Currently this will either be a THREE.Scene
-  object or, if physics is enabled, a Physijs.Scene object.
-  @method createScene
-  */
   my.createScene = function( scene_opts ) {
     eng.scene = scene_opts.physics.enabled ? new Physijs.Scene() : new THREE.Scene();
     return eng.scene;
   };
 
-  /**
-  Create predefined scene objects, meaning custom objects that are placed in the
-  scene via options, by either the user or the generator.
-  @method createScenePrimitives
-  */
   function createScenePrimitives( scene, scene_opts ) {
     if( scene_opts.scene && scene_opts.scene.items ) {
       for(var i = 0; i < scene_opts.scene.items.length; i++) {
@@ -475,10 +356,6 @@ function
     }
   }
 
-  /**
-  Initialize the physics system.
-  @method initPhysics
-  */
   function initPhysics( opts ) {
     if( opts.physics.enabled ) {
       eng.gravity.set( opts.gravity[0], opts.gravity[1], opts.gravity[2] );
@@ -487,15 +364,10 @@ function
     }
   }
 
-  /**
-  Set up event handlers and emitters.
-  @method initEvents
-  */
   function initEvents() {
-    // Register Extrovert-specific events
+    // TODO: Register Extrovert-specific events
     utils.registerEvent('extro.objectClick');
 
-    // Subscribe to standard events
     eng.renderer.domElement.addEventListener( 'mousedown', onMouseDown, false );
     eng.renderer.domElement.addEventListener( 'mouseup', onMouseUp, false );
     eng.renderer.domElement.addEventListener( 'mousemove', onMouseMove, false );
@@ -505,20 +377,10 @@ function
     window.addEventListener( 'resize', window_resize, false );
   }
 
-  /**
-  Initialize the scene timer. TODO: Improve simulation timing and structure.
-  TODO: integrate with Three.Clock() and eng.clock.
-  @method initTimer
-  */
   function initTimer() {
     eng.start_time = eng.last_time = Date.now() / 1000.0;
   }
 
-  /**
-  Create a physical representation of the user's identity. For now this is just
-  an invisible box or capsule that can be collided with.
-  @method initAvatar
-  */
   function initAvatar( avOpts ) {
     if( avOpts && avOpts.enabled ) {
       var avatar = my.createObject( avOpts );
@@ -529,10 +391,7 @@ function
     }
   }
 
-  /**
-  Start the simulation.
-  @method start
-  */
+  // TODO: improve simulation timing/structure
   function start() {
     window.requestAnimFrame =            //[5]
       window.requestAnimationFrame       ||
@@ -546,35 +405,21 @@ function
     animate();
   }
 
-  /**
-  Request animation of the scene. Called directly only once, at the start of the
-  simulation. Thereafter, called whenever requestAnimationFrame decides.
-  @method animate
-  */
   function animate() {
     requestAnimFrame( animate );
     render();
   }
 
-  /**
-  Update the scene physics. Only called when physics are enabled.
-  @method update
-  */
   function update() {
     eng.scene.simulate();
   }
 
-  /**
-  Render the scene.
-  @method render
-  */
   function render() {
 
-    // Update physics and controls
     _opts.physics.enabled && update();
     eng.controls && eng.controls.enabled && eng.controls.update( eng.clock.getDelta() );
 
-    // Housekeeping for Phyijs's __dirtyPosition flag. Refactor this.
+    // Housekeeping for Phyijs's __dirtyPosition flag. TODO: Refactor this.
     if( !_opts.move_with_physics ) {
        // Maintain the __dirtyPosition flag while dragging and after touching
       if( eng.selected !== null ) {
@@ -593,11 +438,6 @@ function
     eng.renderer.render( eng.scene, eng.camera );
   }
 
-  /**
-  Calculate the position, in world coordinates, of the specified (x,y) screen
-  location, at whatever point it intersects the placement_plane.
-  @method screenToWorld
-  */
   my.screenToWorld = function( posX, posY, placement_plane, extents ) {
     eng.raycaster.setFromCamera( my.toNDC( posX, posY, 0.5, new THREE.Vector2(), extents ), eng.camera );
     var p = placement_plane || eng.placement_plane;
@@ -605,11 +445,6 @@ function
     return (intersects.length > 0) ? intersects[0].point : null;
   };
 
-  /**
-  Calculate the position, in world coordinates, of the specified (x,y) screen
-  location, at whatever point it intersects with the placement_plane.
-  @method ndcToWorld
-  */
   my.ndcToWorld = function( pos, placement_plane ) {
     var temp = new THREE.Vector3(pos[0], pos[1], pos[2]);
     eng.raycaster.setFromCamera( temp, eng.camera );
@@ -620,10 +455,6 @@ function
       : null;
   };
 
-  /**
-  Apply a force to an object at a specific point.
-  @method applyForce
-  */
   function applyForce( thing ) {
     if( _opts.physics.enabled ) {
       var rotation_matrix = new THREE.Matrix4().extractRotation( thing.object.matrix );
@@ -633,23 +464,15 @@ function
     }
   }
 
-  /**
-  Handle the 'mousedown' event. TODO: refactor.
-  @method onMouseDown
-  */
   function onMouseDown( e ) {
 
     e.preventDefault();
 
-    // Get the (x,y) mouse coordinates relative to the container
     var xpos = e.offsetX === undefined ? e.layerX : e.offsetX; //[1]
     var ypos = e.offsetY === undefined ? e.layerY : e.offsetY;
 
-    // Convert to normalized device coordinates
     eng.mouse = my.toNDC( xpos, ypos, 0.5, eng.mouse );
 
-    // Set up our ray depending on whether the camera is the child of a
-    // transformed object or not.
     if ( !_opts.avatar ) {
       eng.raycaster.setFromCamera( eng.mouse, eng.camera );
     }
@@ -661,12 +484,9 @@ function
       eng.raycaster.ray.direction.set( eng.mouse.x, eng.mouse.y, 0.5 ).unproject( eng.camera ).sub( cameraPosition ).normalize();
     }
 
-    // Cast a ray to see what objects were clicked.
     var intersects = eng.raycaster.intersectObjects( eng.objects );
     if( intersects.length !== 0 ) {
 
-      // Fire the 'objectClicked' event/callback if an actual object was clicked
-      // and short circuit processing if the handler returns false.
       if( _opts.objectClicked && false === _opts.objectClicked( e, intersects ))
         return;
 
@@ -693,16 +513,11 @@ function
 
     _opts.clicked && _opts.clicked( e, eng.selected );
 
-    // Pass the click to the controller
     if( eng.controls && eng.controls.enabled ) {
       eng.controls.mousedown( e );
     }
   }
 
-  /**
-  Handle the 'mousemove' event. TODO: physics integration.
-  @method onMouseMove
-  */
   function onMouseMove( e ) {
     if( eng.controls && eng.controls.enabled ) {
       eng.controls.mousemove( e );
@@ -728,10 +543,6 @@ function
     }
   }
 
-  /**
-  Handle the 'mouseup' event.
-  @method onMouseUp
-  */
   function onMouseUp( e ) {
     if( eng.controls && eng.controls.enabled ) {
       eng.controls.mouseup( e );
@@ -756,37 +567,18 @@ function
     eng.selected = null;
   }
 
-  /**
-  Handle the 'keydown' event.
-  @method onKeyDown
-  */
   function onKeyDown( e ) {
     eng.controls && eng.controls.enabled && eng.controls.keydown( e );
   }
 
-  /**
-  Handle the 'keyup' event.
-  @method onKeyUp
-  */
   function onKeyUp( e ) {
     eng.controls && eng.controls.enabled && eng.controls.keyup( e );
   }
 
-  /**
-  Handle the 'mousewheel' event.
-  @method onMouseWheel
-  */
   function onMouseWheel( e ) {
     eng.controls && eng.controls.enabled && eng.controls.mousewheel( e );
   }
 
-  /**
-  Retrieve 3D position info for a specific HTML DOM element.
-  @method getPosition
-  @param val Any DOM element.
-  @param container A DOM element or CSS selector for the container element.
-  @param zDepth The depth of the HTML element in world units.
-  */
   my.getPosition = function( val, container, zDepth ) {
 
     // Safely get the position of the HTML element [1] relative to its parent
@@ -824,13 +616,6 @@ function
     };
   };
 
-  /**
-  Retrieve 3D position info for a specific HTML DOM element.
-  @method getPositionDirect
-  @param val Any DOM element.
-  @param container A DOM element or CSS selector for the container element.
-  @param zDepth The depth of the HTML element in world units.
-  */
   my.getPositionDirect = function( val, container, zDepth, forceZ ) {
 
     // Safely get the position of the HTML element [1] relative to its parent
@@ -841,20 +626,17 @@ function
     var child_pos = offset( val );
     var pos = { left: child_pos.left - parent_pos.left, top: child_pos.top - parent_pos.top };
 
-    // Get the position of the element's left-top and right-bottom corners
     var topLeft = { x: pos.left, y: pos.top, z: forceZ || 0.0 };
     var botRight = { x: pos.left + val.offsetWidth, y: pos.top + val.offsetHeight, z: forceZ || 0.0 };
-    // Calculate dimensions of the element (in world units)
     var block_width = Math.abs( botRight.x - topLeft.x );
     var block_height = Math.abs( topLeft.y - botRight.y );
-    // Adjust depth based on options
+
     if(zDepth === 'width')
       zDepth = block_width;
     else if (zDepth === 'height')
       zDepth = block_height;
     var block_depth = zDepth || Math.abs( topLeft.z - botRight.z ) || 1.0;
 
-    // Offset by the half-height/width so the corners line up
     return {
       pos:
         [topLeft.x + (block_width / 2),
@@ -866,11 +648,8 @@ function
     };
   };
 
-  /**
-  Create an invisible placement plane. TODO: No need to create geometry to place objects;
-  replace this technique with unproject at specified Z.
-  @method createPlacementPlane
-  */
+
+  // TODO: No need to create geometry to place objects; replace with unproject at specified Z
   my.createPlacementPlane = function( pos, dims ) {
     dims = dims || [200000,200000,1];
     var geo = new THREE.BoxGeometry(dims[0], dims[1], dims[2]);
@@ -887,10 +666,6 @@ function
     return eng.placement_plane;
   };
 
-  /**
-  Handle the window 'resize' event.
-  @method window_resize
-  */
   function window_resize() {
     var rect = eng.renderer.domElement.parentNode.getBoundingClientRect();
     eng.width = rect.right - rect.left;
@@ -900,11 +675,6 @@ function
     eng.renderer.setSize( eng.width, eng.height );
   }
 
-  /**
-  Convert the specified screen coordinates to normalized device coordinates
-  (NDC) ranging from -1.0 to 1.0 along each axis.
-  @method toNDC
-  */
   my.toNDC = function( posX, posY, posZ, coords, extents ) {
     var width = (extents || eng).width;
     var height = (extents || eng).height;
@@ -915,9 +685,6 @@ function
     return coords;
   };
 
-  /**
-  Module return.
-  */
   return my;
 
 });

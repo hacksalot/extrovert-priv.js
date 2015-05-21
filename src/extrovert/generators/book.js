@@ -13,12 +13,6 @@ define(['require', '../core', '../utilities/log', 'extrovert/providers/three/pro
   var _side = null;
   var _noun = null;
 
-  /**
-  Adjust page textures mapping. Necessary because the page geometry is paper-
-  back size or user-specified, but the page texture should be power-of-2 in
-  both dimensions (ideally).
-  @method mapTextures
-  */
   function mapTextures( cubeGeo ) {
     for (var i = 0; i < cubeGeo.faces.length ; i++) {
       var fvu = cubeGeo.faceVertexUvs[0][i];
