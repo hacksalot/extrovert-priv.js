@@ -1,7 +1,7 @@
 /**
 Plain JavaScript replacement of jQuery .extend.
 @module extend.js
-@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
+@license Copyright (c) 2015 | James M. Devlin
 */
 
 define(['./is'], function( is ) {

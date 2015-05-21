@@ -1,7 +1,7 @@
 /**
 Color blending utility.
 @module blend.js
-@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
+@license Copyright (c) 2015 | James M. Devlin
 */
 
 define(function() {

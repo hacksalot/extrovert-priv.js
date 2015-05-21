@@ -1,7 +1,7 @@
 /**
 A streaming plain text rasterizer for Extrovert.js.
 @module paint-plain-text-stream.js
-@license Copyright (c) 2015 by James M. Devlin. All rights reserved.
+@license Copyright (c) 2015 | James M. Devlin
 */
 
 define(['extrovert/utilities/utils', 'extrovert/providers/three/provider-three', 'in.scribe'], function( utils, gfx, inscribe ) {
