@@ -1,5 +1,9 @@
 # Extrovert.js #
 
+**Note: The Extrovert.js library has moved to https://github.com/indevious/extrovert.js. This is a [precursor repo](http://eatenbygrues.com/tips/precursor-repo); do not use.**
+
+===
+
 **Extrovert.js transforms your data into textured 3D geometry**. It supports physics, animations, cross-browser rendering, mouse and keyboard controls, and a five-minute install. It's intended for 3Dification of anything from on-page HTML to JSON responses fetched over AJAX to custom data formats specific to you or your project. [Visit the official project website](http://extrovert3d.com).
 
 ![](../gh-pages/extrovert_famous_photos.jpg)
